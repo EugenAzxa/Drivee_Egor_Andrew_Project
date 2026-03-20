@@ -634,7 +634,7 @@
       border-radius: 20px;
       z-index: 200;
       opacity: 0;
-      transition: opacity 0.25s ease;
+      transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       pointer-events: none;
       white-space: nowrap;
       max-width: calc(100% - 40px);
@@ -700,6 +700,139 @@
       color: var(--red);
       font-size: 13px;
       font-weight: 600;
+    }
+
+    /* ===================================================
+       KEYFRAME ANIMATIONS
+    =================================================== */
+
+    /* Cards slide up on mount — 0.4s per PRD spec */
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0);    }
+    }
+
+    /* Pulse — used for OVERDUE badge and loading states */
+    @keyframes pulse {
+      0%, 100% { opacity: 1;   }
+      50%       { opacity: 0.4; }
+    }
+
+    /* Shake — used on form validation failure */
+    @keyframes shake {
+      0%,100% { transform: translateX(0);  }
+      20%     { transform: translateX(-5px); }
+      40%     { transform: translateX(5px);  }
+      60%     { transform: translateX(-3px); }
+      80%     { transform: translateX(3px);  }
+    }
+
+    /* ===================================================
+       CARD ANIMATIONS & HOVER
+       - Consistent small delay (no nth-child counting issues)
+       - Hover wrapped in (hover:hover) — won't stick on touch
+       - translateY(-1px) not -2px — safe inside overflow:auto
+    =================================================== */
+
+    .card, .step-card, .lawyer-card {
+      animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) 0.06s both;
+      transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+                  border-color 0.2s ease;
+    }
+
+    /* Only animate NEW reminder cards (not on every re-render) */
+    .reminder-card.new {
+      animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) both;
+    }
+
+    @media (hover: hover) {
+      .card:hover, .step-card:hover, .lawyer-card:hover {
+        transform: translateY(-1px);
+        border-color: rgba(255, 255, 255, 0.18);
+      }
+    }
+
+    /* ===================================================
+       BUTTON HOVER + FOCUS
+       Wrapped in (hover:hover) so touch devices never get
+       stuck in hover state after a tap.
+    =================================================== */
+
+    .btn {
+      transition: transform 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+                  background 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+                  box-shadow 0.15s cubic-bezier(0.4, 0, 0.2, 1),
+                  opacity 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @media (hover: hover) {
+      .btn-primary:hover {
+        background: #1a8fff;
+        box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.2);
+      }
+      .btn-secondary:hover {
+        background: #3a3a3c;
+      }
+      .btn-purple:hover {
+        background: rgba(191, 90, 242, 0.22);
+      }
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--blue);
+      outline-offset: 2px;
+    }
+
+    /* Purple variant — replaces inline styles on Copy Script button */
+    .btn-purple {
+      color: var(--purple);
+      background: rgba(191, 90, 242, 0.12);
+      border: 1px solid rgba(191, 90, 242, 0.3);
+    }
+
+    /* ===================================================
+       BADGE STATES
+       OVERDUE pulses (2s, PRD spec).
+       TODAY glows with amber halo.
+    =================================================== */
+
+    .badge-red {
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .badge-amber {
+      box-shadow: 0 0 6px rgba(255, 214, 10, 0.35);
+    }
+
+    /* ===================================================
+       EMPTY STATE POLISH
+       Dashed border makes it look intentional, not broken.
+    =================================================== */
+
+    .empty-state {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+    }
+
+    /* ===================================================
+       REMINDER DELETE — smooth colour transition
+    =================================================== */
+
+    .reminder-delete {
+      transition: color 0.15s ease;
+    }
+
+    /* ===================================================
+       INPUT HOVER — subtle brightening before focus
+    =================================================== */
+
+    @media (hover: hover) {
+      .input-group input:hover,
+      .input-group select:hover,
+      .input-group textarea:hover {
+        border-color: rgba(255, 255, 255, 0.15);
+      }
     }
 
     /* ===================================================
@@ -776,7 +909,7 @@
           <label for="reminder-date">Due Date</label>
           <input type="date" id="reminder-date" />
         </div>
-        <button class="btn btn-primary" onclick="addReminder()">Add Reminder</button>
+        <button class="btn btn-primary" id="add-reminder-btn" onclick="addReminder()">Add Reminder</button>
 
         <div class="divider"></div>
 
@@ -915,8 +1048,8 @@
           <label for="dispute-textarea">Your Dispute Letter</label>
           <textarea id="dispute-textarea" rows="8" placeholder=""></textarea>
         </div>
-        <button class="btn" id="copy-script-btn" onclick="copyScript()"
-          style="display:none; margin-top:8px; color: var(--purple); background: rgba(191,90,242,0.12); border: 1px solid rgba(191,90,242,0.3);">
+        <button class="btn btn-purple" id="copy-script-btn" onclick="copyScript()"
+          style="display:none; margin-top:8px;">
           Copy Script
         </button>
       </div>
@@ -1011,7 +1144,7 @@
             <span class="badge badge-blue">Lawyer</span>
           </div>
           <div class="lawyer-meta">
-            $350 – $900 &nbsp;·&nbsp; Stunt, Speeding, DUI, Careless
+            <span class="mono">$350 – $900</span> &nbsp;·&nbsp; Stunt, Speeding, DUI, Careless
           </div>
           <button class="btn btn-placeholder">Contact — coming soon</button>
         </div>
@@ -1022,7 +1155,7 @@
             <span class="badge badge-teal">Paralegal</span>
           </div>
           <div class="lawyer-meta">
-            $200 – $600 &nbsp;·&nbsp; Speeding, Red Light, Parking
+            <span class="mono">$200 – $600</span> &nbsp;·&nbsp; Speeding, Red Light, Parking
           </div>
           <button class="btn btn-placeholder">Contact — coming soon</button>
         </div>
@@ -1033,7 +1166,7 @@
             <span class="badge badge-purple">Lawyer & Paralegal</span>
           </div>
           <div class="lawyer-meta">
-            $250 – $700 &nbsp;·&nbsp; Speeding, School Zone, Careless
+            <span class="mono">$250 – $700</span> &nbsp;·&nbsp; Speeding, School Zone, Careless
           </div>
           <button class="btn btn-placeholder">Contact — coming soon</button>
         </div>
@@ -1151,23 +1284,54 @@
     ================================================ -->
     <nav id="bottom-nav">
       <button class="nav-btn active" data-tab="tab-dashboard" onclick="showTab('tab-dashboard')">
-        <span class="nav-icon">⊞</span>
+        <span class="nav-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 10L11 3l8 7v9a1 1 0 01-1 1H4a1 1 0 01-1-1V10z"/>
+            <path d="M8 21V13h6v8"/>
+          </svg>
+        </span>
         Dashboard
       </button>
       <button class="nav-btn" data-tab="tab-services" onclick="showTab('tab-services')">
-        <span class="nav-icon">⚙</span>
+        <span class="nav-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="12" y="3" width="7" height="7" rx="1.5"/>
+            <rect x="3" y="12" width="7" height="7" rx="1.5"/>
+            <rect x="12" y="12" width="7" height="7" rx="1.5"/>
+          </svg>
+        </span>
         Services
       </button>
       <button class="nav-btn" data-tab="tab-hotspots" onclick="showTab('tab-hotspots')">
-        <span class="nav-icon">◎</span>
+        <span class="nav-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 2C8.24 2 6 4.24 6 7c0 4.5 5 11 5 11s5-6.5 5-11c0-2.76-2.24-5-5-5z"/>
+            <circle cx="11" cy="7" r="2"/>
+          </svg>
+        </span>
         Hotspots
       </button>
       <button class="nav-btn" data-tab="tab-legal" onclick="showTab('tab-legal')">
-        <span class="nav-icon">⚖</span>
+        <span class="nav-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="11" y1="3" x2="11" y2="19"/>
+            <line x1="5" y1="19" x2="17" y2="19"/>
+            <path d="M5 9l-3 5h6L5 9z"/>
+            <path d="M17 9l-3 5h6l-3-5z"/>
+            <line x1="5" y1="9" x2="17" y2="9"/>
+          </svg>
+        </span>
         Legal
       </button>
       <button class="nav-btn" data-tab="tab-guide" onclick="showTab('tab-guide')">
-        <span class="nav-icon">☰</span>
+        <span class="nav-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="7" x2="19" y2="7"/>
+            <line x1="3" y1="12" x2="19" y2="12"/>
+            <line x1="3" y1="17" x2="19" y2="17"/>
+          </svg>
+        </span>
         Guide
       </button>
     </nav>
@@ -1245,6 +1409,16 @@
 
       // Scroll the tab back to top when switching
       document.getElementById(tabId).scrollTop = 0;
+
+      // Reset card animations so they replay on every tab switch
+      // (CSS animations only fire once — this forces a replay)
+      document.getElementById(tabId)
+        .querySelectorAll('.card, .step-card, .lawyer-card')
+        .forEach(function(el) {
+          el.style.animation = 'none';
+          el.offsetHeight; // force browser reflow
+          el.style.animation = '';
+        });
 
       // Init map if switching to Hotspots (only runs once)
       if (tabId === 'tab-hotspots') {
@@ -1336,6 +1510,14 @@
       return new Date(parseInt(p[0]), parseInt(p[1]) - 1, parseInt(p[2]));
     }
 
+    // formatDate() — human-readable date from ISO string.
+    // Turns '2026-03-20' into 'Mar 20, 2026'.
+    function formatDate(str) {
+      var p = str.split('-');
+      var m = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      return m[parseInt(p[1]) - 1] + ' ' + parseInt(p[2]) + ', ' + p[0];
+    }
+
     // ===================================================
     // FEATURE 1 — PROFILE SAVE & LOAD
     // ===================================================
@@ -1369,6 +1551,13 @@
       var date = document.getElementById('reminder-date').value;
       if (!ref || !date) {
         showToast('Enter a ticket number and due date');
+        // Shake the Add Reminder button — same feedback as a wrong PIN
+        var addBtn = document.getElementById('add-reminder-btn');
+        if (addBtn) {
+          addBtn.style.animation = 'none';
+          addBtn.offsetHeight;
+          addBtn.style.animation = 'shake 0.3s ease-in-out';
+        }
         return;
       }
       var reminders = safeGet(REMINDERS_KEY) || [];
@@ -1380,6 +1569,10 @@
       });
       safeSet(REMINDERS_KEY, reminders);
       renderReminders();
+      // Mark only the newest card with .new so only it gets the slide-up animation
+      // (prevents all cards re-animating simultaneously on every re-render)
+      var cards = document.querySelectorAll('#reminders-list .reminder-card');
+      if (cards.length) cards[cards.length - 1].classList.add('new');
       document.getElementById('reminder-ref').value  = '';
       document.getElementById('reminder-date').value = '';
       showToast('Reminder added');
@@ -1423,7 +1616,7 @@
           '<div class="reminder-card">' +
             '<div class="reminder-info">' +
               '<div class="reminder-ref">' + esc(r.ref) + '</div>' +
-              '<div class="reminder-due">Due: ' + esc(r.dueDate) + '</div>' +
+              '<div class="reminder-due">Due: ' + formatDate(r.dueDate) + '</div>' +
             '</div>' +
             '<span class="badge ' + status.cls + '">' + status.label + '</span>' +
             '<button class="reminder-delete" onclick="deleteReminder(\'' + r.id + '\')" title="Delete reminder">&times;</button>' +
