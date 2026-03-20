@@ -1,7 +1,8 @@
 {
   "permissions": {
     "allow": [
-      "WebFetch(domain:toticket.replit.app)"
+      "WebFetch(domain:toticket.replit.app)",
+      "WebSearch"
     ],
     "additionalDirectories": [
       "c:\\Users\\dj_la\\OneDrive\\Рабочий стол\\DRIVEE\\.claude"
