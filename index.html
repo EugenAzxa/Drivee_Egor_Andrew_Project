@@ -1217,10 +1217,15 @@
         <div class="card-title">⚡ Ticket Analyser</div>
         <div class="card-subtitle">Enter your ticket details — get an instant verdict and action plan</div>
 
-        <!-- Optional photo -->
+        <!-- Photo — triggers OCR scan automatically on selection -->
         <div class="input-group">
-          <label for="ticket-photo">Ticket Photo (optional)</label>
-          <input type="file" id="ticket-photo" accept="image/*" capture="environment" />
+          <label for="ticket-photo">Ticket Photo — AI will read it automatically</label>
+          <input type="file" id="ticket-photo" accept="image/*" capture="environment" onchange="scanTicketPhoto()" />
+        </div>
+
+        <!-- OCR status — shown while scanning -->
+        <div id="scan-status" style="display:none; margin-bottom:12px; padding:12px 14px; background:rgba(10,132,255,0.08); border:1px solid rgba(10,132,255,0.2); border-radius:12px; font-size:13px; color:var(--blue); text-align:center; animation:pulse 1.5s ease-in-out infinite;">
+          📷 Reading your ticket…
         </div>
 
         <!-- Fine amount -->
@@ -1809,6 +1814,9 @@
   <!-- Leaflet JS — loaded after HTML so the #map element exists when JS runs -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+  <!-- Tesseract.js — client-side OCR. Ticket photos never leave the device. -->
+  <script src="https://unpkg.com/tesseract.js@4/dist/tesseract.min.js"></script>
+
   <script>
     // ===================================================
     // FEE ESCALATION CALCULATOR
@@ -1956,6 +1964,93 @@
     }
 
     // ===================================================
+    // FEATURE — TICKET PHOTO SCANNER (Tesseract.js OCR)
+    // Reads a photo of a parking ticket.
+    // Extracts: fine amount, dates, reference numbers.
+    // Auto-fills the analyser form so the user just taps "Get Verdict".
+    // All processing is 100% on-device — photo never leaves the browser.
+    // ===================================================
+
+    function scanTicketPhoto() {
+      var file = document.getElementById('ticket-photo').files[0];
+      if (!file) return;
+
+      if (typeof Tesseract === 'undefined') {
+        showToast('Scanner not loaded — check your internet connection');
+        return;
+      }
+
+      var statusEl = document.getElementById('scan-status');
+      statusEl.style.display = 'block';
+      statusEl.textContent   = '📷 Reading your ticket…';
+
+      Tesseract.recognize(file, 'eng', {
+        // No logger callback — keeps it simple
+      }).then(function(result) {
+        var text = result.data.text;
+        statusEl.style.animation = 'none';
+
+        // --- Extract fine amount ---
+        // Looks for patterns like "$65.00", "$ 200", "FINE $130"
+        var amountMatch = text.match(/\$\s*(\d{1,4}(?:[.,]\d{2})?)/);
+        if (amountMatch) {
+          var amount = parseFloat(amountMatch[1].replace(',', '.'));
+          document.getElementById('ticket-amount').value = amount;
+        }
+
+        // --- Extract reference / ticket number ---
+        // Toronto tickets look like "TPA-123456" or "1234567890"
+        var refMatch = text.match(/\b([A-Z]{2,4}[-\s]?\d{4,8}|\d{8,12})\b/);
+        if (refMatch) {
+          var refField = document.getElementById('verdict-ref');
+          if (refField) refField.value = refMatch[1];
+        }
+
+        // --- Detect violation type from keywords ---
+        var lower = text.toLowerCase();
+        var typeSelect = document.getElementById('ticket-type');
+        if (/stunt|racing|contest/.test(lower)) {
+          typeSelect.value = 'stunt';
+        } else if (/dui|impair|alcohol|drug/.test(lower)) {
+          typeSelect.value = 'dui';
+        } else if (/careless/.test(lower)) {
+          typeSelect.value = 'careless';
+        } else if (/speed|km\/h|km.h/.test(lower)) {
+          typeSelect.value = 'speeding';
+        } else if (/red light|traffic signal/.test(lower)) {
+          typeSelect.value = 'redlight';
+        } else if (/park/.test(lower)) {
+          typeSelect.value = 'parking';
+        }
+
+        // Show what was found
+        var found = [];
+        if (amountMatch) found.push('Amount: $' + amountMatch[1]);
+        if (refMatch)    found.push('Ref: ' + refMatch[1]);
+        if (typeSelect.value) found.push('Type: ' + typeSelect.options[typeSelect.selectedIndex].text);
+
+        if (found.length) {
+          statusEl.style.animation = '';
+          statusEl.style.background = 'rgba(48,209,88,0.08)';
+          statusEl.style.borderColor = 'rgba(48,209,88,0.25)';
+          statusEl.style.color = 'var(--green)';
+          statusEl.textContent = '✓ Found: ' + found.join(' · ') + ' — tap Get Verdict';
+        } else {
+          statusEl.style.background = 'rgba(255,159,10,0.08)';
+          statusEl.style.borderColor = 'rgba(255,159,10,0.25)';
+          statusEl.style.color = 'var(--orange)';
+          statusEl.textContent = 'Could not read ticket clearly — please fill in the fields manually';
+        }
+
+      }).catch(function() {
+        var statusEl = document.getElementById('scan-status');
+        statusEl.style.animation = '';
+        statusEl.style.color = 'var(--red)';
+        statusEl.textContent = 'Scan failed — please enter the details manually';
+      });
+    }
+
+    // ===================================================
     // FEATURE — TICKET ANALYSER
     // Rule-based verdict system. No API key required.
     // Verdict routing: URGENT/SERIOUS → Legal tab (lawyers)
@@ -2098,19 +2193,24 @@
       var name    = (profile && profile.name)  ? profile.name  : 'a Drivee user';
       var plate   = (profile && profile.plate) ? profile.plate : '';
 
-      var subject = encodeURIComponent('Free Consultation Request — Drivee Referral');
+      var subject = encodeURIComponent('Free Consultation Request - Drivee Referral');
       var body    = encodeURIComponent(
         'Hello ' + firmName + ',\n\n' +
-        'I am reaching out through the Drivee app to request a free consultation regarding a traffic matter.\n\n' +
-        'My details:\n' +
+        'I found your firm through the Drivee app and would like to request a free consultation.\n\n' +
         'Name: ' + name + '\n' +
         (plate ? 'License Plate: ' + plate + '\n' : '') +
         'Referral Code: DRIVEE\n\n' +
-        'Please contact me at your earliest convenience.\n\n' +
         'Thank you,\n' + name
       );
 
-      window.location.href = 'mailto:' + email + '?subject=' + subject + '&body=' + body;
+      // Using a hidden <a> click — most reliable across browsers and local files.
+      // window.location.href with mailto can navigate away on file:// protocol.
+      var a = document.createElement('a');
+      a.href = 'mailto:' + email + '?subject=' + subject + '&body=' + body;
+      a.style.display = 'none';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
     }
 
     // ===================================================
