@@ -1003,6 +1003,53 @@
     }
 
     /* ===================================================
+       VERDICT CARD — ticket analysis result
+    =================================================== */
+    .verdict-card {
+      border-radius: 16px;
+      padding: 20px;
+      margin-top: 4px;
+      animation: slideUp 0.4s cubic-bezier(0.4,0,0.2,1) both;
+    }
+    .verdict-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .verdict-message {
+      font-size: 19px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      line-height: 1.3;
+    }
+    .verdict-reason {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      line-height: 1.6;
+    }
+    .verdict-save-section {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+    .verdict-save-label {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+    .verdict-urgent  { background: rgba(255,69,58,0.12);  border: 1px solid rgba(255,69,58,0.3); }
+    .verdict-serious { background: rgba(255,214,10,0.10); border: 1px solid rgba(255,214,10,0.3); }
+    .verdict-contest { background: rgba(10,132,255,0.10); border: 1px solid rgba(10,132,255,0.3); }
+    .verdict-minor   { background: rgba(48,209,88,0.10);  border: 1px solid rgba(48,209,88,0.3); }
+
+    /* ===================================================
        GPS GUARDIAN — alert banner + active button state
     =================================================== */
     .gps-alert {
@@ -1165,18 +1212,42 @@
         <button class="btn btn-primary" onclick="saveProfile()">Save Profile</button>
       </div>
 
-      <!-- AI Scanner Card -->
+      <!-- Ticket Analyser Card -->
       <div class="card">
-        <div class="card-title">Scan a Ticket</div>
-        <div class="card-subtitle">Take a photo or upload an image — AI reads it for you</div>
+        <div class="card-title">⚡ Ticket Analyser</div>
+        <div class="card-subtitle">Enter your ticket details — get an instant verdict and action plan</div>
+
+        <!-- Optional photo -->
         <div class="input-group">
-          <label for="ticket-photo">Ticket Photo</label>
+          <label for="ticket-photo">Ticket Photo (optional)</label>
           <input type="file" id="ticket-photo" accept="image/*" capture="environment" />
         </div>
-        <div class="empty-state">
-          <div class="empty-state-icon">📷</div>
-          Photo will be analysed here — OCR coming in Part 2
+
+        <!-- Fine amount -->
+        <div class="calc-input-wrap" style="margin-bottom: 12px;">
+          <span class="calc-dollar">$</span>
+          <input type="number" id="ticket-amount" class="calc-input" placeholder="Fine amount" min="0" max="9999" />
         </div>
+
+        <!-- Violation type -->
+        <div class="input-group">
+          <label for="ticket-type">Violation Type</label>
+          <select id="ticket-type">
+            <option value="">Select violation type…</option>
+            <option value="parking">Parking Violation</option>
+            <option value="speeding">Speeding</option>
+            <option value="redlight">Red Light Camera</option>
+            <option value="careless">Careless Driving</option>
+            <option value="stunt">Stunt Driving</option>
+            <option value="dui">DUI / Impaired Driving</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <button class="btn btn-primary" onclick="analyseTicket()">Get Instant Verdict</button>
+
+        <!-- Verdict output — injected by JS -->
+        <div id="verdict-output"></div>
       </div>
 
       <!-- Fine Reminders Card -->
@@ -1486,20 +1557,18 @@
         </div>
       </div>
 
-      <!-- Lawyer Directory -->
+      <!-- Lawyer Directory — all 8 firms -->
       <div class="card">
         <div class="card-title">Toronto Traffic Defence</div>
-        <div class="card-subtitle">Free consultation available at all firms</div>
+        <div class="card-subtitle">Free consultation at all firms · Tap Contact to email with your DRIVEE referral code</div>
 
         <div class="lawyer-card">
           <div class="lawyer-header">
             <div class="lawyer-name">X-Copper Professional Corporation</div>
             <span class="badge badge-blue">Lawyer</span>
           </div>
-          <div class="lawyer-meta">
-            <span class="mono">$350 – $900</span> &nbsp;·&nbsp; Stunt, Speeding, DUI, Careless
-          </div>
-          <button class="btn btn-placeholder">Contact — coming soon</button>
+          <div class="lawyer-meta"><span class="mono">$350–$900</span> &nbsp;·&nbsp; Stunt, Speeding, DUI, Careless, Criminal</div>
+          <button class="btn btn-primary" onclick="contactLawyer('info@xcopper.com','X-Copper')">Contact — Free Consultation</button>
         </div>
 
         <div class="lawyer-card">
@@ -1507,10 +1576,8 @@
             <div class="lawyer-name">X-COPS Traffic Ticket Fighters</div>
             <span class="badge badge-teal">Paralegal</span>
           </div>
-          <div class="lawyer-meta">
-            <span class="mono">$200 – $600</span> &nbsp;·&nbsp; Speeding, Red Light, Parking
-          </div>
-          <button class="btn btn-placeholder">Contact — coming soon</button>
+          <div class="lawyer-meta"><span class="mono">$200–$600</span> &nbsp;·&nbsp; Speeding, Red Light, Parking, Careless</div>
+          <button class="btn btn-primary" onclick="contactLawyer('info@x-cops.ca','X-COPS')">Contact — Free Consultation</button>
         </div>
 
         <div class="lawyer-card">
@@ -1518,14 +1585,53 @@
             <div class="lawyer-name">POINTTS Advisory Services</div>
             <span class="badge badge-purple">Lawyer & Paralegal</span>
           </div>
-          <div class="lawyer-meta">
-            <span class="mono">$250 – $700</span> &nbsp;·&nbsp; Speeding, School Zone, Careless
-          </div>
-          <button class="btn btn-placeholder">Contact — coming soon</button>
+          <div class="lawyer-meta"><span class="mono">$250–$700</span> &nbsp;·&nbsp; Speeding, School Zone, Careless, Insurance</div>
+          <button class="btn btn-primary" onclick="contactLawyer('toronto@pointts.com','POINTTS')">Contact — Free Consultation</button>
         </div>
 
-        <div style="margin-top: 12px; text-align: center; font-size: 13px; color: var(--text-tertiary);">
-          +5 more firms · Full directory coming in Part 2
+        <div class="lawyer-card">
+          <div class="lawyer-header">
+            <div class="lawyer-name">OTT Legal</div>
+            <span class="badge badge-teal">Paralegal</span>
+          </div>
+          <div class="lawyer-meta"><span class="mono">$200–$550</span> &nbsp;·&nbsp; Red Light, Speeding, Parking, HOV Lane</div>
+          <button class="btn btn-primary" onclick="contactLawyer('info@ontariotraffictickets.com','OTT Legal')">Contact — Free Consultation</button>
+        </div>
+
+        <div class="lawyer-card">
+          <div class="lawyer-header">
+            <div class="lawyer-name">X-Police / Fight Your Ticket</div>
+            <span class="badge badge-blue">Lawyer</span>
+          </div>
+          <div class="lawyer-meta"><span class="mono">$300–$800</span> &nbsp;·&nbsp; Stunt, DUI, Criminal, HTA, Careless</div>
+          <button class="btn btn-primary" onclick="contactLawyer('help@xpolice.ca','X-Police')">Contact — Free Consultation</button>
+        </div>
+
+        <div class="lawyer-card">
+          <div class="lawyer-header">
+            <div class="lawyer-name">Street Legal Paralegal Services</div>
+            <span class="badge badge-teal">Paralegal</span>
+          </div>
+          <div class="lawyer-meta"><span class="mono">$150–$500</span> &nbsp;·&nbsp; Speeding, Bike Lane, Parking, Cell Phone</div>
+          <button class="btn btn-primary" onclick="contactLawyer('info@street-legal.ca','Street Legal')">Contact — Free Consultation</button>
+        </div>
+
+        <div class="lawyer-card">
+          <div class="lawyer-header">
+            <div class="lawyer-name">Traffic Ticket Experts</div>
+            <span class="badge badge-purple">Lawyer & Paralegal</span>
+          </div>
+          <div class="lawyer-meta"><span class="mono">$200–$650</span> &nbsp;·&nbsp; All HTA, Speeding, Stunt, Red Light</div>
+          <button class="btn btn-primary" onclick="contactLawyer('info@trafficticket.legal','Traffic Ticket Experts')">Contact — Free Consultation</button>
+        </div>
+
+        <div class="lawyer-card">
+          <div class="lawyer-header">
+            <div class="lawyer-name">HWY-LAW Criminal Defence</div>
+            <span class="badge badge-red">Lawyer</span>
+          </div>
+          <div class="lawyer-meta"><span class="mono">$400–$1,200</span> &nbsp;·&nbsp; DUI, Criminal, HTA, Dangerous, Stunt</div>
+          <button class="btn btn-primary" onclick="contactLawyer('info@hwy-law.com','HWY-LAW')">Contact — Free Consultation</button>
         </div>
       </div>
 
@@ -1847,6 +1953,164 @@
           .bindPopup('<strong>' + labels[zone.type] + '</strong>')
           .addTo(driveeMap);
       });
+    }
+
+    // ===================================================
+    // FEATURE — TICKET ANALYSER
+    // Rule-based verdict system. No API key required.
+    // Verdict routing: URGENT/SERIOUS → Legal tab (lawyers)
+    //                  CONTEST        → Services tab (dispute builder)
+    //                  MINOR          → Toronto.ca payment portal
+    // ===================================================
+
+    var VERDICTS = {
+      urgent: {
+        label: 'URGENT', labelColor: '#FF453A', cls: 'verdict-urgent',
+        message: 'Do NOT pay this ticket.',
+        reason: 'This charge carries serious consequences — criminal record, automatic licence suspension, and insurance rate increases that last for years. You need a lawyer before doing anything.',
+        actionLabel: '→ Find a Lawyer Now',
+        tab: 'tab-legal'
+      },
+      serious: {
+        label: 'SERIOUS', labelColor: '#FFD60A', cls: 'verdict-serious',
+        message: 'This ticket is worth contesting.',
+        reason: 'The fine is large enough that a paralegal could save you money even after their fee. Request a free consultation — it costs nothing to ask.',
+        actionLabel: '→ Contact a Paralegal',
+        tab: 'tab-legal'
+      },
+      contest: {
+        label: 'CONTEST', labelColor: '#0A84FF', cls: 'verdict-contest',
+        message: 'You can fight this yourself.',
+        reason: 'Use the dispute script builder to generate a formal letter to the Toronto Parking Authority. No lawyer needed — this works for most parking and minor traffic tickets.',
+        actionLabel: '→ Build Dispute Letter',
+        tab: 'tab-services'
+      },
+      minor: {
+        label: 'MINOR', labelColor: '#30D158', cls: 'verdict-minor',
+        message: 'Pay it — not worth fighting.',
+        reason: 'The cost and effort of disputing this ticket outweighs the fine. Pay within 15 days to avoid the $15.39 address search fee and further escalation.',
+        actionLabel: '→ Pay on Toronto.ca',
+        tab: null // external link
+      }
+    };
+
+    // Determines verdict based on fine amount and violation type.
+    function analyseTicket() {
+      var amount = parseFloat(document.getElementById('ticket-amount').value) || 0;
+      var type   = document.getElementById('ticket-type').value;
+
+      if (!amount && !type) {
+        showToast('Enter a fine amount or select a violation type');
+        return;
+      }
+
+      var key;
+      if (type === 'stunt' || type === 'dui') {
+        key = 'urgent';
+      } else if (type === 'careless' || amount >= 200) {
+        key = 'serious';
+      } else if (amount > 0 && amount < 65 && (type === 'parking' || type === '')) {
+        key = 'minor';
+      } else {
+        key = 'contest';
+      }
+
+      renderVerdictCard(VERDICTS[key], amount, type);
+    }
+
+    function renderVerdictCard(verdict, amount, type) {
+      var container = document.getElementById('verdict-output');
+      if (!container) return;
+
+      var amountLine = amount > 0
+        ? '<div style="font-size:13px;color:var(--text-secondary);margin-bottom:14px;">Fine: <strong style="color:var(--text-primary);">$' + amount.toFixed(2) + '</strong></div>'
+        : '';
+
+      container.innerHTML =
+        '<div class="verdict-card ' + verdict.cls + '" style="margin-top:14px;">' +
+          '<div class="verdict-label" style="color:' + verdict.labelColor + ';">' + verdict.label + '</div>' +
+          '<div class="verdict-message">' + verdict.message + '</div>' +
+          amountLine +
+          '<div class="verdict-reason">' + verdict.reason + '</div>' +
+          '<button class="btn btn-primary" id="verdict-action-btn">' + verdict.actionLabel + '</button>' +
+          '<div class="verdict-save-section">' +
+            '<div class="verdict-save-label">Save as Reminder</div>' +
+            '<div class="input-group" style="margin-bottom:8px;">' +
+              '<label for="verdict-ref">Ticket Reference Number</label>' +
+              '<input type="text" id="verdict-ref" placeholder="e.g. TPA-123456" />' +
+            '</div>' +
+            '<div class="input-group" style="margin-bottom:10px;">' +
+              '<label for="verdict-due">Due Date</label>' +
+              '<input type="date" id="verdict-due" />' +
+            '</div>' +
+            '<button class="btn btn-secondary" onclick="saveTicketAsReminder()">💾 Save Reminder</button>' +
+          '</div>' +
+        '</div>';
+
+      // Wire up the action button after injecting HTML
+      var btn = document.getElementById('verdict-action-btn');
+      if (verdict.tab) {
+        btn.onclick = function() {
+          // CONTEST verdict: pre-fill the dispute reason based on violation type
+          if (verdict.tab === 'tab-services' && type) {
+            var sel = document.getElementById('dispute-reason');
+            if (sel) {
+              if (type === 'meter')    sel.value = 'meter';
+              else if (type === 'parking') sel.value = 'sign';
+              else                     sel.value = 'error';
+            }
+          }
+          showTab(verdict.tab);
+        };
+      } else {
+        // MINOR verdict — external payment link
+        btn.onclick = function() {
+          window.open('https://www.toronto.ca/services-payments/tickets-fines-penalties/pay-a-parking-ticket/');
+        };
+      }
+    }
+
+    // Reads the save section inputs from the verdict card and adds a reminder.
+    function saveTicketAsReminder() {
+      var ref  = document.getElementById('verdict-ref').value.trim();
+      var date = document.getElementById('verdict-due').value;
+      if (!ref || !date) {
+        showToast('Enter a reference number and due date to save');
+        return;
+      }
+      // Pre-fill the reminder form and call addReminder()
+      document.getElementById('reminder-ref').value  = ref;
+      document.getElementById('reminder-date').value = date;
+      addReminder();
+      // Clear the verdict save inputs
+      document.getElementById('verdict-ref').value = '';
+      document.getElementById('verdict-due').value = '';
+    }
+
+    // ===================================================
+    // FEATURE — LAWYER EMAIL CONTACT
+    // Opens the user's mail app pre-filled with their
+    // profile name, plate, and the DRIVEE referral code.
+    // ===================================================
+
+    function contactLawyer(email, firmName) {
+      var profile = safeGet(PROFILE_KEY);
+      var name    = (profile && profile.name)  ? profile.name  : 'a Drivee user';
+      var plate   = (profile && profile.plate) ? profile.plate : '';
+
+      var subject = encodeURIComponent('Free Consultation Request — Drivee Referral');
+      var body    = encodeURIComponent(
+        'Hello ' + firmName + ',\n\n' +
+        'I am reaching out through the Drivee app to request a free consultation regarding a traffic matter.\n\n' +
+        'My details:\n' +
+        'Name: ' + name + '\n' +
+        (plate ? 'License Plate: ' + plate + '\n' : '') +
+        'Referral Code: DRIVEE\n\n' +
+        'Please contact me at your earliest convenience.\n\n' +
+        'Thank you,\n' + name
+      );
+
+      window.location.href = 'mailto:' + email + '?subject=' + subject + '&body=' + body;
     }
 
     // ===================================================
