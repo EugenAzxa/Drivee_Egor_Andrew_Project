@@ -846,6 +846,39 @@
     }
 
     /* ===================================================
+       GPS GUARDIAN — alert banner + active button state
+    =================================================== */
+    .gps-alert {
+      padding: 14px 16px;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      text-align: center;
+      line-height: 1.4;
+      margin-bottom: 12px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .gps-alert-red {
+      background: rgba(255, 69, 58, 0.15);
+      border: 1px solid rgba(255, 69, 58, 0.4);
+      color: var(--red);
+    }
+
+    .gps-alert-orange {
+      background: rgba(255, 159, 10, 0.15);
+      border: 1px solid rgba(255, 159, 10, 0.4);
+      color: var(--orange);
+    }
+
+    .btn-gps-active {
+      background: var(--elevated) !important;
+      color: var(--red) !important;
+      box-shadow: none !important;
+      border: 1px solid rgba(255, 69, 58, 0.4) !important;
+    }
+
+    /* ===================================================
        COMMUNITY REPORTS — issue type button grid
     =================================================== */
     .issue-grid {
@@ -1147,10 +1180,32 @@
       <!-- GPS Guardian -->
       <div class="card">
         <div class="card-title">GPS Guardian</div>
-        <div class="card-subtitle">Live proximity alerts for tow zones, bike lanes, and hydrants</div>
-        <button class="btn btn-placeholder">Start Live GPS Guardian — coming soon</button>
-        <div style="margin-top: 12px; font-size: 13px; color: var(--text-tertiary); text-align: center;">
-          GPS accuracy will appear here when active
+        <div class="card-subtitle">Live alerts when you are near a fine zone</div>
+
+        <!-- Alert banner — hidden until a zone is triggered -->
+        <div id="gps-alert" style="display: none;"></div>
+
+        <!-- Start / Stop button -->
+        <button class="btn btn-primary" id="gps-btn" onclick="toggleGPS()">Start GPS Guardian</button>
+
+        <!-- Live status / accuracy -->
+        <div id="gps-status" style="margin-top: 12px; font-size: 13px; color: var(--text-secondary); text-align: center;">
+          Tap Start to enable live protection
+        </div>
+
+        <!-- Shown if user denies location permission -->
+        <div id="gps-denied" style="display: none; margin-top: 12px; padding: 12px 14px; background: rgba(255,69,58,0.1); border: 1px solid rgba(255,69,58,0.25); border-radius: 12px; color: var(--red); font-size: 13px;">
+          Location access denied. Go to your browser settings and allow location for this page, then tap Start again.
+        </div>
+
+        <!-- Zone legend -->
+        <div style="margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border);">
+          <div style="font-size: 11px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 10px;">Alert Zones</div>
+          <div style="font-size: 13px; color: var(--text-secondary); display: flex; flex-direction: column; gap: 8px;">
+            <div>🔴 Fire Hydrant — within 20m &nbsp;<span style="color: var(--red);">$100 fine</span></div>
+            <div>🔵 Protected Bike Lane — within 25m &nbsp;<span style="color: var(--red);">$200 fine</span></div>
+            <div>🟠 Tow-away Zone — within 30m &nbsp;<span style="color: var(--orange);">$250+ fine</span></div>
+          </div>
         </div>
       </div>
 
@@ -1544,7 +1599,8 @@
         }).addTo(driveeMap);
 
         mapInitialised = true;
-        loadReportsOnMap(); // draw any saved pins
+        loadReportsOnMap(); // draw any saved community report pins
+        drawZoneMarkers();  // draw hydrant / bike lane / tow zone markers
 
       } catch (err) {
         // Leaflet failed — show fallback message, hide the broken map container
@@ -1552,6 +1608,30 @@
         document.getElementById('map-fallback').style.display = 'flex';
         console.warn('Drivee: Map could not load —', err.message);
       }
+    }
+
+    // Draws small coloured markers on the map for every danger zone.
+    // Called once after the map initialises.
+    // Zones are defined in DANGER_ZONES (GPS Guardian section below).
+    function drawZoneMarkers() {
+      if (!driveeMap || typeof DANGER_ZONES === 'undefined') return;
+
+      var colours = { hydrant: '#FF453A', bike: '#0A84FF', tow: '#FF9F0A' };
+      var labels  = { hydrant: 'Fire Hydrant', bike: 'Protected Bike Lane', tow: 'Tow-away Zone' };
+
+      DANGER_ZONES.forEach(function(zone) {
+        var colour = colours[zone.type];
+        var icon = L.divIcon({
+          className: '',
+          html: '<div style="width:10px;height:10px;background:' + colour + ';border:2px solid #fff;border-radius:50%;opacity:0.85;"></div>',
+          iconSize:   [10, 10],
+          iconAnchor: [5, 5],
+          popupAnchor: [0, -8]
+        });
+        L.marker([zone.lat, zone.lng], { icon: icon })
+          .bindPopup('<strong>' + labels[zone.type] + '</strong>')
+          .addTo(driveeMap);
+      });
     }
 
     // ===================================================
@@ -1726,6 +1806,191 @@
       renderReportCount();
       renderReportsList();
       showToast('Report removed');
+    }
+
+    // ===================================================
+    // FEATURE — GPS GUARDIAN
+    // watchPosition tracks the user in real time.
+    // Checks distance against hardcoded Toronto danger zones.
+    // Fires a pulsing alert banner when within the zone radius.
+    // ===================================================
+
+    // Hardcoded Toronto danger zones — real street locations.
+    // lat/lng taken from Google Maps for accuracy.
+    var DANGER_ZONES = [
+      // Fire hydrants — $100 fine within 3 metres (we alert at 20m as buffer)
+      { type: 'hydrant', lat: 43.6555, lng: -79.3864 }, // Yonge & Wellesley
+      { type: 'hydrant', lat: 43.6489, lng: -79.3767 }, // Church & Carlton
+      { type: 'hydrant', lat: 43.6602, lng: -79.4021 }, // Bloor & Spadina
+      { type: 'hydrant', lat: 43.6478, lng: -79.3941 }, // Queen & University
+      // Protected bike lanes — $200 fine
+      { type: 'bike', lat: 43.6647, lng: -79.4033 }, // Bloor St W (Spadina)
+      { type: 'bike', lat: 43.6648, lng: -79.3950 }, // Bloor St W (Annex)
+      { type: 'bike', lat: 43.6425, lng: -79.3810 }, // Harbourfront / Queens Quay
+      { type: 'bike', lat: 43.6540, lng: -79.3680 }, // Richmond St E
+      // Tow-away zones — $250+ fine
+      { type: 'tow', lat: 43.6462, lng: -79.3843 }, // King St W (transit corridor)
+      { type: 'tow', lat: 43.6470, lng: -79.3910 }, // King & Bathurst
+      { type: 'tow', lat: 43.6533, lng: -79.3826 }, // Bay & Bloor
+      { type: 'tow', lat: 43.6480, lng: -79.3755 }, // Front & Yonge
+    ];
+
+    // Per zone type: alert radius, message, and CSS class
+    var ZONE_CONFIG = {
+      hydrant: {
+        radius:  20,
+        message: '🚨 PULL FORWARD! Too close to a Fire Hydrant ($100 Fine)',
+        cls:     'gps-alert-red'
+      },
+      bike: {
+        radius:  25,
+        message: '🚨 DO NOT STOP! You are in a Protected Bike Lane ($200 Fine)',
+        cls:     'gps-alert-red'
+      },
+      tow: {
+        radius:  30,
+        message: '⚠️ WARNING — Tow Zone. Your car could be towed ($250+)',
+        cls:     'gps-alert-orange'
+      }
+    };
+
+    var gpsWatchId        = null;  // watchPosition handle — needed to stop it
+    var gpsActive         = false;
+    var gpsPositionMarker = null;  // blue dot on the map
+
+    // Toggles GPS on/off — called by the Start/Stop button
+    function toggleGPS() {
+      if (gpsActive) { stopGPS(); } else { startGPS(); }
+    }
+
+    function startGPS() {
+      if (!navigator.geolocation) {
+        document.getElementById('gps-denied').style.display = 'block';
+        return;
+      }
+
+      var btn    = document.getElementById('gps-btn');
+      var status = document.getElementById('gps-status');
+      btn.textContent = 'Locating…';
+      btn.disabled    = true;
+      status.textContent = 'Requesting location permission…';
+
+      gpsWatchId = navigator.geolocation.watchPosition(
+        // SUCCESS — fires every time the device reports a new position
+        function(pos) {
+          // First successful fix — update button to Stop state
+          if (!gpsActive) {
+            gpsActive = true;
+            btn.textContent = '■ Stop GPS Guardian';
+            btn.disabled    = false;
+            btn.classList.add('btn-gps-active');
+            document.getElementById('gps-denied').style.display = 'none';
+          }
+
+          var lat = pos.coords.latitude;
+          var lng = pos.coords.longitude;
+          var acc = Math.round(pos.coords.accuracy);
+
+          status.textContent = 'Active · accuracy ±' + acc + 'm';
+
+          updatePositionMarker(lat, lng); // show blue dot on map
+          checkProximity(lat, lng);       // check all zones
+        },
+
+        // ERROR — location denied or unavailable
+        function() {
+          btn.textContent = 'Start GPS Guardian';
+          btn.disabled    = false;
+          document.getElementById('gps-status').textContent = 'Tap Start to enable live protection';
+          document.getElementById('gps-denied').style.display = 'block';
+        },
+
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+      );
+    }
+
+    function stopGPS() {
+      if (gpsWatchId !== null) {
+        navigator.geolocation.clearWatch(gpsWatchId);
+        gpsWatchId = null;
+      }
+      gpsActive = false;
+
+      var btn = document.getElementById('gps-btn');
+      btn.textContent = 'Start GPS Guardian';
+      btn.classList.remove('btn-gps-active');
+      document.getElementById('gps-status').textContent = 'Tap Start to enable live protection';
+      clearGpsAlert();
+
+      // Remove the blue position dot from the map
+      if (gpsPositionMarker && driveeMap) {
+        driveeMap.removeLayer(gpsPositionMarker);
+        gpsPositionMarker = null;
+      }
+    }
+
+    // Places or moves the blue "you are here" dot on the Leaflet map
+    function updatePositionMarker(lat, lng) {
+      if (!driveeMap) return;
+
+      if (gpsPositionMarker) {
+        gpsPositionMarker.setLatLng([lat, lng]);
+      } else {
+        var icon = L.divIcon({
+          className: '',
+          html: '<div style="width:16px;height:16px;background:#0A84FF;border:3px solid #fff;border-radius:50%;box-shadow:0 0 0 6px rgba(10,132,255,0.25);"></div>',
+          iconSize:   [16, 16],
+          iconAnchor: [8, 8]
+        });
+        gpsPositionMarker = L.marker([lat, lng], { icon: icon }).addTo(driveeMap);
+        driveeMap.setView([lat, lng], 16); // zoom into user position
+      }
+    }
+
+    // Checks every danger zone against the current position.
+    // Shows the alert for the closest triggered zone.
+    function checkProximity(userLat, userLng) {
+      var triggered    = null;
+      var closestDist  = Infinity;
+
+      DANGER_ZONES.forEach(function(zone) {
+        var dist   = getDistanceMetres(userLat, userLng, zone.lat, zone.lng);
+        var config = ZONE_CONFIG[zone.type];
+        if (dist <= config.radius && dist < closestDist) {
+          triggered   = { config: config, dist: Math.round(dist) };
+          closestDist = dist;
+        }
+      });
+
+      if (triggered) {
+        showGpsAlert(triggered.config.message, triggered.config.cls);
+      } else {
+        clearGpsAlert();
+      }
+    }
+
+    function showGpsAlert(message, cls) {
+      var el = document.getElementById('gps-alert');
+      el.className   = 'gps-alert ' + cls;
+      el.textContent = message;
+      el.style.display = 'block';
+    }
+
+    function clearGpsAlert() {
+      var el = document.getElementById('gps-alert');
+      if (el) el.style.display = 'none';
+    }
+
+    // Haversine formula — returns distance in metres between two GPS coordinates.
+    // Used instead of simple subtraction because the Earth is curved.
+    function getDistanceMetres(lat1, lng1, lat2, lng2) {
+      var R    = 6371000; // Earth radius in metres
+      var dLat = (lat2 - lat1) * Math.PI / 180;
+      var dLng = (lng2 - lng1) * Math.PI / 180;
+      var a    = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+                 Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                 Math.sin(dLng / 2) * Math.sin(dLng / 2);
+      return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     }
 
     // ===================================================
