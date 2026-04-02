@@ -241,3 +241,111 @@ Write down anything that looks wrong or that does not match what was described a
 Bring that list to the next session.
 
 If you get stuck, search for: Chrome DevTools device mode iPhone.
+
+
+SESSION 4 — 2 April 2026
+--------------------------
+
+WHAT WAS BUILT
+
+1. Complete visual redesign — the entire app was rebuilt from the dark theme (black
+   background) to a light premium theme matching the Replit Drivee reference app.
+   White card surfaces, light blue-tinted background (#F0F4FF), Poppins font replacing
+   the previous system font. All 14 design tokens updated at :root.
+
+2. Font Awesome 6 icons — all SVG nav icons and UI icons switched to Font Awesome 6.5.1
+   via CDN. Cleaner and more consistent than the hand-drawn SVGs from Session 3.
+
+3. Full feature parity with GitHub reference app — compared our app against
+   https://github.com/EugenAzxa/Drivee-App-Replit-edition and added every missing
+   feature including Tesseract.js OCR for ticket scanning, AI chat panel, lawyer cards,
+   street parking data, and all Services tab links.
+
+4. Claude AI chat panel — floating panel slides up from bottom with typing indicator,
+   suggestion chips, and a CLAUDE_API_KEY variable ready to activate live AI. Offline
+   fallback uses keyword matching to answer all common parking questions without an API key.
+   Uses claude-sonnet-4-6 model when key is set.
+
+5. Fine Reminders — Google Calendar link + .ics file download added to every reminder
+   card. .ics files work natively on iPhone (Apple Calendar) and Android (Google Calendar).
+   Browser Notification API integrated — requests permission and fires a notification
+   24 hours before and on the due date. Runs a check every 60 minutes via setInterval.
+
+6. 5-slide story-style onboarding animation — shows only to first-time visitors
+   (localStorage flag drivee_onboarded). Full swipe support. Progress bar and dots.
+   Slide 5 auto-detects iPhone vs Android and shows the correct "Add to Home Screen"
+   instructions for each platform. Skip button on every slide. Fades out with scale
+   animation after completion.
+
+7. Splash screen — blue gradient (#0A84FF → #0066CC), 2.2s CSS animation, 🚗 icon,
+   wordmark, tagline, and loading dots. Hidden at 2.8s so onboarding shows after.
+
+8. New navigation shell — pill-style bottom nav with floating AI FAB button (sparkles
+   icon). Top bar with AI search input, bell badge for reminders, and profile button.
+   AI search chips: Got a ticket, Free parking, Pay a fine, Dispute it, Car towed,
+   Need a lawyer.
+
+9. Government links audited and fixed — Toronto restructured their website and all
+   previous links were returning 404. Every link verified and updated to correct 2026
+   paths for: pay parking, dispute parking, pay camera fine, dispute camera fine, red
+   light, courts, Ontario traffic guide, TPS towed vehicles.
+
+10. CartoDB Voyager tiles — map switched from Dark Matter (dark tiles) to Voyager
+    (full colour streets) to match the reference app. Zoom set to 15. No API key needed.
+
+11. Background aurora animation — three large blurred colour orbs (blue, purple, teal)
+    float slowly behind all content using CSS @keyframes. Pointer-events none so they
+    never block taps. Disabled for prefers-reduced-motion users.
+
+
+ISSUES TO CARRY FORWARD
+
+- CLAUDE_API_KEY is empty — the chat panel works offline but needs a key for live AI.
+  Under needs to paste their Anthropic API key into the CLAUDE_API_KEY variable in the JS.
+- The app has not yet been deployed to a live URL for iPhone testing.
+  Deployment plan: netlify.com/drop — drag index.html from Windows PC, get URL in 30s.
+- Part 4 Test phase has not started.
+- .ics export was completed this session (no longer outstanding from Part 2).
+
+
+PRD NOTES
+
+- AI chat panel (section 3.11 in PRD) is now complete with Claude API integration.
+- Fine Reminders (section 3.4) is now fully complete including calendar export and
+  browser notifications.
+- OCR ticket scanning (Tesseract.js) added — not in original PRD but matches Replit app.
+- Onboarding (PRD section 3.20) is complete. First-time auto-show is implemented.
+- CartoDB Voyager tiles replace Dark Matter — closer to PRD map spec (readable streets).
+- All other PRD sections remain as previously noted.
+
+
+LESSON ARC — WHERE WE ARE
+
+Part 1 Foundation: COMPLETE
+Part 2 Functionality: COMPLETE (including .ics export)
+Part 3 Polish: COMPLETE
+Part 4 Test: NOT STARTED
+
+
+NEXT SESSION — Deploy + Part 4 Test
+
+Priority order for next session:
+1. Deploy to Netlify Drop — drag index.html from Windows PC to netlify.com/drop,
+   get a live URL, open on iPhone for real device testing.
+2. Set Claude API key — paste Anthropic key into CLAUDE_API_KEY variable to enable
+   live AI responses in the chat panel.
+3. Part 4 Test — work through all 5 tabs on real iPhone: layout, tap targets, animations,
+   reminder badges, calendar export, onboarding flow, chat panel.
+
+
+HOMEWORK SET THIS SESSION
+
+Deploy the app using Netlify Drop:
+1. On your Windows PC open Chrome and go to netlify.com/drop
+2. Find index.html in the DRIVEE folder on your desktop
+3. Drag index.html from File Explorer into the Netlify page in Chrome
+4. Copy the URL Netlify gives you
+5. Open that URL in Safari on your iPhone
+6. Test all 5 tabs and write down anything that looks wrong on the real screen
+
+This should take 10 minutes. Bring the live URL and your notes to the next session.
