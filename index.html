@@ -2450,9 +2450,10 @@
           attributionControl: false
         });
 
-        // CartoDB Dark Matter tile layer — matches the app's dark theme
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-          maxZoom: 19
+        // CartoDB Positron — clean light map, matches the app's light theme
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+          maxZoom: 19,
+          attribution: '© <a href="https://carto.com/">CARTO</a> © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
         }).addTo(driveeMap);
 
         mapInitialised = true;
