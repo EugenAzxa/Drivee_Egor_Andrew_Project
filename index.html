@@ -701,19 +701,19 @@
     =================================================== */
     .reminder-card {
       display: flex;
-      align-items: center;
-      gap: 12px;
+      flex-direction: column;
+      gap: 10px;
       padding: 14px 16px;
       background: var(--elevated);
       border-radius: 14px;
       border: 1px solid var(--border);
       margin-bottom: 8px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.3);
-      transition: transform 0.12s ease, filter 0.12s ease;
+      box-shadow: var(--shadow-card);
     }
-    .reminder-card:active {
-      transform: scale(0.97);
-      filter: brightness(0.85);
+    .reminder-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
     }
     .reminder-info { flex: 1; min-width: 0; }
     .reminder-ref  {
@@ -737,6 +737,61 @@
       flex-shrink: 0;
     }
     .reminder-delete:hover { color: var(--red); }
+    /* Calendar action buttons row */
+    .reminder-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .btn-cal {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 10px;
+      border: 1.5px solid var(--border);
+      background: var(--surface);
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'Poppins', sans-serif;
+      cursor: pointer;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn-cal:active { transform: scale(0.96); }
+    .btn-cal-google { color: #4285F4; border-color: rgba(66,133,244,0.25); background: rgba(66,133,244,0.05); }
+    .btn-cal-ics    { color: var(--blue); border-color: rgba(10,132,255,0.25); background: rgba(10,132,255,0.05); }
+    @media (hover: hover) {
+      .btn-cal-google:hover { background: rgba(66,133,244,0.1); border-color: rgba(66,133,244,0.4); }
+      .btn-cal-ics:hover    { background: rgba(10,132,255,0.1); border-color: rgba(10,132,255,0.4); }
+    }
+    /* Notification permission banner */
+    .notif-banner {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      background: rgba(10,132,255,0.06);
+      border: 1px solid rgba(10,132,255,0.2);
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+    .notif-banner-text { flex: 1; font-size: 13px; color: var(--text-primary); line-height: 1.4; }
+    .notif-banner-text strong { display: block; font-weight: 600; margin-bottom: 2px; }
+    .btn-notif-allow {
+      flex-shrink: 0;
+      padding: 8px 14px;
+      border-radius: 20px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      font-size: 12px;
+      font-weight: 600;
+      font-family: 'Poppins', sans-serif;
+      cursor: pointer;
+    }
 
     /* ===================================================
        STREET PARKING INFO
@@ -3245,6 +3300,114 @@
       updateHeroCard();
     }
 
+    // ===================================================
+    // CALENDAR INTEGRATIONS
+    // ===================================================
+
+    // 1. Google Calendar — opens in browser, pre-filled
+    function addToGoogleCalendar(ref, dueDate) {
+      var title   = encodeURIComponent('Parking Fine Due — ' + ref);
+      var details = encodeURIComponent('Pay your Toronto parking fine to avoid late fees. Fine reference: ' + ref + '. Pay at: toronto.ca/parking-tickets');
+      // Format date as YYYYMMDD for Google Calendar
+      var d = dueDate.replace(/-/g, '');
+      var url = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+        '&text=' + title +
+        '&dates=' + d + 'T090000Z/' + d + 'T100000Z' +
+        '&details=' + details +
+        '&location=' + encodeURIComponent('Toronto, Ontario');
+      window.open(url, '_blank');
+    }
+
+    // 2. .ics download — works with Apple Calendar (iPhone), Google Calendar, Outlook
+    function downloadICS(ref, dueDate) {
+      var d     = dueDate.replace(/-/g, '');
+      var stamp = new Date().toISOString().replace(/[-:.]/g, '').slice(0, 15) + 'Z';
+      var ics   = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//Drivee//Toronto Parking//EN',
+        'CALSCALE:GREGORIAN',
+        'METHOD:PUBLISH',
+        'BEGIN:VEVENT',
+        'UID:drivee-' + ref + '-' + d + '@drivee.app',
+        'DTSTAMP:' + stamp,
+        'DTSTART;VALUE=DATE:' + d,
+        'DTEND;VALUE=DATE:' + d,
+        'SUMMARY:🅿️ Parking Fine Due — ' + ref,
+        'DESCRIPTION:Pay your Toronto parking fine before fees escalate.\\nReference: ' + ref + '\\nPay at: toronto.ca/parking-tickets',
+        'LOCATION:Toronto\\, Ontario',
+        'BEGIN:VALARM',
+        'TRIGGER:-PT24H',
+        'ACTION:DISPLAY',
+        'DESCRIPTION:Parking fine due tomorrow — pay now to avoid $15+ late fee!',
+        'END:VALARM',
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].join('\r\n');
+
+      var blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' });
+      var url  = URL.createObjectURL(blob);
+      var a    = document.createElement('a');
+      a.href = url;
+      a.download = 'drivee-reminder-' + ref + '.ics';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('📅 Calendar file downloaded — open it to add to your calendar');
+    }
+
+    // ===================================================
+    // BROWSER NOTIFICATIONS — 24h deadline alerts
+    // ===================================================
+
+    function requestNotifications() {
+      if (!('Notification' in window)) {
+        showToast('Notifications not supported in this browser');
+        return;
+      }
+      Notification.requestPermission().then(function(permission) {
+        if (permission === 'granted') {
+          showToast('🔔 Notifications enabled! You\'ll be alerted 24h before fees escalate');
+          // Hide the banner
+          var banner = document.getElementById('notif-banner');
+          if (banner) banner.style.display = 'none';
+          // Run a check immediately
+          checkAndFireNotifications();
+        } else {
+          showToast('Notifications blocked — enable them in your browser settings');
+        }
+      });
+    }
+
+    function checkAndFireNotifications() {
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+      var reminders = safeGet(REMINDERS_KEY) || [];
+      var now   = new Date(); now.setHours(0, 0, 0, 0);
+      reminders.forEach(function(r) {
+        var due  = parseLocalDate(r.dueDate);
+        var diff = (due - now) / (1000 * 60 * 60 * 24);
+        // Alert exactly when 1 day remains
+        if (diff === 1) {
+          new Notification('⚠️ Parking Fine Due Tomorrow', {
+            body: 'Reference ' + r.ref + ' is due tomorrow. Pay now to avoid a $15.39 late fee!',
+            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🅿️</text></svg>'
+          });
+        }
+        // Also alert on the due day itself
+        if (diff === 0) {
+          new Notification('🚨 Parking Fine Due TODAY', {
+            body: 'Reference ' + r.ref + ' is due today! Pay immediately to avoid escalating fees.',
+            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🅿️</text></svg>'
+          });
+        }
+      });
+    }
+
+    // Check notifications once on load, then every 60 minutes
+    checkAndFireNotifications();
+    setInterval(checkAndFireNotifications, 60 * 60 * 1000);
+
     // getStatus() — compares due date to today using timezone-safe parser.
     function getStatus(dueDateStr) {
       var today = new Date(); today.setHours(0, 0, 0, 0);
@@ -3268,17 +3431,42 @@
         return;
       }
 
+      // Notification banner — shown if permission not yet granted
+      var notifBanner = '';
+      if ('Notification' in window && Notification.permission === 'default') {
+        notifBanner =
+          '<div class="notif-banner" id="notif-banner">' +
+            '<div class="notif-banner-text">' +
+              '<strong>🔔 Enable deadline alerts</strong>' +
+              'Get notified 24h before your fine escalates' +
+            '</div>' +
+            '<button class="btn-notif-allow" onclick="requestNotifications()">Allow</button>' +
+          '</div>';
+      }
+
       // esc() wraps all user-supplied values before they touch innerHTML
-      list.innerHTML = reminders.map(function (r) {
+      list.innerHTML = notifBanner + reminders.map(function (r) {
         var status = getStatus(r.dueDate);
+        var safeRef  = esc(r.ref);
+        var safeDate = esc(r.dueDate);
         return (
           '<div class="reminder-card">' +
-            '<div class="reminder-info">' +
-              '<div class="reminder-ref">' + esc(r.ref) + '</div>' +
-              '<div class="reminder-due">Due: ' + formatDate(r.dueDate) + '</div>' +
+            '<div class="reminder-top">' +
+              '<div class="reminder-info">' +
+                '<div class="reminder-ref">' + safeRef + '</div>' +
+                '<div class="reminder-due">Due: ' + formatDate(r.dueDate) + '</div>' +
+              '</div>' +
+              '<span class="badge ' + status.cls + '">' + status.label + '</span>' +
+              '<button class="reminder-delete" onclick="deleteReminder(\'' + r.id + '\')" title="Delete">&times;</button>' +
             '</div>' +
-            '<span class="badge ' + status.cls + '">' + status.label + '</span>' +
-            '<button class="reminder-delete" onclick="deleteReminder(\'' + r.id + '\')" title="Delete reminder">&times;</button>' +
+            '<div class="reminder-actions">' +
+              '<button class="btn-cal btn-cal-google" onclick="addToGoogleCalendar(\'' + safeRef + '\',\'' + safeDate + '\')">' +
+                '<i class="fa-brands fa-google"></i> Google Calendar' +
+              '</button>' +
+              '<button class="btn-cal btn-cal-ics" onclick="downloadICS(\'' + safeRef + '\',\'' + safeDate + '\')">' +
+                '<i class="fa-regular fa-calendar-plus"></i> Save to Phone' +
+              '</button>' +
+            '</div>' +
           '</div>'
         );
       }).join('');
