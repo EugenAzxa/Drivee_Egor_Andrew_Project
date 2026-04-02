@@ -4,13 +4,16 @@
   <meta charset="UTF-8" />
   <!-- viewport-fit=cover is required for iPhone safe area (notch/home bar) to work -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#FFFFFF" />
+  <meta name="theme-color" content="#00A651" />
   <title>Drivee</title>
 
   <!-- JetBrains Mono — used for ticket numbers and fine amounts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Font Awesome 6 — icons throughout the app -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
 
   <!-- Leaflet CSS (map styles) — loaded before the JS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
@@ -22,7 +25,7 @@
     =================================================== */
     :root {
       /* ── Backgrounds (elevation = lightness) ── */
-      --bg:        #F0F3F7;   /* light gray page — like Get My Parking */
+      --bg:        #F0F4FF;   /* light blue tint — matches Replit Drivee */
       --surface:   #FFFFFF;   /* white cards */
       --elevated:  #F5F7FA;   /* inputs, secondary areas */
       --surface-3: #EDF0F5;   /* modals, tooltips */
@@ -87,9 +90,6 @@
        LAYOUT — main content area + fixed nav
     =================================================== */
     #app {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
       max-width: 460px;
       margin: 0 auto;
       position: relative;
@@ -101,9 +101,10 @@
     .tab-section {
       display: none; /* hidden by default — JS adds .active to show */
       flex: 1;
-      height: calc(100vh - var(--nav-height));
+      height: 100vh;
       overflow-y: auto;
-      padding: 24px 20px 120px;
+      /* top: top-bar (~100px) + safe area | bottom: pill nav (~90px) + safe area */
+      padding: calc(env(safe-area-inset-top, 0px) + 108px) 20px calc(env(safe-area-inset-bottom, 0px) + 110px);
       /* Smooth momentum scrolling on iOS */
       -webkit-overflow-scrolling: touch;
     }
@@ -113,62 +114,10 @@
     }
 
     /* ===================================================
-       BOTTOM NAVIGATION BAR
+       BOTTOM NAV — old styles kept for reference only
+       New pill nav uses #bottom-nav-wrap / .pill-btn
     =================================================== */
-    #bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 100%;
-      max-width: 460px;
-      height: var(--nav-height);
-      /* Frosted glass — light mode */
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border-top: 0.5px solid var(--border);
-      box-shadow: 0 -1px 0 var(--border);
-      display: flex;
-      align-items: center;
-      justify-content: space-around;
-      /* Sit above the iPhone home indicator */
-      padding-bottom: env(safe-area-inset-bottom);
-      z-index: 100;
-    }
-
-    .nav-btn {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 8px 4px;
-      color: var(--text-tertiary);
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
-      text-transform: uppercase;
-      transition: color 0.15s ease;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .nav-btn .nav-icon {
-      font-size: 22px;
-      line-height: 1;
-    }
-
-    .nav-btn.active {
-      color: var(--blue);
-    }
-
-    .nav-btn:active {
-      transform: scale(0.95);
-    }
+    #bottom-nav { display: none; } /* replaced by pill nav */
 
     /* ===================================================
        SHARED CARD STYLES
@@ -816,6 +765,317 @@
     }
 
     /* ===================================================
+       SPLASH SCREEN
+    =================================================== */
+    #splash-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 99999;
+      background: linear-gradient(160deg, #00A651 0%, #007A3D 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      animation: splashExit 0.5s ease 2.2s forwards;
+      pointer-events: all;
+    }
+    #splash-screen.hidden { display: none; }
+    .splash-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: splashContentIn 0.65s cubic-bezier(0.34,1.56,0.64,1) 0.15s both;
+    }
+    .splash-car-wrap {
+      width: 90px; height: 90px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 28px;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 22px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    }
+    .splash-car-icon { font-size: 50px; line-height: 1; }
+    .splash-wordmark {
+      font-size: 46px; font-weight: 800;
+      color: #fff; letter-spacing: -1.5px;
+      line-height: 1; margin-bottom: 10px;
+    }
+    .splash-tagline {
+      font-size: 15px; color: rgba(255,255,255,0.8);
+      font-weight: 500; letter-spacing: 0.2px;
+      animation: splashTagIn 0.5s ease 0.55s both;
+    }
+    .splash-dots {
+      display: flex; gap: 7px; margin-top: 52px;
+      animation: splashTagIn 0.5s ease 0.8s both;
+    }
+    .splash-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: rgba(255,255,255,0.55);
+      animation: dotPulse 1.1s ease infinite;
+    }
+    .splash-dot:nth-child(2) { animation-delay: 0.2s; }
+    .splash-dot:nth-child(3) { animation-delay: 0.4s; }
+
+    /* ===================================================
+       TOP SEARCH / AI BAR
+    =================================================== */
+    #top-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 90;
+      max-width: 460px;
+      margin: 0 auto;
+      padding: calc(env(safe-area-inset-top, 0px) + 10px) 14px 10px;
+      background: var(--bg);
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    .ai-search-wrap {
+      flex: 1; display: flex; flex-direction: column; gap: 0; min-width: 0;
+    }
+    .ai-search-row {
+      display: flex; align-items: center;
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 50px;
+      padding: 0 6px 0 14px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .ai-search-row:focus-within {
+      border-color: var(--blue);
+      box-shadow: 0 0 0 3px rgba(0,166,81,0.12), 0 2px 10px rgba(0,0,0,0.07);
+    }
+    .ai-search-icon { color: var(--blue); font-size: 13px; flex-shrink: 0; margin-right: 8px; }
+    .ai-search-input {
+      flex: 1; border: none; background: transparent;
+      color: var(--text-primary); font-size: 15px;
+      font-family: 'Poppins', sans-serif; font-weight: 400;
+      outline: none; padding: 12px 0; min-width: 0;
+    }
+    .ai-search-input::placeholder { color: var(--text-tertiary); }
+    .ai-search-send {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--blue); color: #fff; border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; font-size: 13px;
+      flex-shrink: 0; transition: opacity 0.15s, transform 0.15s;
+    }
+    .ai-search-send:active { opacity: 0.8; transform: scale(0.93); }
+    .ai-chip-row {
+      display: flex; gap: 7px; margin-top: 8px;
+      overflow-x: auto; padding-bottom: 2px; scrollbar-width: none;
+    }
+    .ai-chip-row::-webkit-scrollbar { display: none; }
+    .ai-chip {
+      flex-shrink: 0; padding: 6px 12px; border-radius: 20px;
+      background: rgba(0,166,81,0.10); color: var(--blue);
+      border: none; font-size: 12px; font-weight: 600;
+      font-family: 'Poppins', sans-serif; cursor: pointer;
+      white-space: nowrap; transition: background 0.15s, transform 0.1s;
+    }
+    .ai-chip:active { background: rgba(0,166,81,0.2); transform: scale(0.96); }
+    .top-bar-bell {
+      position: relative; width: 44px; height: 44px;
+      border-radius: 50%; background: var(--surface);
+      border: 1.5px solid var(--border); color: var(--text-secondary);
+      font-size: 16px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer; flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .bell-badge {
+      position: absolute; top: -2px; right: -2px;
+      background: var(--red); color: #fff;
+      font-size: 9px; font-weight: 700;
+      width: 16px; height: 16px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid var(--bg);
+    }
+
+    /* ===================================================
+       PILL NAVIGATION + FAB
+    =================================================== */
+    #bottom-nav-wrap {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 100;
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      pointer-events: none;
+    }
+    #bottom-nav-inner {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 16px 14px;
+      max-width: 460px; margin: 0 auto;
+      pointer-events: none;
+    }
+    #nav-pill {
+      display: flex; align-items: center; gap: 4px;
+      flex: 1; background: var(--surface);
+      border-radius: 50px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.13), 0 1px 6px rgba(0,0,0,0.07);
+      padding: 6px 8px;
+      pointer-events: all;
+    }
+    .pill-btn {
+      display: flex; flex-direction: row;
+      align-items: center; justify-content: center;
+      gap: 6px; cursor: pointer; border: none;
+      background: none; color: var(--text-tertiary);
+      font-family: 'Poppins', sans-serif;
+      font-size: 13px; font-weight: 500;
+      flex: 1; padding: 9px 6px; border-radius: 40px;
+      transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1);
+      white-space: nowrap; -webkit-tap-highlight-color: transparent;
+    }
+    .pill-btn.active {
+      background: var(--blue); color: #fff;
+      font-weight: 600;
+      box-shadow: 0 2px 10px rgba(0,166,81,0.35);
+    }
+    .pill-btn i { font-size: 15px; display: block; flex-shrink: 0; }
+    .pill-label { display: none; }
+    .pill-btn.active .pill-label { display: inline; }
+    .nav-fab {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: var(--blue); color: #fff; border: none;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 16px rgba(0,166,81,0.45);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      flex-shrink: 0; pointer-events: all;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .nav-fab:active { transform: scale(0.93); box-shadow: 0 2px 8px rgba(0,166,81,0.35); }
+
+    /* ===================================================
+       FLOATING AI CHAT PANEL
+    =================================================== */
+    .chat-fab {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 96px);
+      right: 18px; z-index: 110;
+      width: 54px; height: 54px; border-radius: 50%;
+      background: var(--blue); color: #fff; border: none;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 18px rgba(0,166,81,0.45);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .chat-fab:active { transform: scale(0.93); }
+    .chat-fab-dot {
+      position: absolute; top: -1px; right: -1px;
+      width: 13px; height: 13px;
+      background: #fff; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .chat-fab-dot::after {
+      content: ''; width: 7px; height: 7px;
+      background: #30D158; border-radius: 50%;
+    }
+    .chat-overlay {
+      display: none; position: fixed; inset: 0; z-index: 150;
+      background: rgba(0,0,0,0.3); backdrop-filter: blur(2px);
+    }
+    .chat-overlay.open { display: block; }
+    .chat-panel {
+      position: fixed; bottom: 0; left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      z-index: 160; width: min(460px, 100vw);
+      height: 78vh; max-height: 640px;
+      background: var(--surface); border-radius: 24px 24px 0 0;
+      box-shadow: 0 -8px 40px rgba(0,0,0,0.15);
+      display: flex; flex-direction: column;
+      transition: transform 0.38s cubic-bezier(0.22,1,0.36,1);
+      overflow: hidden;
+    }
+    .chat-panel.open { transform: translateX(-50%) translateY(0); }
+    .chat-drag-handle {
+      width: 36px; height: 4px; border-radius: 100px;
+      background: rgba(0,0,0,0.15); margin: 10px auto 0; flex-shrink: 0;
+    }
+    .chat-header {
+      display: flex; align-items: center; gap: 12px;
+      padding: 14px 20px 14px; border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .chat-header-icon {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: rgba(0,166,81,0.1); color: var(--blue);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .chat-header-text { flex: 1; min-width: 0; }
+    .chat-header-title { font-size: 15px; font-weight: 700; color: var(--text-primary); letter-spacing: -0.2px; }
+    .chat-header-sub { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
+    .chat-close {
+      background: var(--elevated); border: none; color: var(--text-secondary);
+      width: 30px; height: 30px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; font-size: 14px; flex-shrink: 0;
+    }
+    .chat-messages {
+      flex: 1; overflow-y: auto; padding: 16px 16px 8px;
+      display: flex; flex-direction: column; gap: 10px; scroll-behavior: smooth;
+    }
+    .chat-msg { display: flex; gap: 8px; animation: slideUp 0.2s ease; }
+    .chat-msg.user { flex-direction: row-reverse; }
+    .chat-msg-avatar {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; flex-shrink: 0; margin-top: 2px;
+    }
+    .chat-msg.bot  .chat-msg-avatar { background: rgba(0,166,81,0.1); color: var(--blue); }
+    .chat-msg.user .chat-msg-avatar { background: var(--elevated); color: var(--text-secondary); }
+    .chat-msg-bubble {
+      max-width: 82%; padding: 10px 14px; border-radius: 18px;
+      font-size: 14px; line-height: 1.5;
+    }
+    .chat-msg.bot  .chat-msg-bubble { background: var(--elevated); color: var(--text-primary); border-bottom-left-radius: 4px; }
+    .chat-msg.user .chat-msg-bubble { background: var(--blue); color: #fff; border-bottom-right-radius: 4px; }
+    .chat-typing { display: none; align-items: center; gap: 4px; padding: 10px 14px; background: var(--elevated); border-radius: 18px; border-bottom-left-radius: 4px; width: fit-content; }
+    .chat-typing.show { display: flex; }
+    .chat-typing span { width: 6px; height: 6px; background: var(--text-tertiary); border-radius: 50%; animation: typingBounce 1.2s infinite; }
+    .chat-typing span:nth-child(2) { animation-delay: 0.2s; }
+    .chat-typing span:nth-child(3) { animation-delay: 0.4s; }
+    .chat-suggestions {
+      display: flex; gap: 6px; padding: 0 16px 8px;
+      overflow-x: auto; flex-shrink: 0; scrollbar-width: none;
+    }
+    .chat-suggestions::-webkit-scrollbar { display: none; }
+    .chat-suggestion {
+      white-space: nowrap; padding: 6px 12px; border-radius: 20px;
+      border: 1.5px solid var(--border); background: var(--surface);
+      color: var(--text-secondary); font-size: 12px; font-weight: 500;
+      cursor: pointer; font-family: 'Poppins', sans-serif; transition: all 0.15s; flex-shrink: 0;
+    }
+    .chat-suggestion:hover, .chat-suggestion:active {
+      border-color: var(--blue); color: var(--blue); background: rgba(0,166,81,0.06);
+    }
+    .chat-input-row {
+      display: flex; align-items: center; gap: 10px;
+      padding: 12px 16px calc(env(safe-area-inset-bottom, 0px) + 14px);
+      border-top: 1px solid var(--border); flex-shrink: 0;
+    }
+    .chat-input {
+      flex: 1; padding: 10px 14px; background: var(--elevated);
+      border: 1.5px solid var(--border); border-radius: 22px;
+      color: var(--text-primary); font-size: 14px;
+      font-family: 'Poppins', sans-serif; outline: none;
+      transition: border-color 0.2s;
+    }
+    .chat-input:focus { border-color: var(--blue); }
+    .chat-send {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--blue); color: #fff; border: none;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      font-size: 14px; flex-shrink: 0;
+      transition: opacity 0.2s, transform 0.15s;
+    }
+    .chat-send:active { transform: scale(0.93); }
+
+    /* ===================================================
        KEYFRAME ANIMATIONS
     =================================================== */
 
@@ -850,6 +1110,30 @@
     @keyframes availPulse {
       0%,100% { transform: scale(1);    opacity: 0.8; }
       50%     { transform: scale(1.15); opacity: 0.4; }
+    }
+
+    /* ── Splash screen animations ── */
+    @keyframes splashExit {
+      0%   { opacity: 1; transform: scale(1); pointer-events: all; }
+      100% { opacity: 0; transform: scale(1.04); pointer-events: none; }
+    }
+    @keyframes splashContentIn {
+      from { opacity: 0; transform: translateY(28px) scale(0.88); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    @keyframes splashTagIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes dotPulse {
+      0%, 100% { opacity: 0.4; transform: scale(0.85); }
+      50%      { opacity: 1;   transform: scale(1.15); }
+    }
+
+    /* ── Chat typing indicator ── */
+    @keyframes typingBounce {
+      0%, 60%, 100% { transform: translateY(0); }
+      30%           { transform: translateY(-5px); }
     }
 
     /* ===================================================
@@ -1292,6 +1576,88 @@
 </head>
 
 <body>
+
+  <!-- ===============================================
+       SPLASH SCREEN — shows for 2.2s on first load
+  ================================================ -->
+  <div id="splash-screen">
+    <div class="splash-inner">
+      <div class="splash-car-wrap">
+        <span class="splash-car-icon">🚗</span>
+      </div>
+      <div class="splash-wordmark">Drivee</div>
+      <div class="splash-tagline">Toronto Parking &amp; Fines Manager</div>
+      <div class="splash-dots">
+        <div class="splash-dot"></div>
+        <div class="splash-dot"></div>
+        <div class="splash-dot"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===============================================
+       TOP AI SEARCH BAR — fixed header
+  ================================================ -->
+  <div id="top-bar">
+    <div class="ai-search-wrap">
+      <div class="ai-search-row">
+        <i class="fa-solid fa-sparkles ai-search-icon"></i>
+        <input type="text" id="ai-search-input" class="ai-search-input"
+          placeholder="Ask Drivee AI anything…"
+          oninput="onAiSearchInput(this.value)"
+          onkeydown="if(event.key==='Enter'&&this.value.trim()){sendAiSearch();event.preventDefault()}">
+        <button class="ai-search-send" id="ai-search-send-btn" onclick="sendAiSearch()" style="opacity:0;pointer-events:none">
+          <i class="fa-solid fa-paper-plane"></i>
+        </button>
+      </div>
+      <div class="ai-chip-row">
+        <button class="ai-chip" onclick="aiChipAction('ticket')">🎫 Got a ticket?</button>
+        <button class="ai-chip" onclick="aiChipAction('parking')">🅿️ Free parking</button>
+        <button class="ai-chip" onclick="aiChipAction('pay')">💳 Pay a fine</button>
+        <button class="ai-chip" onclick="aiChipAction('dispute')">⚖️ Dispute it</button>
+        <button class="ai-chip" onclick="aiChipAction('towed')">🚗 Car towed?</button>
+        <button class="ai-chip" onclick="aiChipAction('lawyer')">👨‍⚖️ Need a lawyer?</button>
+      </div>
+    </div>
+    <button class="top-bar-bell" onclick="showTab('tab-dashboard')" title="Reminders">
+      <i class="fa-solid fa-bell"></i>
+      <span class="bell-badge" id="bell-badge" style="display:none">0</span>
+    </button>
+  </div>
+
+  <!-- ===============================================
+       FLOATING AI CHAT
+  ================================================ -->
+  <button class="chat-fab" onclick="openChat()" title="Open AI Assistant">
+    <i class="fa-solid fa-comments"></i>
+    <div class="chat-fab-dot"></div>
+  </button>
+
+  <div class="chat-overlay" id="chat-overlay" onclick="closeChat()"></div>
+
+  <div class="chat-panel" id="chat-panel">
+    <div class="chat-drag-handle"></div>
+    <div class="chat-header">
+      <div class="chat-header-icon"><i class="fa-solid fa-sparkles"></i></div>
+      <div class="chat-header-text">
+        <div class="chat-header-title">Drivee AI Assistant</div>
+        <div class="chat-header-sub">Powered by Claude · Always here to help</div>
+      </div>
+      <button class="chat-close" onclick="closeChat()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-typing" id="chat-typing">
+        <span></span><span></span><span></span>
+      </div>
+    </div>
+    <div class="chat-suggestions" id="chat-suggestions"></div>
+    <div class="chat-input-row">
+      <input type="text" id="chat-input" class="chat-input" placeholder="Type your question…"
+        onkeydown="if(event.key==='Enter'){sendChatMessage();event.preventDefault()}">
+      <button class="chat-send" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+
   <div id="app">
 
     <!-- ===============================================
@@ -1936,61 +2302,37 @@
     </section>
 
     <!-- ===============================================
-         BOTTOM NAVIGATION BAR
+         BOTTOM NAVIGATION — pill style + FAB
     ================================================ -->
-    <nav id="bottom-nav">
-      <button class="nav-btn active" data-tab="tab-dashboard" onclick="showTab('tab-dashboard')">
-        <span class="nav-icon-wrap"><span class="nav-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 10L11 3l8 7v9a1 1 0 01-1 1H4a1 1 0 01-1-1V10z"/>
-            <path d="M8 21V13h6v8"/>
-          </svg>
-        </span></span>
-        Dashboard
-      </button>
-      <button class="nav-btn" data-tab="tab-services" onclick="showTab('tab-services')">
-        <span class="nav-icon-wrap"><span class="nav-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="7" height="7" rx="1.5"/>
-            <rect x="12" y="3" width="7" height="7" rx="1.5"/>
-            <rect x="3" y="12" width="7" height="7" rx="1.5"/>
-            <rect x="12" y="12" width="7" height="7" rx="1.5"/>
-          </svg>
-        </span></span>
-        Services
-      </button>
-      <button class="nav-btn" data-tab="tab-hotspots" onclick="showTab('tab-hotspots')">
-        <span class="nav-icon-wrap"><span class="nav-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M11 2C8.24 2 6 4.24 6 7c0 4.5 5 11 5 11s5-6.5 5-11c0-2.76-2.24-5-5-5z"/>
-            <circle cx="11" cy="7" r="2"/>
-          </svg>
-        </span></span>
-        Hotspots
-      </button>
-      <button class="nav-btn" data-tab="tab-legal" onclick="showTab('tab-legal')">
-        <span class="nav-icon-wrap"><span class="nav-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="11" y1="3" x2="11" y2="19"/>
-            <line x1="5" y1="19" x2="17" y2="19"/>
-            <path d="M5 9l-3 5h6L5 9z"/>
-            <path d="M17 9l-3 5h6l-3-5z"/>
-            <line x1="5" y1="9" x2="17" y2="9"/>
-          </svg>
-        </span></span>
-        Legal
-      </button>
-      <button class="nav-btn" data-tab="tab-guide" onclick="showTab('tab-guide')">
-        <span class="nav-icon-wrap"><span class="nav-icon">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="3" y1="7" x2="19" y2="7"/>
-            <line x1="3" y1="12" x2="19" y2="12"/>
-            <line x1="3" y1="17" x2="19" y2="17"/>
-          </svg>
-        </span></span>
-        Guide
-      </button>
-    </nav>
+    <div id="bottom-nav-wrap">
+      <div id="bottom-nav-inner">
+        <div id="nav-pill">
+          <button class="pill-btn active" data-tab="tab-dashboard" onclick="showTab('tab-dashboard')">
+            <i class="fa-solid fa-house"></i>
+            <span class="pill-label">Dashboard</span>
+          </button>
+          <button class="pill-btn" data-tab="tab-services" onclick="showTab('tab-services')">
+            <i class="fa-solid fa-grid-2"></i>
+            <span class="pill-label">Services</span>
+          </button>
+          <button class="pill-btn" data-tab="tab-hotspots" onclick="showTab('tab-hotspots')">
+            <i class="fa-solid fa-location-dot"></i>
+            <span class="pill-label">Hotspots</span>
+          </button>
+          <button class="pill-btn" data-tab="tab-legal" onclick="showTab('tab-legal')">
+            <i class="fa-solid fa-scale-balanced"></i>
+            <span class="pill-label">Legal</span>
+          </button>
+          <button class="pill-btn" data-tab="tab-guide" onclick="showTab('tab-guide')">
+            <i class="fa-solid fa-book-open"></i>
+            <span class="pill-label">Guide</span>
+          </button>
+        </div>
+        <button class="nav-fab" onclick="openChat()" title="AI Assistant">
+          <i class="fa-solid fa-sparkles"></i>
+        </button>
+      </div>
+    </div>
 
   </div><!-- /#app -->
 
@@ -2054,8 +2396,8 @@
         section.classList.remove('active');
       });
 
-      // Deactivate all nav buttons
-      document.querySelectorAll('.nav-btn').forEach(function(btn) {
+      // Deactivate all nav buttons (supports both old .nav-btn and new .pill-btn)
+      document.querySelectorAll('.nav-btn, .pill-btn').forEach(function(btn) {
         btn.classList.remove('active');
       });
 
@@ -3091,6 +3433,254 @@
     loadProfile();      // Populate name + plate if previously saved
     renderReminders();  // Render any saved reminders on startup
     updateHeroCard();   // Sync hero card stats on load
+    // bell badge updated after splash hides, in updateBellBadge() below
+
+    // ===================================================
+    // SPLASH SCREEN — auto-hide after animation completes
+    // ===================================================
+    (function() {
+      var splash = document.getElementById('splash-screen');
+      if (!splash) return;
+      // CSS animation hides it at 2.2s; we also set display:none at 2.8s for safety
+      setTimeout(function() {
+        splash.classList.add('hidden');
+      }, 2800);
+    })();
+
+    // ===================================================
+    // BELL BADGE — update reminder count on the top bar
+    // ===================================================
+    function updateBellBadge() {
+      var reminders = safeGet(REMINDERS_KEY) || [];
+      var badge = document.getElementById('bell-badge');
+      if (!badge) return;
+      if (reminders.length > 0) {
+        badge.textContent = reminders.length;
+        badge.style.display = 'flex';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
+    updateBellBadge();
+
+    // ===================================================
+    // AI SEARCH BAR
+    // ===================================================
+    function onAiSearchInput(val) {
+      var btn = document.getElementById('ai-search-send-btn');
+      if (!btn) return;
+      if (val && val.trim()) {
+        btn.style.opacity = '1';
+        btn.style.pointerEvents = 'auto';
+      } else {
+        btn.style.opacity = '0';
+        btn.style.pointerEvents = 'none';
+      }
+    }
+
+    function sendAiSearch() {
+      var input = document.getElementById('ai-search-input');
+      if (!input || !input.value.trim()) return;
+      var query = input.value.trim().toLowerCase();
+      input.value = '';
+      onAiSearchInput('');
+      openChat();
+      setTimeout(function() {
+        appendChatMessage('user', query);
+        showChatTyping(true);
+        setTimeout(function() {
+          showChatTyping(false);
+          var reply = getChatReply(query);
+          appendChatMessage('bot', reply.text);
+          if (reply.tab) showTab(reply.tab);
+        }, 1000);
+      }, 350);
+    }
+
+    function aiChipAction(topic) {
+      var prompts = {
+        ticket: 'I got a parking ticket — what do I do?',
+        parking: 'Where can I find free parking in Toronto?',
+        pay: 'How do I pay my parking fine?',
+        dispute: 'How do I dispute a parking ticket?',
+        towed: 'My car got towed — what should I do?',
+        lawyer: 'I need a lawyer for my traffic ticket'
+      };
+      var text = prompts[topic] || topic;
+      openChat();
+      setTimeout(function() {
+        appendChatMessage('user', text);
+        showChatTyping(true);
+        setTimeout(function() {
+          showChatTyping(false);
+          var reply = getChatReply(text.toLowerCase());
+          appendChatMessage('bot', reply.text);
+          if (reply.tab) showTab(reply.tab);
+        }, 1000);
+      }, 350);
+    }
+
+    // ===================================================
+    // AI CHAT PANEL — Claude-powered keyword responses
+    // ===================================================
+    var CLAUDE_API_KEY = ''; // Set your Claude API key here to enable live AI
+    var CHAT_SUGGESTIONS = [
+      'How do I dispute a ticket?',
+      'What are the late fees?',
+      'Find me a lawyer',
+      'Pay my fine online',
+      'Car towed?',
+      'GPS Guardian help'
+    ];
+
+    function openChat() {
+      document.getElementById('chat-panel').classList.add('open');
+      document.getElementById('chat-overlay').classList.add('open');
+      // Add welcome message if chat is empty
+      var msgs = document.getElementById('chat-messages');
+      if (msgs && msgs.children.length === 0) {
+        appendChatMessage('bot', "👋 Hi! I'm the Drivee AI assistant. I can help you with parking tickets, fines, disputes, legal advice, and more. What do you need help with today?");
+        renderChatSuggestions();
+      }
+    }
+
+    function closeChat() {
+      document.getElementById('chat-panel').classList.remove('open');
+      document.getElementById('chat-overlay').classList.remove('open');
+    }
+
+    function appendChatMessage(role, text) {
+      var msgs = document.getElementById('chat-messages');
+      if (!msgs) return;
+      var div = document.createElement('div');
+      div.className = 'chat-msg ' + role;
+      var avatar = role === 'bot'
+        ? '<div class="chat-msg-avatar"><i class="fa-solid fa-sparkles"></i></div>'
+        : '<div class="chat-msg-avatar"><i class="fa-solid fa-user"></i></div>';
+      div.innerHTML = avatar + '<div class="chat-msg-bubble">' + esc(text) + '</div>';
+      msgs.appendChild(div);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function showChatTyping(show) {
+      var el = document.getElementById('chat-typing');
+      if (!el) return;
+      if (show) {
+        el.classList.add('show');
+        var msgs = document.getElementById('chat-messages');
+        if (msgs) msgs.scrollTop = msgs.scrollHeight;
+      } else {
+        el.classList.remove('show');
+      }
+    }
+
+    function renderChatSuggestions() {
+      var el = document.getElementById('chat-suggestions');
+      if (!el) return;
+      el.innerHTML = CHAT_SUGGESTIONS.map(function(s) {
+        return '<button class="chat-suggestion" onclick="handleChatSuggestion(\'' + s.replace(/'/g, "\\'") + '\')">' + esc(s) + '</button>';
+      }).join('');
+    }
+
+    function handleChatSuggestion(text) {
+      document.getElementById('chat-suggestions').innerHTML = '';
+      appendChatMessage('user', text);
+      showChatTyping(true);
+      setTimeout(function() {
+        showChatTyping(false);
+        var reply = getChatReply(text.toLowerCase());
+        appendChatMessage('bot', reply.text);
+        if (reply.tab) showTab(reply.tab);
+      }, 1100);
+    }
+
+    function sendChatMessage() {
+      var input = document.getElementById('chat-input');
+      if (!input || !input.value.trim()) return;
+      var text = input.value.trim();
+      input.value = '';
+      document.getElementById('chat-suggestions').innerHTML = '';
+      appendChatMessage('user', text);
+      showChatTyping(true);
+
+      // If Claude API key is set, use Claude — otherwise use keyword responses
+      if (CLAUDE_API_KEY) {
+        callClaudeAPI(text);
+      } else {
+        setTimeout(function() {
+          showChatTyping(false);
+          var reply = getChatReply(text.toLowerCase());
+          appendChatMessage('bot', reply.text);
+          if (reply.tab) showTab(reply.tab);
+        }, 1100);
+      }
+    }
+
+    // Claude API call (activated when CLAUDE_API_KEY is set)
+    function callClaudeAPI(userMessage) {
+      var systemPrompt = 'You are Drivee AI, an expert assistant for Toronto drivers dealing with parking tickets, traffic fines, and city bylaws. Be concise, friendly, and practical. Always relate answers to Toronto/Ontario context. If the user needs a lawyer, mention the Legal tab. If they need to pay a fine, mention the Services tab. Keep responses under 3 sentences.';
+      fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': CLAUDE_API_KEY,
+          'anthropic-version': '2023-06-01'
+        },
+        body: JSON.stringify({
+          model: 'claude-sonnet-4-6',
+          max_tokens: 300,
+          system: systemPrompt,
+          messages: [{ role: 'user', content: userMessage }]
+        })
+      })
+      .then(function(res) { return res.json(); })
+      .then(function(data) {
+        showChatTyping(false);
+        var text = data.content && data.content[0] && data.content[0].text
+          ? data.content[0].text
+          : 'I had trouble connecting. Please try again.';
+        appendChatMessage('bot', text);
+      })
+      .catch(function() {
+        showChatTyping(false);
+        appendChatMessage('bot', 'Connection issue — using offline responses. ' + getChatReply(userMessage.toLowerCase()).text);
+      });
+    }
+
+    // Keyword-based offline responses (fallback + default)
+    function getChatReply(query) {
+      if (/tow|towed|impound/.test(query)) {
+        return { text: '🚗 If your car was towed, go to tps.ca to find which lot it\'s at. Storage fees start at $75/day so act fast! I\'ve opened the Services tab for you.', tab: 'tab-services' };
+      }
+      if (/pay|payment|fine|portal/.test(query)) {
+        return { text: '💳 You can pay Toronto parking tickets at toronto.ca. I\'ve opened the Services tab — look for "City Payment Portals" with all the links.', tab: 'tab-services' };
+      }
+      if (/dispute|contest|fight|appeal/.test(query)) {
+        return { text: '⚖️ To dispute a ticket, go to the Services tab and use the Dispute Script Builder. It generates a formal letter matched to your situation. You have 15 days before late fees kick in!', tab: 'tab-services' };
+      }
+      if (/lawyer|legal|paralegal|firm|stunt|dui|criminal/.test(query)) {
+        return { text: '👨‍⚖️ For serious charges like stunt driving or DUI, you need a lawyer. I\'ve opened the Legal tab — all 8 firms offer free consultations and the Contact button emails them directly.', tab: 'tab-legal' };
+      }
+      if (/ticket|scan|ocr|photo/.test(query)) {
+        return { text: '📸 Go to the Dashboard tab and use the AI Ticket Scanner — take a photo of your ticket and it will read the fine amount, reference number, and violation type automatically.', tab: 'tab-dashboard' };
+      }
+      if (/free parking|park free|where.*park/.test(query)) {
+        return { text: '🅿️ In Toronto, street parking is free on Sundays and most evenings after 9pm. Use the Street Parking Checker in the Services tab for exact hours on specific streets.', tab: 'tab-services' };
+      }
+      if (/late fee|escalat|cost|day 15|day 31|day 60/.test(query)) {
+        return { text: '📊 Toronto parking fines escalate: +$15.39 at Day 16, +$32.10 at Day 31, +$32.10 at Day 60 (plus plate denial). Use the Fee Calculator on the Dashboard to see your exact costs.', tab: 'tab-dashboard' };
+      }
+      if (/gps|guardian|hydrant|bike lane|zone/.test(query)) {
+        return { text: '📍 The GPS Guardian in the Hotspots tab gives live alerts when you\'re within 20m of a fire hydrant, 25m of a bike lane, or 30m of a tow zone. Tap "Start GPS Guardian" to activate it.', tab: 'tab-hotspots' };
+      }
+      if (/reminder|deadline|due|alert/.test(query)) {
+        return { text: '⏰ Go to the Dashboard and add your ticket in the Fine Reminders section. It will show UPCOMING, TODAY, or OVERDUE status and keep you on track before fees increase.', tab: 'tab-dashboard' };
+      }
+      if (/speed|speeding|provincial|court|ontario/.test(query)) {
+        return { text: '🏎️ Speeding tickets in Ontario go through Provincial Offences Court. Check the Services tab for the Court Services link at ontario.ca, or head to Legal if you need representation.', tab: 'tab-services' };
+      }
+      return { text: '👋 I can help with: paying fines, disputing tickets, finding lawyers, GPS Guardian, late fee calculations, and more. What specifically do you need help with?', tab: null };
+    }
   </script>
 
 </body>
