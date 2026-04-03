@@ -10,7 +10,7 @@
   <!-- JetBrains Mono — used for ticket numbers and fine amounts -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
   <!-- Font Awesome 6 — icons throughout the app -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
@@ -24,41 +24,41 @@
        Change a value here and it updates everywhere
     =================================================== */
     :root {
-      /* ── Backgrounds (elevation = lightness) ── */
-      --bg:        #F0F4FF;   /* light blue tint — matches Replit Drivee */
-      --surface:   #FFFFFF;   /* white cards */
-      --elevated:  #F5F7FA;   /* inputs, secondary areas */
-      --surface-3: #EDF0F5;   /* modals, tooltips */
-      --surface-4: #E2E6EE;   /* active/selected */
+      /* ── Backgrounds ── */
+      --bg:        #F2F3F0;   /* warm off-white — matches design spec */
+      --surface:   #FFFFFF;
+      --elevated:  #F5F6F3;
+      --surface-3: #EDEEEB;
+      --surface-4: #E3E4E1;
 
       /* ── Text ── */
-      --text-primary:   #111827;  /* near-black */
-      --text-secondary: #6B7280;
-      --text-tertiary:  #9CA3AF;
-      --text-disabled:  #D1D5DB;
+      --text-primary:   #111111;
+      --text-secondary: #666666;
+      --text-tertiary:  #999999;
+      --text-disabled:  #CBCCC9;
 
-      /* ── Brand accent — electric blue ── */
-      --blue:        #0A84FF;  /* iOS blue — trust + tech */
-      --primary-dim: #0066CC;  /* pressed state */
+      /* ── Brand accent — design blue ── */
+      --blue:        #2563EB;
+      --primary-dim: #1D4ED8;
 
       /* ── Semantic ── */
-      --green:   #30D158;  /* available / success */
-      --ev-green:#00C65A;  /* EV charging variant */
-      --warning: #F59E0B;  /* amber — filling up / expiring */
+      --green:   #22C55E;
+      --ev-green:#16A34A;
+      --warning: #F59E0B;
       --orange:  #F59E0B;
-      --danger:  #EF4444;  /* red — full / urgent */
+      --danger:  #D93C15;
       --red:     #EF4444;
-      --premium: #F59E0B;  /* gold — VIP/reserved */
+      --premium: #F59E0B;
       --amber:   #F59E0B;
       --purple:  #7C3AED;
       --teal:    #0EA5E9;
 
       /* ── Borders & shadows ── */
-      --border:       rgba(0,0,0,0.07);
-      --border-focus: rgba(10,132,255,0.45);
+      --border:       #CBCCC9;
+      --border-focus: rgba(37,99,235,0.45);
       --nav-height:   84px;
-      --shadow-card:  0 2px 12px rgba(0,0,0,0.07), 0 1px 3px rgba(0,0,0,0.04);
-      --shadow-btn:   0 6px 24px rgba(10,132,255,0.35);
+      --shadow-card:  0 1px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-btn:   0 4px 16px rgba(37,99,235,0.30);
     }
 
     /* ===================================================
@@ -75,7 +75,7 @@
       background: var(--bg);
       color: var(--text-primary);
       /* Poppins — clean, rounded, premium feel (matches Get My Parking style) */
-      font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       font-size: 14px;
       line-height: 1.5;
       -webkit-font-smoothing: antialiased;
@@ -104,8 +104,8 @@
       flex: 1;
       height: 100vh;
       overflow-y: auto;
-      /* top: top-bar (~100px) + safe area | bottom: pill nav (~90px) + safe area */
-      padding: calc(env(safe-area-inset-top, 0px) + 108px) 20px calc(env(safe-area-inset-bottom, 0px) + 110px);
+      /* top: top-bar (~76px) + safe area | bottom: pill nav (~90px) + safe area */
+      padding: calc(env(safe-area-inset-top, 0px) + 80px) 20px calc(env(safe-area-inset-bottom, 0px) + 110px);
       /* Smooth momentum scrolling on iOS */
       -webkit-overflow-scrolling: touch;
     }
@@ -125,10 +125,10 @@
     =================================================== */
     .card {
       background: var(--surface);
-      border-radius: 20px;
-      padding: 20px;
+      border-radius: 16px;
+      padding: 18px 16px;
       border: 1px solid var(--border);
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       box-shadow: var(--shadow-card);
     }
 
@@ -194,9 +194,9 @@
     .btn-primary {
       background: var(--blue);
       color: #fff;
-      font-size: 17px;
+      font-size: 15px;
       box-shadow: var(--shadow-btn);
-      border-radius: 16px;
+      border-radius: 9999px;
     }
     .btn-primary:active {
       background: var(--primary-dim);
@@ -241,7 +241,7 @@
       color: var(--text-primary);
       font-size: 14px;
       font-weight: 600;
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
       text-decoration: none;
       margin-bottom: 8px;
       transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
@@ -258,6 +258,31 @@
     }
     a.btn-gov .gov-arrow { color: var(--text-tertiary); font-size: 18px; flex-shrink: 0; font-weight: 400; }
     a.btn-gov .gov-icon  { margin-right: 8px; }
+
+    /* Services search bar */
+    .services-search {
+      display: flex; align-items: center;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0 14px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-card);
+    }
+    .services-search i { color: var(--text-tertiary); font-size: 14px; margin-right: 10px; }
+    .services-search input {
+      flex: 1; border: none; background: transparent; outline: none;
+      font-size: 14px; font-family: 'Inter', sans-serif;
+      color: var(--text-primary); padding: 13px 0;
+    }
+    .services-search input::placeholder { color: var(--text-tertiary); }
+
+    /* Section heading row (Services) */
+    .section-heading {
+      font-size: 15px; font-weight: 600;
+      color: var(--text-primary);
+      margin: 0 0 10px;
+    }
 
     /* Category label inside portal card */
     .portal-category {
@@ -398,13 +423,28 @@
     /* ===================================================
        LEAFLET MAP OVERRIDES
     =================================================== */
+    .map-legend {
+      display: flex; align-items: center;
+      font-size: 12px; font-weight: 500; color: var(--text-secondary);
+      margin-bottom: 10px;
+    }
+    .map-legend-dot {
+      display: inline-block; width: 8px; height: 8px;
+      border-radius: 50%; margin-right: 4px;
+    }
+    .parking-spot-card {
+      background: var(--elevated);
+      border-radius: 12px; padding: 12px;
+      border: 1px solid var(--border);
+    }
+    .parking-spot-name { font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; }
+    .parking-spot-dist { font-size: 11px; color: var(--text-tertiary); margin-bottom: 4px; }
+    .parking-spot-status { font-size: 12px; font-weight: 500; color: var(--text-secondary); }
     #map {
       /* Full-bleed: cancel the tab section's 20px side padding */
       width: calc(100% + 40px);
       margin-left: -20px;
-      /* Cancel the top padding so map starts right below the page title */
-      margin-top: -12px;
-      height: 340px;
+      height: 320px;
       border-radius: 0;
       overflow: hidden;
       background: var(--elevated);
@@ -476,36 +516,131 @@
     }
 
     /* ===================================================
-       LAWYER CARDS (Legal tab)
+       LEGAL TAB — AI advisor + filter chips + firm cards
     =================================================== */
-    .lawyer-card {
-      padding: 16px;
+
+    /* AI Ticket Advisor hero card */
+    .ai-advisor-hero {
+      background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+      border-radius: 16px;
+      padding: 20px 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 6px 24px rgba(37,99,235,0.30);
+    }
+    .ai-advisor-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: rgba(255,255,255,0.15);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 16px; margin-bottom: 10px;
+    }
+    .ai-advisor-title {
+      font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 3px;
+    }
+    .ai-advisor-sub {
+      font-size: 12px; color: rgba(255,255,255,0.65); margin-bottom: 14px;
+    }
+    .ai-advisor-input-wrap { margin-bottom: 10px; }
+    .ai-advisor-input {
+      width: 100%; border: none; border-radius: 10px;
+      padding: 11px 13px; font-size: 14px; font-family: 'Inter', sans-serif;
+      background: rgba(255,255,255,0.15); color: #fff; outline: none; resize: none;
+    }
+    .ai-advisor-input::placeholder { color: rgba(255,255,255,0.5); }
+    .ai-advisor-btn {
+      background: #fff; color: var(--blue);
+      font-weight: 600; font-size: 14px;
+      padding: 11px 20px; border-radius: 9999px;
+      display: inline-flex; align-items: center; gap: 6px;
+      width: auto; border: none; cursor: pointer;
+    }
+    .ai-advisor-btn:active { transform: scale(0.97); }
+
+    /* Filter chips */
+    .filter-chip-row {
+      display: flex; gap: 8px; overflow-x: auto;
+      padding-bottom: 2px; scrollbar-width: none;
+      margin-bottom: 16px;
+    }
+    .filter-chip-row::-webkit-scrollbar { display: none; }
+    .filter-chip {
+      flex-shrink: 0; padding: 7px 16px; border-radius: 9999px;
+      font-size: 13px; font-weight: 500; cursor: pointer;
+      border: 1.5px solid var(--border);
+      background: var(--surface); color: var(--text-secondary);
+      font-family: 'Inter', sans-serif;
+      transition: all 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .filter-chip.active {
+      background: var(--blue); color: #fff; border-color: var(--blue);
+      font-weight: 600;
+    }
+    .filter-chip:active { transform: scale(0.96); }
+
+    /* Firm cards */
+    .firm-card {
       background: var(--surface);
-      border-radius: 18px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 14px;
+      margin-bottom: 10px;
+      box-shadow: var(--shadow-card);
+      display: flex; align-items: flex-start; gap: 12px;
+    }
+    .firm-card-left { display: flex; align-items: flex-start; gap: 12px; flex: 1; min-width: 0; }
+    .firm-icon {
+      width: 40px; height: 40px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .firm-info { flex: 1; min-width: 0; }
+    .firm-name { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 3px; }
+    .firm-rating { font-size: 12px; color: var(--text-secondary); margin-bottom: 5px; }
+    .firm-reviews { color: var(--text-tertiary); }
+    .firm-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 6px; }
+    .firm-tag {
+      font-size: 11px; font-weight: 500; color: var(--blue);
+      background: rgba(37,99,235,0.08); border-radius: 6px;
+      padding: 2px 7px;
+    }
+    .firm-price { font-size: 12px; color: var(--text-secondary); }
+    .firm-discount {
+      display: inline-block; font-size: 10px; font-weight: 600;
+      color: var(--green); background: rgba(34,197,94,0.1);
+      border-radius: 6px; padding: 2px 6px; margin-left: 4px;
+    }
+    .firm-actions {
+      display: flex; flex-direction: column; gap: 6px; flex-shrink: 0;
+    }
+    .firm-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--elevated); border: 1px solid var(--border);
+      color: var(--text-secondary); font-size: 13px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; -webkit-tap-highlight-color: transparent;
+    }
+    .firm-btn:active { transform: scale(0.93); }
+    .firm-card.hidden { display: none; }
+
+    /* Keep old lawyer-card for compatibility */
+    .lawyer-card {
+      padding: 14px;
+      background: var(--surface);
+      border-radius: 14px;
       border: 1px solid var(--border);
       margin-bottom: 10px;
       box-shadow: var(--shadow-card);
     }
-
     .lawyer-header {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      margin-bottom: 8px;
+      display: flex; align-items: flex-start;
+      justify-content: space-between; margin-bottom: 8px;
     }
-
     .lawyer-name {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text-primary);
-      flex: 1;
-      margin-right: 8px;
+      font-size: 15px; font-weight: 600;
+      color: var(--text-primary); flex: 1; margin-right: 8px;
     }
-
     .lawyer-meta {
-      font-size: 12px;
-      color: var(--text-secondary);
-      margin-bottom: 12px;
+      font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;
     }
 
     /* ===================================================
@@ -756,7 +891,7 @@
       color: var(--text-secondary);
       font-size: 12px;
       font-weight: 600;
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
       cursor: pointer;
       transition: all 0.15s;
       -webkit-tap-highlight-color: transparent;
@@ -790,7 +925,7 @@
       border: none;
       font-size: 12px;
       font-weight: 600;
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
       cursor: pointer;
     }
 
@@ -871,7 +1006,7 @@
       padding: 6px 14px;
       font-size: 13px;
       font-weight: 600;
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
       color: var(--text-secondary);
       cursor: pointer;
       z-index: 2;
@@ -948,7 +1083,7 @@
       background: var(--elevated);
       font-size: 13px;
       font-weight: 600;
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
       color: var(--text-secondary);
       cursor: pointer;
       transition: all 0.15s;
@@ -1021,7 +1156,7 @@
       border: none;
       font-size: 15px;
       font-weight: 600;
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
       cursor: pointer;
       box-shadow: var(--shadow-btn);
       transition: transform 0.15s, box-shadow 0.15s;
@@ -1085,69 +1220,43 @@
     /* ===================================================
        TOP SEARCH / AI BAR
     =================================================== */
+    /* ===================================================
+       TOP HEADER — Drivee wordmark + greeting + actions
+    =================================================== */
     #top-bar {
       position: fixed;
       top: 0; left: 0; right: 0;
       z-index: 90;
       max-width: 460px;
       margin: 0 auto;
-      padding: calc(env(safe-area-inset-top, 0px) + 10px) 14px 10px;
+      padding: calc(env(safe-area-inset-top, 0px) + 14px) 20px 12px;
       background: var(--bg);
       display: flex;
-      align-items: flex-start;
-      gap: 8px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
     }
-    .ai-search-wrap {
-      flex: 1; display: flex; flex-direction: column; gap: 0; min-width: 0;
+    .top-bar-brand {
+      flex: 1; min-width: 0;
     }
-    .ai-search-row {
-      display: flex; align-items: center;
-      background: var(--surface);
-      border: 1.5px solid var(--border);
-      border-radius: 50px;
-      padding: 0 6px 0 14px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.07);
-      transition: border-color 0.2s, box-shadow 0.2s;
+    .top-bar-wordmark {
+      font-size: 22px; font-weight: 700;
+      color: var(--text-primary); line-height: 1.1;
+      letter-spacing: -0.5px;
     }
-    .ai-search-row:focus-within {
-      border-color: var(--blue);
-      box-shadow: 0 0 0 3px rgba(10,132,255,0.12), 0 2px 10px rgba(0,0,0,0.07);
+    .top-bar-greeting {
+      font-size: 13px; font-weight: 400;
+      color: var(--text-secondary); margin-top: 1px;
     }
-    .ai-search-icon { color: var(--blue); font-size: 13px; flex-shrink: 0; margin-right: 8px; }
-    .ai-search-input {
-      flex: 1; border: none; background: transparent;
-      color: var(--text-primary); font-size: 15px;
-      font-family: 'Poppins', sans-serif; font-weight: 400;
-      outline: none; padding: 12px 0; min-width: 0;
+    .top-bar-actions {
+      display: flex; align-items: center; gap: 10px; flex-shrink: 0;
     }
-    .ai-search-input::placeholder { color: var(--text-tertiary); }
-    .ai-search-send {
-      width: 34px; height: 34px; border-radius: 50%;
-      background: var(--blue); color: #fff; border: none; cursor: pointer;
-      display: flex; align-items: center; justify-content: center; font-size: 13px;
-      flex-shrink: 0; transition: opacity 0.15s, transform 0.15s;
-    }
-    .ai-search-send:active { opacity: 0.8; transform: scale(0.93); }
-    .ai-chip-row {
-      display: flex; gap: 7px; margin-top: 8px;
-      overflow-x: auto; padding-bottom: 2px; scrollbar-width: none;
-    }
-    .ai-chip-row::-webkit-scrollbar { display: none; }
-    .ai-chip {
-      flex-shrink: 0; padding: 6px 12px; border-radius: 20px;
-      background: rgba(10,132,255,0.10); color: var(--blue);
-      border: none; font-size: 12px; font-weight: 600;
-      font-family: 'Poppins', sans-serif; cursor: pointer;
-      white-space: nowrap; transition: background 0.15s, transform 0.1s;
-    }
-    .ai-chip:active { background: rgba(10,132,255,0.2); transform: scale(0.96); }
     .top-bar-bell {
-      position: relative; width: 44px; height: 44px;
+      position: relative; width: 40px; height: 40px;
       border-radius: 50%; background: var(--surface);
-      border: 1.5px solid var(--border); color: var(--text-secondary);
-      font-size: 16px; display: flex; align-items: center; justify-content: center;
-      cursor: pointer; flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+      border: 1px solid var(--border); color: var(--text-secondary);
+      font-size: 15px; display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
       -webkit-tap-highlight-color: transparent;
     }
     .bell-badge {
@@ -1159,14 +1268,16 @@
       border: 2px solid var(--bg);
     }
     .top-bar-profile {
-      width: 44px; height: 44px; border-radius: 50%;
-      background: var(--surface); border: 1.5px solid var(--border);
-      color: var(--text-secondary); font-size: 16px;
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--blue); color: #fff; font-size: 15px;
       display: flex; align-items: center; justify-content: center;
       cursor: pointer; flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.07);
       -webkit-tap-highlight-color: transparent;
     }
+    /* Keep ai-search/chip styles for the floating chat — still used internally */
+    .ai-search-row { display: none; }
+    .ai-chip-row   { display: none; }
+    .ai-search-wrap { display: none; }
 
     /* ===================================================
        PILL NAVIGATION + FAB
@@ -1197,7 +1308,7 @@
       align-items: center; justify-content: center;
       gap: 6px; cursor: pointer; border: none;
       background: none; color: var(--text-tertiary);
-      font-family: 'Poppins', sans-serif;
+      font-family: 'Inter', sans-serif;
       font-size: 13px; font-weight: 500;
       flex: 1; padding: 9px 6px; border-radius: 40px;
       transition: all 0.22s cubic-bezier(0.34,1.56,0.64,1);
@@ -1322,7 +1433,7 @@
       white-space: nowrap; padding: 6px 12px; border-radius: 20px;
       border: 1.5px solid var(--border); background: var(--surface);
       color: var(--text-secondary); font-size: 12px; font-weight: 500;
-      cursor: pointer; font-family: 'Poppins', sans-serif; transition: all 0.15s; flex-shrink: 0;
+      cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.15s; flex-shrink: 0;
     }
     .chat-suggestion:hover, .chat-suggestion:active {
       border-color: var(--blue); color: var(--blue); background: rgba(10,132,255,0.06);
@@ -1336,7 +1447,7 @@
       flex: 1; padding: 10px 14px; background: var(--elevated);
       border: 1.5px solid var(--border); border-radius: 22px;
       color: var(--text-primary); font-size: 14px;
-      font-family: 'Poppins', sans-serif; outline: none;
+      font-family: 'Inter', sans-serif; outline: none;
       transition: border-color 0.2s;
     }
     .chat-input:focus { border-color: var(--blue); }
@@ -1635,98 +1746,119 @@
     .tab-header-sub  { font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
 
     /* ===================================================
-       HERO CARD — gradient welcome card on Dashboard
+       BENTO STAT CARDS — 3-column row on Dashboard
     =================================================== */
+    .bento-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .bento-card {
+      background: var(--surface);
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      padding: 14px 10px 12px;
+      text-align: center;
+      box-shadow: var(--shadow-card);
+    }
+    .bento-value {
+      font-size: 24px;
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    .bento-value.blue  { color: var(--blue); }
+    .bento-value.green { color: var(--green); }
+    .bento-value.muted { color: var(--text-primary); }
+    .bento-label {
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    /* AI Scanner hero card — dark navy */
+    .scanner-hero {
+      background: #0F172A;
+      border-radius: 16px;
+      padding: 18px 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .scanner-hero-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: rgba(255,255,255,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+    }
+    .scanner-hero-text { flex: 1; min-width: 0; }
+    .scanner-hero-title {
+      font-size: 15px; font-weight: 600; color: #fff; margin-bottom: 2px;
+    }
+    .scanner-hero-sub  { font-size: 12px; color: rgba(255,255,255,0.55); }
+    .scanner-hero-arrow { color: rgba(255,255,255,0.4); font-size: 14px; }
+
+    /* Hero card — kept for greeting use */
     .hero-card {
-      background: linear-gradient(135deg, #0A84FF 0%, #0066CC 100%);
-      border-radius: 22px;
-      padding: 22px 20px 20px;
-      margin-bottom: 14px;
+      background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+      border-radius: 16px;
+      padding: 18px 16px;
+      margin-bottom: 12px;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 8px 32px rgba(10,132,255,0.38);
+      box-shadow: 0 6px 24px rgba(37,99,235,0.30);
     }
-    /* Decorative circles — purely visual */
     .hero-card::before {
       content: '';
       position: absolute;
       top: -50px; right: -40px;
-      width: 170px; height: 170px;
+      width: 160px; height: 160px;
       border-radius: 50%;
       background: rgba(255,255,255,0.07);
-      pointer-events: none;
-    }
-    .hero-card::after {
-      content: '';
-      position: absolute;
-      bottom: -55px; right: 20px;
-      width: 130px; height: 130px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.04);
       pointer-events: none;
     }
     .hero-top {
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      margin-bottom: 18px;
-      position: relative;
-    }
-    .hero-greeting {
-      font-size: 20px;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 4px;
-    }
-    .hero-tagline {
-      font-size: 12px;
-      color: rgba(255,255,255,0.65);
-    }
-    .hero-logo-badge {
-      width: 42px;
-      height: 42px;
-      background: rgba(255,255,255,0.15);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      flex-shrink: 0;
-    }
-    .hero-divider {
-      height: 1px;
-      background: rgba(255,255,255,0.15);
       margin-bottom: 16px;
       position: relative;
     }
-    .hero-stats {
-      display: flex;
-      align-items: center;
-      position: relative;
+    .hero-greeting {
+      font-size: 18px; font-weight: 700; color: #fff; margin-bottom: 3px;
     }
-    .hero-stat {
-      flex: 1;
-      text-align: center;
+    .hero-tagline { font-size: 12px; color: rgba(255,255,255,0.65); }
+    .hero-logo-badge {
+      width: 40px; height: 40px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
     }
+    .hero-divider {
+      height: 1px; background: rgba(255,255,255,0.15); margin-bottom: 14px;
+    }
+    .hero-stats { display: flex; align-items: center; }
+    .hero-stat  { flex: 1; text-align: center; }
     .hero-stat-num {
-      font-size: 26px;
-      font-weight: 700;
-      color: #fff;
+      font-size: 22px; font-weight: 700; color: #fff;
       font-family: 'JetBrains Mono', monospace;
-      line-height: 1;
-      margin-bottom: 4px;
+      line-height: 1; margin-bottom: 3px;
     }
     .hero-stat-label {
-      font-size: 10px;
-      color: rgba(255,255,255,0.6);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      font-size: 9px; color: rgba(255,255,255,0.6);
+      text-transform: uppercase; letter-spacing: 0.5px;
     }
     .hero-stat-sep {
-      width: 1px;
-      height: 34px;
-      background: rgba(255,255,255,0.18);
-      flex-shrink: 0;
+      width: 1px; height: 30px;
+      background: rgba(255,255,255,0.18); flex-shrink: 0;
     }
 
     /* ===================================================
@@ -2009,33 +2141,19 @@
        TOP AI SEARCH BAR — fixed header
   ================================================ -->
   <div id="top-bar">
-    <div class="ai-search-wrap">
-      <div class="ai-search-row">
-        <i class="fa-solid fa-sparkles ai-search-icon"></i>
-        <input type="text" id="ai-search-input" class="ai-search-input"
-          placeholder="Ask Drivee AI anything…"
-          oninput="onAiSearchInput(this.value)"
-          onkeydown="if(event.key==='Enter'&&this.value.trim()){sendAiSearch();event.preventDefault()}">
-        <button class="ai-search-send" id="ai-search-send-btn" onclick="sendAiSearch()" style="opacity:0;pointer-events:none">
-          <i class="fa-solid fa-paper-plane"></i>
-        </button>
-      </div>
-      <div class="ai-chip-row">
-        <button class="ai-chip" onclick="aiChipAction('ticket')">🎫 Got a ticket?</button>
-        <button class="ai-chip" onclick="aiChipAction('parking')">🅿️ Free parking</button>
-        <button class="ai-chip" onclick="aiChipAction('pay')">💳 Pay a fine</button>
-        <button class="ai-chip" onclick="aiChipAction('dispute')">⚖️ Dispute it</button>
-        <button class="ai-chip" onclick="aiChipAction('towed')">🚗 Car towed?</button>
-        <button class="ai-chip" onclick="aiChipAction('lawyer')">👨‍⚖️ Need a lawyer?</button>
-      </div>
+    <div class="top-bar-brand">
+      <div class="top-bar-wordmark">Drivee</div>
+      <div class="top-bar-greeting">Good morning, <span id="top-greeting-name">Driver</span></div>
     </div>
-    <button class="top-bar-bell" onclick="showTab('tab-dashboard')" title="Reminders">
-      <i class="fa-solid fa-bell"></i>
-      <span class="bell-badge" id="bell-badge" style="display:none">0</span>
-    </button>
-    <button class="top-bar-profile" onclick="showTab('tab-dashboard')" title="Profile">
-      <i class="fa-solid fa-user"></i>
-    </button>
+    <div class="top-bar-actions">
+      <button class="top-bar-bell" onclick="showTab('tab-dashboard')" title="Reminders">
+        <i class="fa-solid fa-bell"></i>
+        <span class="bell-badge" id="bell-badge" style="display:none">0</span>
+      </button>
+      <button class="top-bar-profile" onclick="showTab('tab-dashboard')" title="Profile">
+        <i class="fa-solid fa-user"></i>
+      </button>
+    </div>
   </div>
 
   <!-- ===============================================
@@ -2078,12 +2196,30 @@
     ================================================ -->
     <section class="tab-section" id="tab-dashboard">
 
-      <div class="tab-header tab-header-blue">
-        <div class="tab-header-icon tab-icon-blue">🚗</div>
-        <div class="tab-header-text">
-          <h1 class="page-title">Dashboard</h1>
-          <div class="tab-header-sub">Manage your tickets and deadlines</div>
+      <!-- Quick Stat Bento Cards -->
+      <div class="bento-row">
+        <div class="bento-card">
+          <div class="bento-value muted" id="stat-fines">0</div>
+          <div class="bento-label">Active Fines</div>
         </div>
+        <div class="bento-card">
+          <div class="bento-value blue" id="stat-deadlines">0</div>
+          <div class="bento-label">Deadlines</div>
+        </div>
+        <div class="bento-card">
+          <div class="bento-value green" id="stat-saved">$0</div>
+          <div class="bento-label">Total Saved</div>
+        </div>
+      </div>
+
+      <!-- AI Ticket Scanner — dark hero card -->
+      <div class="scanner-hero" onclick="document.getElementById('ticket-photo').click()">
+        <div class="scanner-hero-icon">📸</div>
+        <div class="scanner-hero-text">
+          <div class="scanner-hero-title">AI Ticket Scanner</div>
+          <div class="scanner-hero-sub">Scan your ticket to extract details.</div>
+        </div>
+        <i class="fa-solid fa-chevron-right scanner-hero-arrow"></i>
       </div>
 
       <!-- Hero welcome card -->
@@ -2269,12 +2405,12 @@
     ================================================ -->
     <section class="tab-section" id="tab-services">
 
-      <div class="tab-header tab-header-green">
-        <div class="tab-header-icon tab-icon-green">🔗</div>
-        <div class="tab-header-text">
-          <h1 class="page-title">Services</h1>
-          <div class="tab-header-sub">Pay, dispute, and check parking rules</div>
-        </div>
+      <h1 class="page-title" style="margin-bottom:14px">Services</h1>
+
+      <!-- Search bar -->
+      <div class="services-search">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" placeholder="Search services…" />
       </div>
 
       <!-- City Portals -->
@@ -2404,12 +2540,13 @@
     ================================================ -->
     <section class="tab-section" id="tab-hotspots">
 
-      <div class="tab-header tab-header-orange">
-        <div class="tab-header-icon tab-icon-orange">📍</div>
-        <div class="tab-header-text">
-          <h1 class="page-title">Hotspots</h1>
-          <div class="tab-header-sub">Live map, GPS guardian, community reports</div>
-        </div>
+      <h1 class="page-title" style="margin-bottom:12px">Map</h1>
+
+      <!-- Legend bar -->
+      <div class="map-legend">
+        <span class="map-legend-dot" style="background:#22C55E"></span> Free
+        <span class="map-legend-dot" style="background:#2563EB;margin-left:12px"></span> Metered
+        <span class="map-legend-dot" style="background:#EF4444;margin-left:12px"></span> No Parking
       </div>
 
       <!-- Enforcement Map — full-bleed, no card wrapper -->
@@ -2419,10 +2556,34 @@
         <div>Map unavailable — check your internet connection</div>
       </div>
 
-      <!-- Map label card sits below the map -->
+      <!-- Free Parking Nearby panel -->
       <div class="card" style="margin-top: 12px;">
-        <div class="card-title">Enforcement Map</div>
-        <div class="card-subtitle">Toronto parking enforcement — tap the map to explore</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+          <div class="card-title" style="margin-bottom:0">Free Parking Nearby</div>
+          <span class="badge badge-blue">5 spots</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="parking-spot-card">
+            <div class="parking-spot-name">King St W</div>
+            <div class="parking-spot-dist">0.3 km away</div>
+            <div class="parking-spot-status"><span style="color:var(--green)">●</span> Free now</div>
+          </div>
+          <div class="parking-spot-card">
+            <div class="parking-spot-name">Queen St E</div>
+            <div class="parking-spot-dist">0.5 km away</div>
+            <div class="parking-spot-status"><span style="color:var(--green)">●</span> Free now</div>
+          </div>
+          <div class="parking-spot-card">
+            <div class="parking-spot-name">Spadina Ave</div>
+            <div class="parking-spot-dist">0.7 km away</div>
+            <div class="parking-spot-status"><span style="color:var(--warning)">●</span> Until 6pm</div>
+          </div>
+          <div class="parking-spot-card">
+            <div class="parking-spot-name">College St</div>
+            <div class="parking-spot-dist">0.9 km away</div>
+            <div class="parking-spot-status"><span style="color:var(--green)">●</span> Free now</div>
+          </div>
+        </div>
       </div>
 
       <!-- GPS Guardian -->
@@ -2509,103 +2670,124 @@
     ================================================ -->
     <section class="tab-section" id="tab-legal">
 
-      <div class="tab-header tab-header-purple">
-        <div class="tab-header-icon tab-icon-purple">⚖️</div>
-        <div class="tab-header-text">
-          <h1 class="page-title">Legal</h1>
-          <div class="tab-header-sub">AI advisor and Toronto defence lawyers</div>
+      <h1 class="page-title" style="margin-bottom:14px">Legal</h1>
+
+      <!-- AI Ticket Advisor — blue gradient hero -->
+      <div class="ai-advisor-hero">
+        <div class="ai-advisor-icon"><i class="fa-solid fa-brain"></i></div>
+        <div class="ai-advisor-title">AI Ticket Advisor</div>
+        <div class="ai-advisor-sub">Analyze your ticket severity instantly</div>
+        <div class="ai-advisor-input-wrap">
+          <textarea id="legal-textarea" class="ai-advisor-input" rows="2" placeholder="Describe your ticket or violation…"></textarea>
+        </div>
+        <button class="btn ai-advisor-btn" onclick="analyseTicketFromLegal()">
+          <i class="fa-solid fa-sparkles"></i> Analyze My Ticket
+        </button>
+        <div id="legal-verdict-output"></div>
+      </div>
+
+      <!-- Filter chips -->
+      <div class="filter-chip-row">
+        <button class="filter-chip active" onclick="filterLawyers('all',this)">All</button>
+        <button class="filter-chip" onclick="filterLawyers('dui',this)">DUI</button>
+        <button class="filter-chip" onclick="filterLawyers('speeding',this)">Speeding</button>
+        <button class="filter-chip" onclick="filterLawyers('parking',this)">Parking</button>
+        <button class="filter-chip" onclick="filterLawyers('stunt',this)">Stunt Driving</button>
+      </div>
+
+      <!-- Recommended Firms -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+        <div class="section-heading">Recommended Firms</div>
+        <span style="font-size:12px;color:var(--blue);font-weight:600">See all</span>
+      </div>
+
+      <div class="firm-card" data-tags="dui speeding stunt careless criminal">
+        <div class="firm-card-left">
+          <div class="firm-icon" style="background:rgba(37,99,235,0.1);color:var(--blue)"><i class="fa-solid fa-scale-balanced"></i></div>
+          <div class="firm-info">
+            <div class="firm-name">X-Copper Professional Corp</div>
+            <div class="firm-rating">⭐ 4.9 <span class="firm-reviews">(227 reviews)</span></div>
+            <div class="firm-tags">
+              <span class="firm-tag">DUI</span><span class="firm-tag">Stunt</span><span class="firm-tag">Speeding</span>
+            </div>
+            <div class="firm-price">From <span class="mono">$350</span> &nbsp;<span class="firm-discount">Drivee 15% off</span></div>
+          </div>
+        </div>
+        <div class="firm-actions">
+          <button class="firm-btn" onclick="contactLawyer('info@xcopper.com','X-Copper')"><i class="fa-solid fa-envelope"></i></button>
+          <button class="firm-btn" onclick="window.open('https://xcopper.com','_blank')"><i class="fa-solid fa-globe"></i></button>
         </div>
       </div>
 
-      <!-- AI Ticket Advisor -->
-      <div class="card">
-        <div class="card-title">AI Ticket Advisor</div>
-        <div class="card-subtitle">Describe your ticket — get an instant severity assessment</div>
-        <div class="input-group">
-          <label for="legal-textarea">Ticket Details</label>
-          <textarea id="legal-textarea" rows="4" placeholder="e.g. I received a $200 fine for stunt driving on the 401…"></textarea>
+      <div class="firm-card" data-tags="speeding parking careless redlight">
+        <div class="firm-card-left">
+          <div class="firm-icon" style="background:rgba(124,58,237,0.1);color:var(--purple)"><i class="fa-solid fa-gavel"></i></div>
+          <div class="firm-info">
+            <div class="firm-name">Toronto Traffic Law</div>
+            <div class="firm-rating">⭐ 4.7 <span class="firm-reviews">(89 reviews)</span></div>
+            <div class="firm-tags">
+              <span class="firm-tag">Careless</span><span class="firm-tag">Red Light</span>
+            </div>
+            <div class="firm-price">From <span class="mono">$199</span></div>
+          </div>
         </div>
-        <button class="btn btn-placeholder">Analyse My Ticket — coming soon</button>
-        <div style="margin-top: 12px; font-size: 13px; color: var(--text-tertiary); text-align: center;">
-          Verdict card (Urgent / Serious / Contest / Minor) will appear here
+        <div class="firm-actions">
+          <button class="firm-btn" onclick="contactLawyer('info@x-cops.ca','X-COPS')"><i class="fa-solid fa-envelope"></i></button>
+          <button class="firm-btn" onclick="window.open('https://x-cops.ca','_blank')"><i class="fa-solid fa-globe"></i></button>
         </div>
       </div>
 
-      <!-- Lawyer Directory — all 8 firms -->
-      <div class="card">
-        <div class="card-title">Toronto Traffic Defence</div>
-        <div class="card-subtitle">Free consultation at all firms · Tap Contact to email with your DRIVEE referral code</div>
-
-        <div class="lawyer-card">
-          <div class="lawyer-header">
-            <div class="lawyer-name">X-Copper Professional Corporation</div>
-            <span class="badge badge-blue">Lawyer</span>
+      <div class="firm-card" data-tags="speeding parking stunt redlight all">
+        <div class="firm-card-left">
+          <div class="firm-icon" style="background:rgba(14,165,233,0.1);color:var(--teal)"><i class="fa-solid fa-shield-halved"></i></div>
+          <div class="firm-info">
+            <div class="firm-name">POINTTS Advisory Services</div>
+            <div class="firm-rating">⭐ 4.8 <span class="firm-reviews">(156 reviews)</span></div>
+            <div class="firm-tags">
+              <span class="firm-tag">Speeding</span><span class="firm-tag">Insurance</span>
+            </div>
+            <div class="firm-price">From <span class="mono">$250</span> &nbsp;<span class="firm-discount">Drivee 10% off</span></div>
           </div>
-          <div class="lawyer-meta"><span class="mono">$350–$900</span> &nbsp;·&nbsp; Stunt, Speeding, DUI, Careless, Criminal</div>
-          <button class="btn btn-primary" onclick="contactLawyer('info@xcopper.com','X-Copper')">Contact — Free Consultation</button>
         </div>
-
-        <div class="lawyer-card">
-          <div class="lawyer-header">
-            <div class="lawyer-name">X-COPS Traffic Ticket Fighters</div>
-            <span class="badge badge-teal">Paralegal</span>
-          </div>
-          <div class="lawyer-meta"><span class="mono">$200–$600</span> &nbsp;·&nbsp; Speeding, Red Light, Parking, Careless</div>
-          <button class="btn btn-primary" onclick="contactLawyer('info@x-cops.ca','X-COPS')">Contact — Free Consultation</button>
+        <div class="firm-actions">
+          <button class="firm-btn" onclick="contactLawyer('toronto@pointts.com','POINTTS')"><i class="fa-solid fa-envelope"></i></button>
+          <button class="firm-btn" onclick="window.open('https://pointts.com','_blank')"><i class="fa-solid fa-globe"></i></button>
         </div>
+      </div>
 
-        <div class="lawyer-card">
-          <div class="lawyer-header">
-            <div class="lawyer-name">POINTTS Advisory Services</div>
-            <span class="badge badge-purple">Lawyer & Paralegal</span>
+      <div class="firm-card" data-tags="parking speeding redlight">
+        <div class="firm-card-left">
+          <div class="firm-icon" style="background:rgba(245,158,11,0.1);color:var(--warning)"><i class="fa-solid fa-car-burst"></i></div>
+          <div class="firm-info">
+            <div class="firm-name">OTT Legal</div>
+            <div class="firm-rating">⭐ 4.6 <span class="firm-reviews">(64 reviews)</span></div>
+            <div class="firm-tags">
+              <span class="firm-tag">Parking</span><span class="firm-tag">HOV Lane</span>
+            </div>
+            <div class="firm-price">From <span class="mono">$200</span></div>
           </div>
-          <div class="lawyer-meta"><span class="mono">$250–$700</span> &nbsp;·&nbsp; Speeding, School Zone, Careless, Insurance</div>
-          <button class="btn btn-primary" onclick="contactLawyer('toronto@pointts.com','POINTTS')">Contact — Free Consultation</button>
         </div>
-
-        <div class="lawyer-card">
-          <div class="lawyer-header">
-            <div class="lawyer-name">OTT Legal</div>
-            <span class="badge badge-teal">Paralegal</span>
-          </div>
-          <div class="lawyer-meta"><span class="mono">$200–$550</span> &nbsp;·&nbsp; Red Light, Speeding, Parking, HOV Lane</div>
-          <button class="btn btn-primary" onclick="contactLawyer('info@ontariotraffictickets.com','OTT Legal')">Contact — Free Consultation</button>
+        <div class="firm-actions">
+          <button class="firm-btn" onclick="contactLawyer('info@ontariotraffictickets.com','OTT')"><i class="fa-solid fa-envelope"></i></button>
+          <button class="firm-btn" onclick="window.open('https://ontariotraffictickets.com','_blank')"><i class="fa-solid fa-globe"></i></button>
         </div>
+      </div>
 
-        <div class="lawyer-card">
-          <div class="lawyer-header">
-            <div class="lawyer-name">X-Police / Fight Your Ticket</div>
-            <span class="badge badge-blue">Lawyer</span>
+      <div class="firm-card" data-tags="dui stunt criminal careless">
+        <div class="firm-card-left">
+          <div class="firm-icon" style="background:rgba(239,68,68,0.1);color:var(--red)"><i class="fa-solid fa-user-shield"></i></div>
+          <div class="firm-info">
+            <div class="firm-name">HWY-LAW Criminal Defence</div>
+            <div class="firm-rating">⭐ 4.9 <span class="firm-reviews">(312 reviews)</span></div>
+            <div class="firm-tags">
+              <span class="firm-tag">DUI</span><span class="firm-tag">Criminal</span><span class="firm-tag">Stunt</span>
+            </div>
+            <div class="firm-price">From <span class="mono">$400</span></div>
           </div>
-          <div class="lawyer-meta"><span class="mono">$300–$800</span> &nbsp;·&nbsp; Stunt, DUI, Criminal, HTA, Careless</div>
-          <button class="btn btn-primary" onclick="contactLawyer('help@xpolice.ca','X-Police')">Contact — Free Consultation</button>
         </div>
-
-        <div class="lawyer-card">
-          <div class="lawyer-header">
-            <div class="lawyer-name">Street Legal Paralegal Services</div>
-            <span class="badge badge-teal">Paralegal</span>
-          </div>
-          <div class="lawyer-meta"><span class="mono">$150–$500</span> &nbsp;·&nbsp; Speeding, Bike Lane, Parking, Cell Phone</div>
-          <button class="btn btn-primary" onclick="contactLawyer('info@street-legal.ca','Street Legal')">Contact — Free Consultation</button>
-        </div>
-
-        <div class="lawyer-card">
-          <div class="lawyer-header">
-            <div class="lawyer-name">Traffic Ticket Experts</div>
-            <span class="badge badge-purple">Lawyer & Paralegal</span>
-          </div>
-          <div class="lawyer-meta"><span class="mono">$200–$650</span> &nbsp;·&nbsp; All HTA, Speeding, Stunt, Red Light</div>
-          <button class="btn btn-primary" onclick="contactLawyer('info@trafficticket.legal','Traffic Ticket Experts')">Contact — Free Consultation</button>
-        </div>
-
-        <div class="lawyer-card">
-          <div class="lawyer-header">
-            <div class="lawyer-name">HWY-LAW Criminal Defence</div>
-            <span class="badge badge-red">Lawyer</span>
-          </div>
-          <div class="lawyer-meta"><span class="mono">$400–$1,200</span> &nbsp;·&nbsp; DUI, Criminal, HTA, Dangerous, Stunt</div>
-          <button class="btn btn-primary" onclick="contactLawyer('info@hwy-law.com','HWY-LAW')">Contact — Free Consultation</button>
+        <div class="firm-actions">
+          <button class="firm-btn" onclick="contactLawyer('info@hwy-law.com','HWY-LAW')"><i class="fa-solid fa-envelope"></i></button>
+          <button class="firm-btn" onclick="window.open('https://hwy-law.com','_blank')"><i class="fa-solid fa-globe"></i></button>
         </div>
       </div>
 
@@ -2725,24 +2907,24 @@
       <div id="bottom-nav-inner">
         <div id="nav-pill">
           <button class="pill-btn active" data-tab="tab-dashboard" onclick="showTab('tab-dashboard')">
-            <i class="fa-solid fa-house"></i>
+            <i class="fa-solid fa-grid-2"></i>
             <span class="pill-label">Dashboard</span>
           </button>
           <button class="pill-btn" data-tab="tab-services" onclick="showTab('tab-services')">
-            <i class="fa-solid fa-grid-2"></i>
+            <i class="fa-solid fa-briefcase"></i>
             <span class="pill-label">Services</span>
           </button>
           <button class="pill-btn" data-tab="tab-hotspots" onclick="showTab('tab-hotspots')">
-            <i class="fa-solid fa-location-dot"></i>
-            <span class="pill-label">Hotspots</span>
+            <i class="fa-solid fa-map"></i>
+            <span class="pill-label">Map</span>
           </button>
           <button class="pill-btn" data-tab="tab-legal" onclick="showTab('tab-legal')">
             <i class="fa-solid fa-scale-balanced"></i>
             <span class="pill-label">Legal</span>
           </button>
-          <button class="pill-btn" data-tab="tab-guide" onclick="showTab('tab-guide')">
-            <i class="fa-solid fa-book-open"></i>
-            <span class="pill-label">Guide</span>
+          <button class="pill-btn" data-tab="tab-guide" onclick="openChat()">
+            <i class="fa-solid fa-message"></i>
+            <span class="pill-label">Chat</span>
           </button>
         </div>
         <button class="nav-fab" onclick="openChat()" title="AI Assistant">
@@ -3133,6 +3315,33 @@
     // Opens the user's mail app pre-filled with their
     // profile name, plate, and the DRIVEE referral code.
     // ===================================================
+
+    // Filter firm cards by tag
+    function filterLawyers(tag, btn) {
+      document.querySelectorAll('.filter-chip').forEach(function(c){ c.classList.remove('active'); });
+      btn.classList.add('active');
+      document.querySelectorAll('.firm-card').forEach(function(card){
+        if (tag === 'all') {
+          card.classList.remove('hidden');
+        } else {
+          var tags = (card.getAttribute('data-tags') || '').toLowerCase();
+          if (tags.indexOf(tag) !== -1) card.classList.remove('hidden');
+          else card.classList.add('hidden');
+        }
+      });
+    }
+
+    // Legal tab AI advisor button
+    function analyseTicketFromLegal() {
+      var text = document.getElementById('legal-textarea').value.trim();
+      if (!text) { showToast('Describe your ticket first'); return; }
+      // Reuse the main ticket analyser logic via chat
+      openChat();
+      setTimeout(function(){
+        document.getElementById('chat-input').value = 'Analyze this ticket: ' + text;
+        sendChatMessage();
+      }, 400);
+    }
 
     function contactLawyer(email, firmName) {
       var profile = safeGet(PROFILE_KEY);
@@ -3602,10 +3811,10 @@
     function updateHeroCard() {
       var p = safeGet(PROFILE_KEY);
       var heroName = document.getElementById('hero-name');
-      if (heroName && p && p.name) {
-        // Show first name only — cleaner greeting
-        heroName.textContent = p.name.split(' ')[0];
-      }
+      var topName  = document.getElementById('top-greeting-name');
+      var firstName = (p && p.name) ? p.name.split(' ')[0] : 'Driver';
+      if (heroName) heroName.textContent = firstName;
+      if (topName)  topName.textContent  = firstName;
       var reminders = safeGet(REMINDERS_KEY) || [];
       var el = document.getElementById('hero-reminders');
       if (el) el.textContent = reminders.length;
@@ -3613,6 +3822,18 @@
       var reports = safeGet(REPORTS_KEY) || [];
       var el2 = document.getElementById('hero-reports');
       if (el2) el2.textContent = reports.length;
+
+      // Update bento stat cards
+      var today = new Date(); today.setHours(0,0,0,0);
+      var overdue = 0, upcoming = 0;
+      reminders.forEach(function(r) {
+        var d = parseLocalDate(r.dueDate);
+        if (d <= today) overdue++; else upcoming++;
+      });
+      var sf = document.getElementById('stat-fines');
+      var sd = document.getElementById('stat-deadlines');
+      if (sf) sf.textContent = overdue;
+      if (sd) sd.textContent = upcoming;
     }
 
     // ===================================================
