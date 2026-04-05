@@ -1302,8 +1302,6 @@
       box-shadow: 0 4px 20px rgba(0,0,0,0.13), 0 1px 6px rgba(0,0,0,0.07);
       padding: 6px 8px;
       pointer-events: all;
-      /* leave 68px gap on the right for the fixed FAB */
-      margin-right: 68px;
     }
     .pill-btn {
       display: flex; flex-direction: row;
@@ -2912,11 +2910,11 @@
       <div id="bottom-nav-inner">
         <div id="nav-pill">
           <button class="pill-btn active" data-tab="tab-dashboard" onclick="showTab('tab-dashboard')">
-            <i class="fa-solid fa-grid-2"></i>
+            <i class="fa-solid fa-house"></i>
             <span class="pill-label">Dashboard</span>
           </button>
           <button class="pill-btn" data-tab="tab-services" onclick="showTab('tab-services')">
-            <i class="fa-solid fa-briefcase"></i>
+            <i class="fa-solid fa-list"></i>
             <span class="pill-label">Services</span>
           </button>
           <button class="pill-btn" data-tab="tab-hotspots" onclick="showTab('tab-hotspots')">
@@ -2932,13 +2930,15 @@
             <span class="pill-label">Chat</span>
           </button>
         </div>
-        <button class="nav-fab" onclick="openChat()" title="AI Assistant">
-          <i class="fa-solid fa-sparkles"></i>
-        </button>
-      </div>
+        </div>
     </div>
 
   </div><!-- /#app -->
+
+  <!-- FAB — outside #app so nothing can clip it -->
+  <button class="nav-fab" onclick="openChat()" title="AI Assistant">
+    <i class="fa-solid fa-sparkles"></i>
+  </button>
 
   <!-- Toast notification — shared by profile, reminders, copy script -->
   <div id="toast"></div>
