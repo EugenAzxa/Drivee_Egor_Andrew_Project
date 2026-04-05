@@ -3196,17 +3196,24 @@
         if (refMatch)    found.push('Ref: ' + refMatch[1]);
         if (typeSelect.value) found.push('Type: ' + typeSelect.options[typeSelect.selectedIndex].text);
 
-        if (found.length) {
-          statusEl.style.animation = '';
-          statusEl.style.background = 'rgba(48,209,88,0.08)';
-          statusEl.style.borderColor = 'rgba(48,209,88,0.25)';
-          statusEl.style.color = 'var(--green)';
-          statusEl.textContent = '✓ Found: ' + found.join(' · ') + ' — tap Get Verdict';
+        // If Claude API is connected, send OCR text to Claude for smarter extraction
+        if (CLAUDE_API_KEY && text.trim().length > 20) {
+          statusEl.textContent = '🤖 Claude is reading your ticket…';
+          scanWithClaude(text, statusEl);
         } else {
-          statusEl.style.background = 'rgba(255,159,10,0.08)';
-          statusEl.style.borderColor = 'rgba(255,159,10,0.25)';
-          statusEl.style.color = 'var(--orange)';
-          statusEl.textContent = 'Could not read ticket clearly — please fill in the fields manually';
+          // Fallback: show regex results
+          if (found.length) {
+            statusEl.style.animation = '';
+            statusEl.style.background = 'rgba(34,197,94,0.08)';
+            statusEl.style.borderColor = 'rgba(34,197,94,0.25)';
+            statusEl.style.color = 'var(--green)';
+            statusEl.textContent = '✓ Found: ' + found.join(' · ') + ' — tap Get Verdict';
+          } else {
+            statusEl.style.background = 'rgba(245,158,11,0.08)';
+            statusEl.style.borderColor = 'rgba(245,158,11,0.25)';
+            statusEl.style.color = 'var(--warning)';
+            statusEl.textContent = 'Could not read clearly — please fill in the fields manually';
+          }
         }
 
       }).catch(function() {
@@ -3214,6 +3221,63 @@
         statusEl.style.animation = '';
         statusEl.style.color = 'var(--red)';
         statusEl.textContent = 'Scan failed — please enter the details manually';
+      });
+    }
+
+    // Send raw OCR text to Claude for smart ticket extraction
+    function scanWithClaude(ocrText, statusEl) {
+      fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': CLAUDE_API_KEY,
+          'anthropic-version': '2023-06-01',
+          'anthropic-dangerous-direct-browser-access': 'true'
+        },
+        body: JSON.stringify({
+          model: 'claude-haiku-4-5-20251001',
+          max_tokens: 200,
+          messages: [{
+            role: 'user',
+            content: 'From this parking ticket OCR text, extract ONLY: fine amount (number only, no $), ticket/reference number, violation type (one of: parking, speeding, redlight, careless, stunt, dui, other). Reply in this exact format:\nAMOUNT: [number]\nREF: [ref]\nTYPE: [type]\n\nOCR text:\n' + ocrText.substring(0, 800)
+          }]
+        })
+      })
+      .then(function(r){ return r.json(); })
+      .then(function(data) {
+        var reply = data.content && data.content[0] ? data.content[0].text : '';
+        var amountM = reply.match(/AMOUNT:\s*([\d.]+)/i);
+        var refM    = reply.match(/REF:\s*([A-Z0-9\-]+)/i);
+        var typeM   = reply.match(/TYPE:\s*(\w+)/i);
+
+        if (amountM) document.getElementById('ticket-amount').value = parseFloat(amountM[1]);
+        if (typeM) {
+          var t = typeM[1].toLowerCase();
+          var sel = document.getElementById('ticket-type');
+          if (sel) sel.value = (['parking','speeding','redlight','careless','stunt','dui','other'].indexOf(t) !== -1 ? t : '');
+        }
+        if (refM) {
+          var rf = document.getElementById('verdict-ref');
+          if (rf) rf.value = refM[1];
+          // Also pre-fill reminder ref
+          var rr = document.getElementById('reminder-ref');
+          if (rr && !rr.value) rr.value = refM[1];
+        }
+
+        var found = [];
+        if (amountM) found.push('$' + amountM[1]);
+        if (refM)    found.push(refM[1]);
+        if (typeM)   found.push(typeM[1]);
+
+        statusEl.style.animation = '';
+        statusEl.style.background = 'rgba(34,197,94,0.08)';
+        statusEl.style.borderColor = 'rgba(34,197,94,0.25)';
+        statusEl.style.color = 'var(--green)';
+        statusEl.textContent = '🤖 Claude found: ' + (found.length ? found.join(' · ') : 'details extracted') + ' — tap Get Verdict';
+      })
+      .catch(function() {
+        statusEl.style.color = 'var(--warning)';
+        statusEl.textContent = 'Claude unavailable — using basic scan results';
       });
     }
 
