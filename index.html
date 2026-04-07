@@ -810,6 +810,64 @@
     /* ===================================================
        SUPPORT BANNER
     =================================================== */
+    /* ===================================================
+       AUTH CARD — sign in / signed in state
+    =================================================== */
+    .auth-card {
+      background: var(--surface);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: var(--shadow-card);
+    }
+    .auth-signed-in {
+      display: flex; align-items: center; gap: 12px;
+    }
+    .auth-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--blue); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; font-weight: 700; flex-shrink: 0;
+    }
+    .auth-user-info { flex: 1; min-width: 0; }
+    .auth-user-name { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .auth-user-email { font-size: 12px; color: var(--text-secondary); margin-top: 1px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .auth-signout {
+      padding: 6px 12px; border-radius: 9999px;
+      background: var(--elevated); border: 1px solid var(--border);
+      font-size: 12px; font-weight: 600; color: var(--text-secondary);
+      cursor: pointer; font-family: 'Inter', sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .auth-prompt-title {
+      font-size: 14px; font-weight: 700; color: var(--text-primary); margin-bottom: 3px;
+    }
+    .auth-prompt-sub {
+      font-size: 12px; color: var(--text-secondary); margin-bottom: 12px;
+    }
+    .auth-input-row {
+      display: flex; gap: 8px;
+    }
+    .auth-email-input {
+      flex: 1; border: 1.5px solid var(--border); border-radius: 9999px;
+      padding: 10px 14px; font-size: 13px; font-family: 'Inter', sans-serif;
+      background: var(--elevated); color: var(--text-primary); outline: none;
+    }
+    .auth-email-input:focus { border-color: var(--blue); }
+    .auth-send-btn {
+      padding: 10px 16px; border-radius: 9999px;
+      background: var(--blue); color: #fff; border: none;
+      font-size: 13px; font-weight: 600; font-family: 'Inter', sans-serif;
+      cursor: pointer; white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .auth-sent-msg {
+      font-size: 13px; color: var(--green); font-weight: 500;
+      text-align: center; padding: 8px 0;
+    }
+
     .support-banner {
       display: flex; align-items: center; gap: 12px;
       background: linear-gradient(135deg, #fff5f5 0%, #fff0f8 100%);
@@ -2223,6 +2281,31 @@
     ================================================ -->
     <section class="tab-section" id="tab-dashboard">
 
+      <!-- Auth Card — sign in / signed in state -->
+      <div class="auth-card" id="auth-card">
+        <!-- Signed OUT state -->
+        <div id="auth-signout-state">
+          <div class="auth-prompt-title">☁️ Sync across devices</div>
+          <div class="auth-prompt-sub">Sign in to save your data on all your devices — free, no password needed.</div>
+          <div class="auth-input-row">
+            <input type="email" class="auth-email-input" id="auth-email-input" placeholder="your@email.com" />
+            <button class="auth-send-btn" onclick="sendMagicLink()">Send Link</button>
+          </div>
+          <div class="auth-sent-msg" id="auth-sent-msg" style="display:none">
+            ✅ Check your email — click the link to sign in
+          </div>
+        </div>
+        <!-- Signed IN state (hidden until auth) -->
+        <div id="auth-signin-state" style="display:none" class="auth-signed-in">
+          <div class="auth-avatar" id="auth-avatar">U</div>
+          <div class="auth-user-info">
+            <div class="auth-user-name" id="auth-user-name">User</div>
+            <div class="auth-user-email" id="auth-user-email"></div>
+          </div>
+          <button class="auth-signout" onclick="signOutUser()">Sign out</button>
+        </div>
+      </div>
+
       <!-- Quick Stat Bento Cards -->
       <div class="bento-row">
         <div class="bento-card">
@@ -2976,6 +3059,9 @@
 
   <!-- Toast notification — shared by profile, reminders, copy script -->
   <div id="toast"></div>
+
+  <!-- Supabase JS SDK v2 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <!-- Leaflet JS — loaded after HTML so the #map element exists when JS runs -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -3898,6 +3984,7 @@
         return;
       }
       safeSet(PROFILE_KEY, { name: name, plate: plate });
+      saveProfileToSupabase(name, plate); // sync to cloud if signed in
       showToast('Profile saved');
     }
 
@@ -3965,7 +4052,9 @@
         ref:     ref,
         dueDate: date
       });
+      var localId = reminders[reminders.length - 1].id;
       safeSet(REMINDERS_KEY, reminders);
+      addReminderToSupabase(ref, date, localId); // sync to cloud if signed in
       renderReminders();
       updateHeroCard();
       // Mark only the newest card with .new so only it gets the slide-up animation
@@ -3982,6 +4071,7 @@
         return r.id !== id;
       });
       safeSet(REMINDERS_KEY, reminders);
+      deleteReminderFromSupabase(id); // sync to cloud if signed in
       renderReminders();
       updateHeroCard();
     }
@@ -4302,12 +4392,173 @@
     }
 
     // ===================================================
+    // SUPABASE INTEGRATION — auth, profile sync, reminders sync
+    // SDK loaded from CDN above index.html <script> tags.
+    // Falls back to localStorage silently when not signed in.
+    // ===================================================
+    var SUPABASE_URL  = 'https://ofnsssyiiejohcnbejxq.supabase.co';
+    var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9mbnNzc3lpaWVqb2hjbmJlanhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU1MDE4OTcsImV4cCI6MjA5MTA3Nzg5N30._C3k82OSOklVtKaWT4zl1rWGJyaokiRQC9H6y5VhS58';
+    var db = null;
+    var currentUser = null;
+
+    function initSupabase() {
+      if (typeof window.supabase === 'undefined') {
+        console.warn('Drivee: Supabase SDK not loaded — offline only');
+        return;
+      }
+      db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
+
+      // Check if already signed in (e.g. returning via magic link)
+      db.auth.getSession().then(function(res) {
+        if (res.data && res.data.session) {
+          onUserSignedIn(res.data.session.user);
+        }
+      });
+
+      // Listen for sign-in / sign-out events
+      db.auth.onAuthStateChange(function(event, session) {
+        if (session && session.user) {
+          onUserSignedIn(session.user);
+        } else {
+          onUserSignedOut();
+        }
+      });
+    }
+
+    function sendMagicLink() {
+      if (!db) { showToast('Not connected — try refreshing'); return; }
+      var email = document.getElementById('auth-email-input').value.trim();
+      if (!email || !email.includes('@')) {
+        showToast('Enter a valid email address');
+        return;
+      }
+      var btn = document.querySelector('.auth-send-btn');
+      if (btn) { btn.textContent = 'Sending…'; btn.disabled = true; }
+
+      db.auth.signInWithOtp({ email: email, options: { shouldCreateUser: true } })
+        .then(function(res) {
+          if (res.error) {
+            showToast('Error: ' + res.error.message);
+            if (btn) { btn.textContent = 'Send Link'; btn.disabled = false; }
+          } else {
+            document.getElementById('auth-sent-msg').style.display = 'block';
+            if (btn) { btn.textContent = 'Sent ✓'; }
+          }
+        });
+    }
+
+    function signOutUser() {
+      if (!db) return;
+      db.auth.signOut().then(function() {
+        onUserSignedOut();
+        showToast('Signed out');
+      });
+    }
+
+    function onUserSignedIn(user) {
+      currentUser = user;
+      // Show signed-in state in auth card
+      document.getElementById('auth-signout-state').style.display = 'none';
+      document.getElementById('auth-signin-state').style.display  = 'flex';
+      var email = user.email || '';
+      var initials = email ? email[0].toUpperCase() : 'U';
+      document.getElementById('auth-avatar').textContent    = initials;
+      document.getElementById('auth-user-email').textContent = email;
+      // Load cloud data and overwrite local cache
+      loadProfileFromSupabase();
+      loadRemindersFromSupabase();
+      showToast('Signed in as ' + email);
+    }
+
+    function onUserSignedOut() {
+      currentUser = null;
+      document.getElementById('auth-signin-state').style.display  = 'none';
+      document.getElementById('auth-signout-state').style.display = 'block';
+      // Reset send button in case it was changed
+      var btn = document.querySelector('.auth-send-btn');
+      if (btn) { btn.textContent = 'Send Link'; btn.disabled = false; }
+      document.getElementById('auth-sent-msg').style.display = 'none';
+    }
+
+    // ── Profile sync ─────────────────────────────────────
+    function loadProfileFromSupabase() {
+      if (!db || !currentUser) return;
+      db.from('profiles').select('full_name, license_plate').eq('id', currentUser.id).single()
+        .then(function(res) {
+          if (res.data) {
+            // Overwrite localStorage with cloud data
+            safeSet(PROFILE_KEY, { name: res.data.full_name || '', plate: res.data.license_plate || '' });
+            loadProfile();
+          }
+        });
+    }
+
+    function saveProfileToSupabase(name, plate) {
+      if (!db || !currentUser) return;
+      db.from('profiles').upsert({
+        id:              currentUser.id,
+        full_name:       name,
+        license_plate:   plate,
+        updated_at:      new Date().toISOString()
+      }).then(function(res) {
+        if (res.error) console.warn('Drivee: profile sync error', res.error.message);
+      });
+    }
+
+    // ── Reminders sync ───────────────────────────────────
+    function loadRemindersFromSupabase() {
+      if (!db || !currentUser) return;
+      db.from('reminders').select('id, ticket_ref, due_date').eq('user_id', currentUser.id).order('due_date')
+        .then(function(res) {
+          if (res.data && res.data.length > 0) {
+            var reminders = res.data.map(function(r) {
+              return { id: r.id, ref: r.ticket_ref, dueDate: r.due_date };
+            });
+            safeSet(REMINDERS_KEY, reminders);
+            renderReminders();
+            updateHeroCard();
+          }
+        });
+    }
+
+    function addReminderToSupabase(ref, dueDate, localId) {
+      if (!db || !currentUser) return;
+      db.from('reminders').insert({
+        user_id:    currentUser.id,
+        ticket_ref: ref,
+        due_date:   dueDate
+      }).select('id').single()
+        .then(function(res) {
+          if (res.data) {
+            // Replace the temporary local ID with the real Supabase UUID
+            var reminders = (safeGet(REMINDERS_KEY) || []).map(function(r) {
+              return r.id === localId ? { id: res.data.id, ref: r.ref, dueDate: r.dueDate } : r;
+            });
+            safeSet(REMINDERS_KEY, reminders);
+            renderReminders();
+          }
+        });
+    }
+
+    function deleteReminderFromSupabase(id) {
+      if (!db || !currentUser) return;
+      // Only try Supabase delete if id looks like a UUID (not a local timestamp id)
+      if (/^[0-9a-f-]{36}$/i.test(id)) {
+        db.from('reminders').delete().eq('id', id).eq('user_id', currentUser.id)
+          .then(function(res) {
+            if (res.error) console.warn('Drivee: reminder delete error', res.error.message);
+          });
+      }
+    }
+
+    // ===================================================
     // ON LOAD — show Dashboard tab by default
     // ===================================================
     showTab('tab-dashboard');
     loadProfile();      // Populate name + plate if previously saved
     renderReminders();  // Render any saved reminders on startup
     updateHeroCard();   // Sync hero card stats on load
+    initSupabase();     // Start Supabase auth listener (non-blocking)
     // bell badge updated after splash hides, in updateBellBadge() below
 
     // ===================================================
