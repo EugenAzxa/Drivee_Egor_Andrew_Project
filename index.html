@@ -105,9 +105,10 @@
       height: 100vh;
       overflow-y: auto;
       /* top: top-bar (~76px) + safe area | bottom: pill nav (~90px) + safe area */
-      padding: calc(env(safe-area-inset-top, 0px) + 80px) 20px calc(env(safe-area-inset-bottom, 0px) + 110px);
+      padding: calc(env(safe-area-inset-top, 0px) + 80px) 20px calc(env(safe-area-inset-bottom, 0px) + 140px);
       /* Smooth momentum scrolling on iOS */
       -webkit-overflow-scrolling: touch;
+      transform: translateZ(0); /* GPU compositing for smoother scroll */
     }
 
     .tab-section.active {
@@ -1720,6 +1721,7 @@
       position: absolute; border-radius: 50%;
       filter: blur(70px); opacity: 0.22;
       will-change: transform;
+      transform: translateZ(0); /* GPU layer for smoother scroll */
     }
     .bg-orb-1 {
       width: 500px; height: 500px;
@@ -2395,7 +2397,7 @@
       <div class="top-bar-greeting">Good morning, <span id="top-greeting-name">Driver</span></div>
     </div>
     <div class="top-bar-actions">
-      <button class="top-bar-bell" onclick="showTab('tab-dashboard')" title="Reminders">
+      <button class="top-bar-bell" onclick="showTab('tab-dashboard');setTimeout(function(){var el=document.getElementById('reminders-card');if(el)el.scrollIntoView({behavior:'smooth',block:'center'})},150)" title="Reminders">
         <i class="fa-solid fa-bell"></i>
         <span class="bell-badge" id="bell-badge" style="display:none">0</span>
       </button>
@@ -2408,11 +2410,6 @@
   <!-- ===============================================
        FLOATING AI CHAT
   ================================================ -->
-  <button class="chat-fab" onclick="openChat()" title="Open AI Assistant">
-    <i class="fa-solid fa-comments"></i>
-    <div class="chat-fab-dot"></div>
-  </button>
-
   <!-- Profile Sheet -->
   <div class="profile-overlay" id="profile-overlay" onclick="closeProfileSheet()"></div>
   <div class="profile-sheet" id="profile-sheet">
@@ -2660,7 +2657,7 @@
       </a>
 
       <!-- Fine Reminders Card -->
-      <div class="card">
+      <div class="card" id="reminders-card">
         <div class="card-title">Fine Reminders</div>
         <div class="card-subtitle">Track your deadlines — never miss a payment</div>
 
@@ -2758,6 +2755,12 @@
         </div>
       </div>
 
+      <!-- Feedback -->
+      <div style="text-align:center;padding:18px 0 8px;font-size:13px;color:var(--text-tertiary)">
+        Questions or feedback?<br>
+        <a href="mailto:support@drivee.ca" style="color:var(--blue);text-decoration:none;font-weight:600">support@drivee.ca</a>
+      </div>
+
     </section>
 
     <!-- ===============================================
@@ -2844,7 +2847,7 @@
       <div class="card">
         <div class="card-title">Vehicle Towed?</div>
         <div class="card-subtitle" style="color: var(--warning);">⚠️ Storage fees start at $75/day. Act fast.</div>
-        <a class="btn-gov" href="https://www.tps.ca/services/towed-impounded-vehicles/" target="_blank" rel="noopener">
+        <a class="btn-gov" href="https://www.tps.ca/services/towing/" target="_blank" rel="noopener">
           <span><span class="gov-icon">🚗</span>Find Towed Vehicle — Toronto Police</span>
           <span class="gov-arrow">›</span>
         </a>
@@ -4217,6 +4220,7 @@
         // Switch to Map tab and drop the pin
         showTab('tab-hotspots');
         setTimeout(function() {
+          report._justCreated = true;
           dropReportPin(report);
           if (driveeMap) driveeMap.setView([lat, lng], 17);
         }, 300);
@@ -4306,14 +4310,16 @@
       var photoHtml = report.photo
         ? '<br><img src="' + report.photo + '" style="width:160px;border-radius:8px;margin-top:6px;display:block">'
         : '';
-      L.marker([report.lat, report.lng], { icon: icon })
+      var marker = L.marker([report.lat, report.lng], { icon: icon })
         .bindPopup(
           '<strong>' + report.label + '</strong><br>' +
           report.date +
           (report.desc ? '<br><span style="color:#666">' + report.desc + '</span>' : '') +
-          photoHtml
+          photoHtml,
+          { maxWidth: 220, minWidth: 120 }
         )
         .addTo(driveeMap);
+      if (report._justCreated) marker.openPopup();
     }
 
     // Loads all saved reports from localStorage and draws pins on the map.
@@ -4577,7 +4583,9 @@
     }
 
     function safeSet(key, val) {
-      try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+      try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {
+        console.warn('localStorage full — could not save', key, e);
+      }
     }
 
     // showToast() — green notification, auto-dismisses after 3s.
@@ -5025,43 +5033,6 @@
       { name: 'Adelaide St W — Bay to Spadina',         rate: '$4.00/hr', hours: 'Mon–Fri 7am–9pm',      free: 'Sat–Sun · Daily after 9pm',     tow: 'Tow-away: Mon–Fri 7–9am and 4–6pm' },
       { name: 'Gerrard St E — Broadview to Greenwood',  rate: '$2.00/hr', hours: 'Mon–Sat 9am–6pm',      free: 'Sun · Daily after 6pm',         tow: null },
     ];
-    // KEEP old object for backwards compat (not used by new checkStreet)
-    var _OLD_STREETS = { 'queen-w': {
-        name:  'Queen St W (Spadina to Bathurst)',
-        rate:  '$3.00 / hour',
-        hours: 'Mon–Sat 8am–9pm',
-        free:  'Sun 1pm–9pm · Every day after 9pm',
-        tow:   'Tow-away zone: Mon–Fri 3:30–6:30pm'
-      },
-      'bloor-w': {
-        name:  'Bloor St W (Yorkville Area)',
-        rate:  '$4.00 / hour',
-        hours: 'Mon–Sat 8am–9pm',
-        free:  'Sun all day · Every day after 9pm',
-        tow:   'Tow-away zone: Mon–Fri 7–9am and 4–6pm'
-      },
-      'kensington': {
-        name:  'Kensington Market',
-        rate:  '$2.50 / hour',
-        hours: 'Mon–Sat 9am–6pm',
-        free:  'Sun all day · Every day after 6pm',
-        tow:   null
-      },
-      'front-st': {
-        name:  'Front St (Near Scotiabank Arena)',
-        rate:  '$5.00 / hour',
-        hours: 'Mon–Sun 7am–midnight',
-        free:  'After midnight only',
-        tow:   'Tow-away zone: Event days — check signage'
-      },
-      'king-w': {
-        name:  'King St W',
-        rate:  '$3.50 / hour',
-        hours: 'Mon–Sat 8am–9pm',
-        free:  'Sun all day · Every day after 9pm',
-        tow:   'Tow-away zone: Mon–Fri 7–9am and 3–7pm'
-      }
-    };
 
     function checkStreet() {
       var query  = (document.getElementById('street-search').value || '').trim().toLowerCase();
