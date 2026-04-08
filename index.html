@@ -3635,7 +3635,7 @@
               role: 'user',
               content: [
                 { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-                { type: 'text', text: 'This is a parking or traffic ticket image. Extract details and reply in this EXACT format (no extra text):\nAMOUNT: [fine amount, number only]\nREF: [ticket or reference number]\nPLATE: [vehicle license plate number, or unknown]\nTYPE: [one of: parking, speeding, redlight, careless, stunt, dui, other]\nDATE: [violation date YYYY-MM-DD, or unknown]\nDUE: [payment due date YYYY-MM-DD, or unknown]\nADVICE: [1 clear sentence: dispute chances and recommendation]\n\nIf this is NOT a ticket image, reply exactly: NOT_A_TICKET' }
+                { type: 'text', text: 'This image may be a parking ticket, traffic ticket, toll bill (407 ETR), camera fine, or any other vehicle-related fine or bill. Extract details and reply in this EXACT format (no extra text):\nAMOUNT: [total amount owing, number only, no $ sign]\nREF: [ticket number, reference number, or account number]\nPLATE: [vehicle license plate number, or unknown]\nTYPE: [one of: parking, speeding, redlight, toll, careless, stunt, dui, other]\nDATE: [violation or bill date YYYY-MM-DD, or unknown]\nDUE: [payment due date YYYY-MM-DD, or unknown]\nADVICE: [1 clear sentence: what to do next — pay, dispute, or contact issuer]\n\nIf the image contains NO fine, ticket, or bill of any kind, reply exactly: NOT_A_TICKET' }
               ]
             }]
           })
