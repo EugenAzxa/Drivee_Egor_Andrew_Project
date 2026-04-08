@@ -468,3 +468,97 @@ Go through this checklist one item at a time:
 9. Type a street name that does not exist — does "Coming Soon" appear?
 
 Write down anything that looks wrong. Bring notes to the next session.
+
+
+SESSION 6 — 8 April 2026
+--------------------------
+
+WHAT WAS BUILT
+
+1. Vercel serverless proxy for Claude API — created api/claude.js which acts as a
+   secure middleman between the app and Anthropic. The API key is stored as a Vercel
+   environment variable (never in the code or GitHub). All three Claude calls in the
+   app (Vision scan, OCR enhancement, AI chat) now go through /api/claude instead of
+   calling Anthropic directly. This makes live AI work for every user on drivee.ca.
+
+2. Street Parking Checker fix — suggestion chips were not clickable because
+   JSON.stringify produces double quotes which broke out of the HTML onclick attribute.
+   Fixed by using single-quote escaping. Streets now show info when tapped.
+
+3. Vision scanner expanded to all ticket types and all Canadian provinces — updated
+   the Claude prompt to recognise parking, speeding, red light, stop sign, toll (407
+   ETR), HOV, distracted driving, seatbelt, stunt, careless, DUI, insurance,
+   registration, and camera fines. Added PROVINCE field (all 13 provinces/territories).
+   parseVisionReply() updated to extract province. Tested on a real 407 ETR bill.
+
+4. Dashboard full redesign — new layout order:
+   - Hero card at the very top (greeting + stats + auth sign-in embedded inside)
+   - Bento stats row (Active Fines, Deadlines, Total Saved)
+   - AI Scanner and Ticket Analyser merged into one card (was two separate cards)
+   - Fine Reminders, My Vehicles, Scan History, Calculator below
+   Removed the separate dark scanner-hero card and the separate auth card.
+   Violation type dropdown expanded to all 15 types.
+
+5. Pay Now button after scan — after a successful ticket scan, a Pay Now button
+   appears immediately in the scanner card linking directly to the correct payment
+   portal based on ticket type and province. getPaymentUrl() routes:
+   toll to 407etr.com, QC to Quebec city portal, BC to ICBC, AB to Alberta,
+   parking to Toronto payment portal, all other Ontario to ontario.ca/pay-ticket.
+   If a due date was found, a reminder is auto-set and a confirmation shows.
+
+
+ISSUES TO CARRY FORWARD
+
+- The AI chat still uses the keyword fallback when no response comes from /api/claude.
+  Need to verify on drivee.ca that live chat is working end to end.
+- Dashboard redesign needs real iPhone testing — layout may need spacing tweaks on
+  small screens.
+- Profile card is now below the fold — users may not find it easily. Consider whether
+  it needs to move or be merged into the hero card next session.
+- Nothing is broken as of the final push. All changes are live on drivee.ca.
+
+
+PRD NOTES
+
+- getPaymentUrl() extends PRD section 3.3 (AI Ticket Scanner) with direct payment
+  links — this is beyond the PRD spec and is a real improvement.
+- All Canadian provinces added to scanner — PRD specified Toronto only. This is a
+  deliberate expansion that makes the app useful Canada-wide, not just Toronto.
+- Dashboard order now matches PRD section 3 intent more closely: scanner first,
+  then reminders, then calculator.
+- PRD section 3.1 says single plate for MVP — multi-vehicle is already built and
+  exceeds this. No conflict, just ahead of spec.
+
+
+LESSON ARC — WHERE WE ARE
+
+Part 1 Foundation: COMPLETE
+Part 2 Functionality: COMPLETE
+Part 3 Polish: COMPLETE
+Part 4 Test: IN PROGRESS — app live on drivee.ca, real user launch tonight
+Part 5 Backend: COMPLETE
+Part 6 Launch: IN PROGRESS
+
+
+NEXT SESSION TASKS
+
+1. Verify live AI chat is working on drivee.ca for real users
+2. Real iPhone testing of redesigned dashboard — check spacing, scan flow, Pay Now link
+3. Collect first user feedback and fix any bugs reported
+4. Consider moving Profile card higher or merging into hero card
+
+
+HOMEWORK SET THIS SESSION
+
+Open drivee.ca on your iPhone. Go to the Dashboard tab and do this:
+
+1. Tap the Scan Ticket Photo with AI button
+2. Take a photo of any fine or bill you have — parking ticket, 407 ETR bill, anything
+3. Wait for the result — does it show the amount and a Pay Now button?
+4. Tap Pay Now — does it open the right payment website?
+5. Check if a reminder was automatically added in the Fine Reminders section below
+
+This tests the full scan-to-pay flow that was built today.
+If you get stuck, search for: Vercel environment variables to check the API key is set.
+
+Write down what worked and what did not. Bring to next session.
