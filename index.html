@@ -3635,7 +3635,7 @@
               role: 'user',
               content: [
                 { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
-                { type: 'text', text: 'This image may be a parking ticket, traffic ticket, toll bill (407 ETR), camera fine, or any other vehicle-related fine or bill. Extract details and reply in this EXACT format (no extra text):\nAMOUNT: [total amount owing, number only, no $ sign]\nREF: [ticket number, reference number, or account number]\nPLATE: [vehicle license plate number, or unknown]\nTYPE: [one of: parking, speeding, redlight, toll, careless, stunt, dui, other]\nDATE: [violation or bill date YYYY-MM-DD, or unknown]\nDUE: [payment due date YYYY-MM-DD, or unknown]\nADVICE: [1 clear sentence: what to do next — pay, dispute, or contact issuer]\n\nIf the image contains NO fine, ticket, or bill of any kind, reply exactly: NOT_A_TICKET' }
+                { type: 'text', text: 'You are scanning a document that may be any Canadian vehicle-related fine, ticket, or bill. This includes: parking tickets, speeding tickets, red light camera fines, stop sign fines, stunt driving charges, careless driving charges, DUI/impaired driving charges, toll bills (407 ETR, 412, 418), HOV lane violations, distracted driving fines, seatbelt fines, insurance fines, registration fines, camera enforcement notices, or any other traffic or parking violation from any Canadian province or territory (ON, BC, QC, AB, MB, SK, NS, NB, PE, NL, YT, NT, NU).\n\nExtract all available details and reply in this EXACT format (no extra text):\nAMOUNT: [total amount owing, number only, no $ sign]\nREF: [ticket number, infraction number, reference number, or account number]\nPLATE: [vehicle license plate number, or unknown]\nTYPE: [one of: parking, speeding, redlight, stopsign, toll, hov, distracted, seatbelt, stunt, careless, dui, insurance, registration, camera, other]\nPROVINCE: [2-letter province code where violation occurred, e.g. ON, BC, QC, or unknown]\nDATE: [violation or bill date YYYY-MM-DD, or unknown]\nDUE: [payment due date YYYY-MM-DD, or unknown]\nADVICE: [1 clear practical sentence: dispute chances and what to do next]\n\nIf the image contains NO fine, ticket, or bill of any kind, reply exactly: NOT_A_TICKET' }
               ]
             }]
           })
@@ -3659,13 +3659,14 @@
     function parseVisionReply(text) {
       function grab(rx) { var m = text.match(rx); return m ? m[1].trim() : null; }
       return {
-        amount: grab(/AMOUNT:\s*([\d.]+)/i),
-        ref:    grab(/REF:\s*([^\n]+)/i),
-        plate:  grab(/PLATE:\s*([^\n]+)/i),
-        type:   (grab(/TYPE:\s*(\w+)/i) || '').toLowerCase() || null,
-        date:   grab(/DATE:\s*([^\n]+)/i),
-        due:    grab(/DUE:\s*([^\n]+)/i),
-        advice: grab(/ADVICE:\s*([^\n]+)/i)
+        amount:   grab(/AMOUNT:\s*([\d.]+)/i),
+        ref:      grab(/REF:\s*([^\n]+)/i),
+        plate:    grab(/PLATE:\s*([^\n]+)/i),
+        type:     (grab(/TYPE:\s*(\w+)/i) || '').toLowerCase() || null,
+        province: (grab(/PROVINCE:\s*([^\n]+)/i) || '').toUpperCase() || null,
+        date:     grab(/DATE:\s*([^\n]+)/i),
+        due:      grab(/DUE:\s*([^\n]+)/i),
+        advice:   grab(/ADVICE:\s*([^\n]+)/i)
       };
     }
 
@@ -3787,6 +3788,7 @@
           if (p.ref)    lines.push('Ref: ' + p.ref);
           if (p.plate && p.plate !== 'unknown') lines.push('Plate: ' + p.plate);
           if (p.type)   lines.push('Type: ' + p.type);
+          if (p.province && p.province !== 'UNKNOWN') lines.push('Province: ' + p.province);
           if (p.date && p.date !== 'unknown') lines.push('Date: ' + p.date);
           if (p.due  && p.due  !== 'unknown') lines.push('Due: ' + p.due);
           if (p.advice) lines.push('\n' + p.advice);
