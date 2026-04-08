@@ -811,6 +811,36 @@
        SUPPORT BANNER
     =================================================== */
     /* ===================================================
+       MY VEHICLES — car list, emoji picker, filter chips
+    =================================================== */
+    .car-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+    .car-chip {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 14px; background: var(--elevated);
+      border: 1px solid var(--border); border-radius: 12px;
+    }
+    .car-chip-emoji { font-size: 28px; flex-shrink: 0; line-height: 1; }
+    .car-chip-info  { flex: 1; min-width: 0; }
+    .car-chip-nickname { font-size: 14px; font-weight: 600; color: var(--text-primary); }
+    .car-chip-plate    { font-size: 12px; color: var(--text-secondary); font-family: 'JetBrains Mono', monospace; margin-top: 2px; }
+    .car-chip-delete   { background: none; border: none; color: var(--text-tertiary); font-size: 20px; cursor: pointer; padding: 4px 6px; line-height: 1; }
+    @media (hover: hover) { .car-chip-delete:hover { color: var(--red); } }
+
+    .add-car-form { display: none; margin-top: 12px; padding: 14px; background: var(--elevated); border-radius: 12px; border: 1px solid var(--border); }
+    .add-car-form.open { display: block; }
+    .add-car-label { font-size: 12px; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.4px; margin-bottom: 8px; }
+    .emoji-picker  { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+    .emoji-opt { font-size: 24px; padding: 6px 8px; border-radius: 8px; border: 2px solid transparent; background: var(--surface); cursor: pointer; transition: border-color 0.15s; }
+    .emoji-opt.selected { border-color: var(--blue); background: rgba(37,99,235,0.08); }
+
+    .car-filter-row { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 12px; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+    .car-filter-row::-webkit-scrollbar { display: none; }
+    .car-filter-chip { flex-shrink: 0; padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--surface); font-size: 13px; font-weight: 500; color: var(--text-secondary); cursor: pointer; white-space: nowrap; transition: background 0.15s, color 0.15s; }
+    .car-filter-chip.active { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+    .reminder-car-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--text-secondary); background: var(--elevated); border: 1px solid var(--border); border-radius: 6px; padding: 2px 7px; margin-top: 6px; }
+
+    /* ===================================================
        PROFILE SHEET — slide-up panel from top-bar profile button
     =================================================== */
     .profile-overlay {
@@ -2460,6 +2490,30 @@
         </div>
       </div>
 
+      <!-- My Vehicles Card -->
+      <div class="card">
+        <div class="card-title">🚘 My Vehicles</div>
+        <div class="card-subtitle">Track tickets per car</div>
+        <div class="car-list" id="car-list"></div>
+        <button class="btn btn-secondary" id="add-car-toggle" onclick="toggleAddCarForm()">+ Add Vehicle</button>
+        <div class="add-car-form" id="add-car-form">
+          <div class="add-car-label">Pick an emoji</div>
+          <div class="emoji-picker" id="emoji-picker"></div>
+          <div class="input-group" style="margin-bottom:10px">
+            <label>Nickname</label>
+            <input type="text" id="car-nickname" placeholder="e.g. My Honda" />
+          </div>
+          <div class="input-group" style="margin-bottom:12px">
+            <label>License Plate</label>
+            <input type="text" id="car-plate" placeholder="e.g. ABCD 123" />
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary" style="flex:1" onclick="addCar()">Save Vehicle</button>
+            <button class="btn btn-secondary" onclick="toggleAddCarForm()">Cancel</button>
+          </div>
+        </div>
+      </div>
+
       <!-- Profile Card -->
       <div class="card">
         <div class="card-title">Your Profile</div>
@@ -2541,9 +2595,18 @@
           <label for="reminder-date">Due Date</label>
           <input type="date" id="reminder-date" />
         </div>
+        <div class="input-group" id="reminder-car-group">
+          <label for="reminder-car-select">Vehicle (optional)</label>
+          <select id="reminder-car-select">
+            <option value="">All vehicles</option>
+          </select>
+        </div>
         <button class="btn btn-primary" id="add-reminder-btn" onclick="addReminder()">Add Reminder</button>
 
         <div class="divider"></div>
+
+        <!-- Car filter chips — shown when 2+ cars exist -->
+        <div class="car-filter-row" id="car-filter-row" style="display:none"></div>
 
         <!-- Reminder cards render here -->
         <div id="reminders-list"></div>
@@ -4158,12 +4221,15 @@
         }
         return;
       }
+      var carSel  = document.getElementById('reminder-car-select');
+      var carId   = carSel ? carSel.value : '';
       var reminders = safeGet(REMINDERS_KEY) || [];
       // Collision-safe ID: timestamp + random suffix
       reminders.push({
         id:      Date.now() + '_' + Math.floor(Math.random() * 9999),
         ref:     ref,
-        dueDate: date
+        dueDate: date,
+        carId:   carId || null
       });
       var localId = reminders[reminders.length - 1].id;
       safeSet(REMINDERS_KEY, reminders);
@@ -4309,14 +4375,25 @@
 
     function renderReminders() {
       var list      = document.getElementById('reminders-list');
-      var reminders = safeGet(REMINDERS_KEY) || [];
+      var allReminders = safeGet(REMINDERS_KEY) || [];
+      var cars      = safeGet(CARS_KEY) || [];
 
-      if (reminders.length === 0) {
+      // Filter by selected car
+      var reminders = activeCarFilter === 'all'
+        ? allReminders
+        : allReminders.filter(function(r) { return r.carId === activeCarFilter; });
+
+      if (allReminders.length === 0) {
         list.innerHTML =
           '<div class="empty-state">' +
             '<div class="empty-state-icon">🔔</div>' +
             'No reminders yet — add one above' +
           '</div>';
+        return;
+      }
+
+      if (reminders.length === 0) {
+        list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🔔</div>No reminders for this vehicle</div>';
         return;
       }
 
@@ -4335,15 +4412,21 @@
 
       // esc() wraps all user-supplied values before they touch innerHTML
       list.innerHTML = notifBanner + reminders.map(function (r) {
-        var status = getStatus(r.dueDate);
+        var status   = getStatus(r.dueDate);
         var safeRef  = esc(r.ref);
         var safeDate = esc(r.dueDate);
+        // Find the car this reminder belongs to
+        var car = r.carId ? cars.find(function(c) { return c.id === r.carId; }) : null;
+        var carBadge = car
+          ? '<div class="reminder-car-badge">' + car.emoji + ' ' + esc(car.nickname) + ' · ' + esc(car.plate) + '</div>'
+          : '';
         return (
           '<div class="reminder-card">' +
             '<div class="reminder-top">' +
               '<div class="reminder-info">' +
                 '<div class="reminder-ref">' + safeRef + '</div>' +
                 '<div class="reminder-due">Due: ' + formatDate(r.dueDate) + '</div>' +
+                carBadge +
               '</div>' +
               '<span class="badge ' + status.cls + '">' + status.label + '</span>' +
               '<button class="reminder-delete" onclick="deleteReminder(\'' + r.id + '\')" title="Delete">&times;</button>' +
@@ -4591,6 +4674,7 @@
       // Load cloud data and overwrite local cache
       loadProfileFromSupabase();
       loadRemindersFromSupabase();
+      loadCarsFromSupabase();
       showToast('Signed in as ' + email);
     }
 
@@ -4730,11 +4814,159 @@
       }
     }
 
+    // ── Cars sync ─────────────────────────────────────────
+    function loadCarsFromSupabase() {
+      if (!db || !currentUser) return;
+      db.from('cars').select('id, nickname, plate, emoji').eq('user_id', currentUser.id).order('created_at')
+        .then(function(res) {
+          if (res.data && res.data.length > 0) {
+            safeSet(CARS_KEY, res.data);
+            renderCars();
+          }
+        });
+    }
+
+    function addCarToSupabase(car) {
+      if (!db || !currentUser) return;
+      db.from('cars').insert({ user_id: currentUser.id, nickname: car.nickname, plate: car.plate, emoji: car.emoji })
+        .select('id').single()
+        .then(function(res) {
+          if (res.data) {
+            var cars = (safeGet(CARS_KEY) || []).map(function(c) {
+              return c.id === car.id ? Object.assign({}, c, { id: res.data.id }) : c;
+            });
+            safeSet(CARS_KEY, cars);
+            renderCars();
+          }
+        });
+    }
+
+    function deleteCarFromSupabase(id) {
+      if (!db || !currentUser) return;
+      if (/^[0-9a-f-]{36}$/i.test(id)) {
+        db.from('cars').delete().eq('id', id).eq('user_id', currentUser.id)
+          .then(function(res) {
+            if (res.error) console.warn('Drivee: car delete error', res.error.message);
+          });
+      }
+    }
+
+    // ===================================================
+    // MY VEHICLES
+    // ===================================================
+    var CARS_KEY         = 'drivee_cars';
+    var selectedCarEmoji = '🚗';
+    var activeCarFilter  = 'all';
+    var CAR_EMOJIS       = ['🚗','🚕','🚙','🏎','🛻','🚐','🚑','🚒','🚓','🚌','🚎','🛺'];
+
+    function toggleAddCarForm() {
+      var form = document.getElementById('add-car-form');
+      form.classList.toggle('open');
+      if (form.classList.contains('open')) {
+        // Build emoji picker
+        var picker = document.getElementById('emoji-picker');
+        picker.innerHTML = CAR_EMOJIS.map(function(e) {
+          return '<button class="emoji-opt' + (e === selectedCarEmoji ? ' selected' : '') + '" onclick="selectEmoji(\'' + e + '\')">' + e + '</button>';
+        }).join('');
+        document.getElementById('car-nickname').value = '';
+        document.getElementById('car-plate').value    = '';
+      }
+    }
+
+    function selectEmoji(emoji) {
+      selectedCarEmoji = emoji;
+      document.querySelectorAll('.emoji-opt').forEach(function(btn) {
+        btn.classList.toggle('selected', btn.textContent === emoji);
+      });
+    }
+
+    function addCar() {
+      var nickname = document.getElementById('car-nickname').value.trim();
+      var plate    = document.getElementById('car-plate').value.trim().toUpperCase();
+      if (!nickname || !plate) { showToast('Enter a nickname and plate'); return; }
+      var car = { id: Date.now() + '_' + Math.floor(Math.random()*9999), emoji: selectedCarEmoji, nickname: nickname, plate: plate };
+      var cars = safeGet(CARS_KEY) || [];
+      cars.push(car);
+      safeSet(CARS_KEY, cars);
+      addCarToSupabase(car);
+      toggleAddCarForm();
+      renderCars();
+      showToast(car.emoji + ' ' + nickname + ' added');
+    }
+
+    function deleteCar(id) {
+      var cars = (safeGet(CARS_KEY) || []).filter(function(c) { return c.id !== id; });
+      safeSet(CARS_KEY, cars);
+      deleteCarFromSupabase(id);
+      // Clear any reminders linked to this car from local storage
+      var reminders = (safeGet(REMINDERS_KEY) || []).map(function(r) {
+        return r.carId === id ? Object.assign({}, r, { carId: null }) : r;
+      });
+      safeSet(REMINDERS_KEY, reminders);
+      if (activeCarFilter === id) activeCarFilter = 'all';
+      renderCars();
+      renderReminders();
+      showToast('Vehicle removed');
+    }
+
+    function renderCars() {
+      var cars  = safeGet(CARS_KEY) || [];
+      var list  = document.getElementById('car-list');
+      if (!list) return;
+
+      if (cars.length === 0) {
+        list.innerHTML = '<div class="empty-state" style="margin-bottom:0"><div class="empty-state-icon">🚗</div>No vehicles yet — add one below</div>';
+      } else {
+        list.innerHTML = cars.map(function(c) {
+          return '<div class="car-chip">' +
+            '<div class="car-chip-emoji">' + c.emoji + '</div>' +
+            '<div class="car-chip-info">' +
+              '<div class="car-chip-nickname">' + esc(c.nickname) + '</div>' +
+              '<div class="car-chip-plate">' + esc(c.plate) + '</div>' +
+            '</div>' +
+            '<button class="car-chip-delete" onclick="deleteCar(\'' + c.id + '\')" title="Remove">&times;</button>' +
+          '</div>';
+        }).join('');
+      }
+
+      // Update car selector in reminder form
+      var sel = document.getElementById('reminder-car-select');
+      if (sel) {
+        sel.innerHTML = '<option value="">All vehicles</option>' +
+          cars.map(function(c) {
+            return '<option value="' + c.id + '">' + c.emoji + ' ' + esc(c.nickname) + ' — ' + esc(c.plate) + '</option>';
+          }).join('');
+      }
+
+      // Show/hide filter row (only if 2+ cars)
+      var filterRow = document.getElementById('car-filter-row');
+      if (filterRow) {
+        if (cars.length >= 1) {
+          filterRow.style.display = 'flex';
+          filterRow.innerHTML =
+            '<button class="car-filter-chip' + (activeCarFilter === 'all' ? ' active' : '') + '" onclick="setCarFilter(\'all\',this)">All</button>' +
+            cars.map(function(c) {
+              return '<button class="car-filter-chip' + (activeCarFilter === c.id ? ' active' : '') + '" onclick="setCarFilter(\'' + c.id + '\',this)">' + c.emoji + ' ' + esc(c.nickname) + '</button>';
+            }).join('');
+        } else {
+          filterRow.style.display = 'none';
+        }
+      }
+    }
+
+    function setCarFilter(id, btn) {
+      activeCarFilter = id;
+      document.querySelectorAll('.car-filter-chip').forEach(function(c) { c.classList.remove('active'); });
+      btn.classList.add('active');
+      renderReminders();
+    }
+
     // ===================================================
     // ON LOAD — show Dashboard tab by default
     // ===================================================
     showTab('tab-dashboard');
     loadProfile();      // Populate name + plate if previously saved
+    renderCars();       // Render saved vehicles on startup
     renderReminders();  // Render any saved reminders on startup
     updateHeroCard();   // Sync hero card stats on load
     initSupabase();     // Start Supabase auth listener (non-blocking)
