@@ -3019,8 +3019,11 @@
             <textarea id="report-desc" rows="3" placeholder="Describe the issue briefly…"></textarea>
           </div>
 
-          <button class="btn btn-primary" onclick="submitReport()">📍 Pin on Map &amp; Email 311</button>
-          <button class="btn btn-secondary" onclick="cancelReport()" style="margin-top: 8px;">Cancel</button>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-top:4px">
+            <button class="btn btn-primary" id="report-btn-both" onclick="submitReport('both')">📍 Pin on Map &amp; Email 311</button>
+            <button class="btn btn-secondary" id="report-btn-map" onclick="submitReport('map')">📍 Pin on Map Only</button>
+            <button class="btn btn-secondary" onclick="cancelReport()" style="color:var(--red)">Cancel</button>
+          </div>
         </div>
 
         <!-- Submitted reports list — rendered by JS -->
@@ -4171,9 +4174,10 @@
       reader.readAsDataURL(file);
     }
 
-    // Called when user taps "Pin on Map & Email 311".
-    function submitReport() {
+    // mode = 'both' (pin + email) or 'map' (pin only)
+    function submitReport(mode) {
       if (!selectedIssueType) return;
+      mode = mode || 'both';
 
       var desc      = document.getElementById('report-desc').value.trim();
       var label     = ISSUE_LABELS[selectedIssueType];
@@ -4181,8 +4185,11 @@
       var id        = Date.now() + '_' + Math.floor(Math.random() * 9999);
       var photoFile = document.getElementById('report-photo').files[0];
 
-      var submitBtn = document.querySelector('#report-form .btn-primary');
-      if (submitBtn) { submitBtn.textContent = '📍 Getting your location…'; submitBtn.disabled = true; }
+      // Disable both action buttons while locating
+      var btnBoth = document.getElementById('report-btn-both');
+      var btnMap  = document.getElementById('report-btn-map');
+      if (btnBoth) { btnBoth.disabled = true; }
+      if (btnMap)  { btnMap.disabled  = true; btnMap.textContent = '📍 Getting location…'; }
 
       // Helper — finalises and saves the report once we have coords + optional photo
       function finaliseReport(lat, lng, photoDataUrl) {
@@ -4208,21 +4215,26 @@
           if (driveeMap) driveeMap.setView([lat, lng], 17);
         }, 300);
 
-        var subject = encodeURIComponent('Community Report: ' + label);
-        var body = encodeURIComponent(
-          'Issue Type: ' + label + '\n' +
-          'Date: ' + date + '\n' +
-          'Location: ' + lat.toFixed(6) + ', ' + lng.toFixed(6) + '\n' +
-          (desc ? 'Description: ' + desc + '\n' : '') +
-          '\nSubmitted via Drivee app.\nPlease find my photo attached.'
-        );
-        window.location.href = 'mailto:311@toronto.ca?subject=' + subject + '&body=' + body;
+        if (mode === 'both') {
+          var subject = encodeURIComponent('Community Report: ' + label);
+          var body = encodeURIComponent(
+            'Issue Type: ' + label + '\n' +
+            'Date: ' + date + '\n' +
+            'Location: ' + lat.toFixed(6) + ', ' + lng.toFixed(6) + '\n' +
+            (desc ? 'Description: ' + desc + '\n' : '') +
+            '\nSubmitted via Drivee app.\nPlease find my photo attached.'
+          );
+          window.location.href = 'mailto:311@toronto.ca?subject=' + subject + '&body=' + body;
+          showToast('📍 Pinned on map — email to 311 opened');
+        } else {
+          showToast('📍 Report pinned on map');
+        }
 
-        showToast('📍 Report pinned on map!');
         cancelReport();
         renderReportCount();
         renderReportsList();
-        if (submitBtn) { submitBtn.textContent = '📍 Pin on Map & Email 311'; submitBtn.disabled = false; }
+        if (btnBoth) { btnBoth.disabled = false; }
+        if (btnMap)  { btnMap.disabled = false; btnMap.textContent = '📍 Pin on Map Only'; }
       }
 
       // Resize photo to thumbnail (max 300px) to fit in localStorage
