@@ -349,3 +349,122 @@ Deploy the app using Netlify Drop:
 6. Test all 5 tabs and write down anything that looks wrong on the real screen
 
 This should take 10 minutes. Bring the live URL and your notes to the next session.
+
+
+SESSION 5 — 7 April 2026
+--------------------------
+
+WHAT WAS BUILT
+
+1. Supabase backend integration — full cloud sync added. Users can sign in with a magic
+   link (email only, no password). Profile, reminders, and cars all save to Supabase when
+   signed in, with localStorage as the offline fallback layer. Row Level Security (RLS)
+   means each user can only see their own data.
+
+2. Profile sheet — tapping the profile button in the top bar opens a slide-up sheet.
+   When signed out it shows an email input and Send Magic Link button. When signed in it
+   shows avatar initial, name, email, plate, reminder count, and a Sign Out button.
+   The sheet uses the same CSS slide-up pattern as the chat panel.
+
+3. Email memory — after a successful sign-in, the email address is saved to localStorage.
+   Next time the user opens the app both email input fields (top bar and profile sheet)
+   are pre-filled automatically so they never have to type it again.
+
+4. GPS Guardian auto-restart — the browser cannot run GPS in the background, but the app
+   now saves a GPS_KEY flag to localStorage when GPS is turned on and removes it when
+   turned off. On every app open, if the flag is present, GPS restarts automatically.
+
+5. Multi-vehicle support — users can add multiple cars to their profile, each with an
+   emoji, nickname, and licence plate. Cars are stored in a Supabase "cars" table (SQL
+   provided to student) and in localStorage offline. Each reminder can be linked to a
+   specific car. Cars show as selectable chips in the Add Reminder form.
+
+6. 407 ETR and Quebec payment links added to Services tab — "Pay 407 ETR Bill" button
+   links to 407etr.com/en/pay-your-bill and "Pay Quebec Traffic Fine" links to the
+   Quebec city constat infraction page.
+
+7. Claude Vision ticket scanning — added to three entry points: Dashboard scan button,
+   Legal tab, and AI chat panel. A single scanTicketWithVision() function sends the photo
+   to Claude Haiku as base64 and asks it to extract AMOUNT, REF, PLATE, TYPE, DATE, DUE,
+   ADVICE. Falls back to Tesseract.js OCR if no API key is set. HEIC iPhone photos are
+   handled by forcing media type to image/jpeg.
+
+8. Scan auto-fill — after a successful scan, the app automatically: saves the licence
+   plate to the profile (if none saved yet), adds a due-date reminder (if not already
+   present), generates a thumbnail (max 300px, JPEG 0.7), and stores the scan in a
+   history list visible in the Dashboard. The same logic runs regardless of which entry
+   point triggered the scan.
+
+9. Map report form updated — the "Report Issue" form on the Hotspots map now has three
+   buttons: "Pin on Map & Email 311" (sends both), "Pin on Map Only" (local only), and
+   "Cancel". Report GPS now uses the device's real location via getCurrentPosition(),
+   falling back to Toronto centre only if GPS is denied.
+
+10. Street Parking Checker expanded — replaced the 5-item hardcoded dropdown with a live
+    text search across 40 Toronto streets. As you type, matching streets appear as
+    suggestion chips. Selecting a chip shows the full parking info card. If no streets
+    match the query, a "Coming Soon" empty state is shown instead of an error.
+
+11. MapTiler Streets v2 tiles — Leaflet map switched from CartoDB Voyager to MapTiler
+    Streets v2 for a cleaner, more detailed base map. Uses API key already embedded.
+
+12. App deployed to drivee.ca — connected to Vercel via GitHub. Every push to main
+    auto-deploys. Live URL: drivee.ca.
+
+
+ISSUES TO CARRY FORWARD
+
+- CLAUDE_API_KEY is still empty — Vision scanning and live AI chat require the student
+  to paste their Anthropic API key into the CLAUDE_API_KEY variable in the JS.
+- Supabase cars table SQL was provided but must be run by the student in the Supabase
+  SQL Editor before multi-vehicle sync works in production.
+- Real iPhone testing on the live drivee.ca URL has not been done this session.
+- Cars created offline do not retroactively sync to Supabase after sign-in (minor gap,
+  acceptable for MVP).
+
+
+PRD NOTES
+
+- Supabase replaces the IndexedDB spec from the PRD — more suitable for a mobile-first
+  single-file app with no build step. Functionally exceeds PRD requirements for sync.
+- Multi-vehicle (section not in original PRD) matches the Replit reference app.
+- Claude Vision ticket scanning (not in original PRD) matches the Replit reference app.
+- All other PRD sections remain as previously noted.
+
+
+LESSON ARC — WHERE WE ARE
+
+Part 1 Foundation: COMPLETE
+Part 2 Functionality: COMPLETE
+Part 3 Polish: COMPLETE
+Part 4 Test: PARTIALLY DONE (Vercel/GitHub deployment complete, real iPhone testing pending)
+Part 5 Backend: COMPLETE (Supabase auth + sync)
+
+
+NEXT SESSION — API key + real iPhone test
+
+Priority order for next session:
+1. Add Claude API key — paste Anthropic key into CLAUDE_API_KEY variable to unlock
+   Vision scanning and live AI chat.
+2. Real iPhone test on drivee.ca — open in Safari on iPhone, test all 5 tabs, both
+   auth flows (sign in, sign out), scan a ticket photo, add a reminder, check map.
+3. Fix any bugs found during real-device testing.
+4. Run Supabase cars table SQL if not already done.
+
+
+HOMEWORK SET THIS SESSION
+
+Open drivee.ca on your iPhone in Safari.
+Go through this checklist one item at a time:
+
+1. Does the splash screen and onboarding appear on first load?
+2. Tap the profile icon — does the sheet slide up?
+3. Enter your email and tap Send Magic Link — do you get an email?
+4. Tap the link in the email — does the app sign you in?
+5. Does your name/plate appear in the profile sheet after sign-in?
+6. Add a reminder — does it appear with the correct badge colour?
+7. On the Hotspots tab, tap a map marker — does the report form have 3 buttons?
+8. On Services, type "Yonge" in the street checker — does info appear?
+9. Type a street name that does not exist — does "Coming Soon" appear?
+
+Write down anything that looks wrong. Bring notes to the next session.
