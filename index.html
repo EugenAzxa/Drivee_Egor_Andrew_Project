@@ -1651,6 +1651,39 @@
       transition: opacity 0.2s, transform 0.15s;
     }
     .chat-send:active { transform: scale(0.93); }
+    .chat-photo-btn {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--elevated); color: var(--text-secondary);
+      border: 1.5px solid var(--border); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0; transition: color 0.15s, border-color 0.15s;
+    }
+    @media (hover: hover) { .chat-photo-btn:hover { color: var(--blue); border-color: var(--blue); } }
+    .chat-photo-btn:active { transform: scale(0.93); }
+    /* Vision scan status inside Legal hero */
+    .vision-scan-status {
+      margin-top: 12px; padding: 10px 14px; border-radius: 10px;
+      font-size: 13px; text-align: center; display: none;
+      background: rgba(37,99,235,0.08); border: 1px solid rgba(37,99,235,0.2);
+      color: var(--blue); animation: pulse 1.5s ease-in-out infinite;
+    }
+    .vision-scan-status.done {
+      animation: none; background: rgba(34,197,94,0.08);
+      border-color: rgba(34,197,94,0.25); color: #15803D;
+    }
+    .vision-scan-status.error {
+      animation: none; background: rgba(239,68,68,0.08);
+      border-color: rgba(239,68,68,0.2); color: var(--red);
+    }
+    /* Legal hero photo button */
+    .ai-advisor-photo-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 11px; border-radius: 10px; margin-bottom: 10px;
+      background: rgba(255,255,255,0.15); color: #fff;
+      border: 1.5px dashed rgba(255,255,255,0.4); cursor: pointer; font-size: 14px;
+      font-weight: 500; transition: background 0.15s;
+    }
+    .ai-advisor-photo-btn:active { background: rgba(255,255,255,0.25); }
 
     /* ===================================================
        BACKGROUND AURORA ANIMATION — floating colour orbs
@@ -2398,7 +2431,11 @@
     </div>
     <div class="chat-suggestions" id="chat-suggestions"></div>
     <div class="chat-input-row">
-      <input type="text" id="chat-input" class="chat-input" placeholder="Type your question…"
+      <input type="file" id="chat-photo-input" accept="image/*" capture="environment" style="display:none" onchange="scanTicketFromChat()" />
+      <button class="chat-photo-btn" onclick="document.getElementById('chat-photo-input').click()" title="Scan ticket photo">
+        <i class="fa-solid fa-camera"></i>
+      </button>
+      <input type="text" id="chat-input" class="chat-input" placeholder="Type or scan a ticket…"
         onkeydown="if(event.key==='Enter'){sendChatMessage();event.preventDefault()}">
       <button class="chat-send" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
     </div>
@@ -2969,9 +3006,17 @@
       <div class="ai-advisor-hero">
         <div class="ai-advisor-icon"><i class="fa-solid fa-brain"></i></div>
         <div class="ai-advisor-title">AI Ticket Advisor</div>
-        <div class="ai-advisor-sub">Analyze your ticket severity instantly</div>
+        <div class="ai-advisor-sub">Photo scan or describe — get instant verdict</div>
+
+        <!-- Photo scan — Claude Vision reads the ticket directly -->
+        <input type="file" id="legal-photo" accept="image/*" capture="environment" style="display:none" onchange="scanLegalPhoto()" />
+        <button class="ai-advisor-photo-btn" onclick="document.getElementById('legal-photo').click()">
+          <i class="fa-solid fa-camera"></i> Scan Ticket Photo with AI
+        </button>
+        <div class="vision-scan-status" id="legal-scan-status"></div>
+
         <div class="ai-advisor-input-wrap">
-          <textarea id="legal-textarea" class="ai-advisor-input" rows="2" placeholder="Describe your ticket or violation…"></textarea>
+          <textarea id="legal-textarea" class="ai-advisor-input" rows="2" placeholder="Or describe your ticket / violation…"></textarea>
         </div>
         <button class="btn ai-advisor-btn" onclick="analyseTicketFromLegal()">
           <i class="fa-solid fa-sparkles"></i> Analyze My Ticket
@@ -3403,14 +3448,69 @@
       var file = document.getElementById('ticket-photo').files[0];
       if (!file) return;
 
+      var statusEl = document.getElementById('scan-status');
+      statusEl.style.display = 'block';
+      statusEl.textContent   = '🤖 Claude Vision reading your ticket…';
+      statusEl.style.animation = 'pulse 1.5s ease-in-out infinite';
+      statusEl.style.background = 'rgba(37,99,235,0.07)';
+      statusEl.style.borderColor = 'rgba(37,99,235,0.2)';
+      statusEl.style.color = 'var(--blue)';
+
+      // Try Claude Vision first — much more accurate than OCR
+      if (CLAUDE_API_KEY) {
+        scanTicketWithVision(file,
+          function(text) {
+            var p = parseVisionReply(text);
+            if (p.amount) document.getElementById('ticket-amount').value = parseFloat(p.amount);
+            if (p.type) {
+              var sel = document.getElementById('ticket-type');
+              if (sel && ['parking','speeding','redlight','careless','stunt','dui','other'].indexOf(p.type) !== -1) sel.value = p.type;
+            }
+            if (p.ref) {
+              var rf = document.getElementById('verdict-ref');
+              if (rf) rf.value = p.ref;
+              var rr = document.getElementById('reminder-ref');
+              if (rr && !rr.value) rr.value = p.ref;
+            }
+            if (p.due && p.due !== 'unknown') {
+              var rd = document.getElementById('reminder-date');
+              if (rd && !rd.value) rd.value = p.due;
+            }
+            var found = [];
+            if (p.amount) found.push('$' + p.amount);
+            if (p.ref)    found.push(p.ref);
+            if (p.type)   found.push(p.type);
+            statusEl.style.animation = 'none';
+            statusEl.style.background = 'rgba(34,197,94,0.08)';
+            statusEl.style.borderColor = 'rgba(34,197,94,0.25)';
+            statusEl.style.color = 'var(--green)';
+            statusEl.textContent = '✅ Claude found: ' + (found.join(' · ') || 'details extracted') + ' — tap Get Verdict';
+          },
+          function() {
+            // Vision failed — fall back to Tesseract
+            runTesseractFallback(file, statusEl);
+          }
+        );
+        return;
+      }
+
+      // No API key — use Tesseract OCR fallback
+      if (typeof Tesseract === 'undefined') {
+        statusEl.style.animation = 'none';
+        statusEl.style.color = 'var(--warning)';
+        statusEl.textContent = '⚠️ Scanner not loaded — add a Claude API key for Vision scanning';
+        return;
+      }
+      runTesseractFallback(file, statusEl);
+    }
+
+    function runTesseractFallback(file, statusEl) {
+      statusEl.textContent = '📷 Reading ticket with OCR…';
+
       if (typeof Tesseract === 'undefined') {
         showToast('Scanner not loaded — check your internet connection');
         return;
       }
-
-      var statusEl = document.getElementById('scan-status');
-      statusEl.style.display = 'block';
-      statusEl.textContent   = '📷 Reading your ticket…';
 
       Tesseract.recognize(file, 'eng', {
         // No logger callback — keeps it simple
@@ -3486,6 +3586,154 @@
     }
 
     // Send raw OCR text to Claude for smart ticket extraction
+    // ===================================================
+    // CLAUDE VISION — direct image analysis (no OCR needed)
+    // Used by: Dashboard scanner, Legal tab, Chat panel
+    // Falls back gracefully when no API key is set.
+    // ===================================================
+
+    // Core function — sends image to Claude Vision, calls onResult(text) or onError(msg)
+    function scanTicketWithVision(file, onResult, onError) {
+      if (!CLAUDE_API_KEY) { onError('no_key'); return; }
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var dataUrl   = e.target.result;
+        var base64    = dataUrl.split(',')[1];
+        var mediaType = (file.type && file.type.startsWith('image/')) ? file.type : 'image/jpeg';
+        // HEIC not supported by Claude — treat as jpeg
+        if (mediaType === 'image/heic' || mediaType === 'image/heif') mediaType = 'image/jpeg';
+
+        fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': CLAUDE_API_KEY,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true'
+          },
+          body: JSON.stringify({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 500,
+            messages: [{
+              role: 'user',
+              content: [
+                { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+                { type: 'text', text: 'This is a parking or traffic ticket image. Extract details and reply in this EXACT format (no extra text):\nAMOUNT: [fine amount, number only]\nREF: [ticket or reference number]\nTYPE: [one of: parking, speeding, redlight, careless, stunt, dui, other]\nDATE: [violation date YYYY-MM-DD, or unknown]\nDUE: [payment due date YYYY-MM-DD, or unknown]\nADVICE: [1 clear sentence: dispute chances and recommendation]\n\nIf this is NOT a ticket image, reply exactly: NOT_A_TICKET' }
+              ]
+            }]
+          })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.error) { onError(data.error.message || 'API error'); return; }
+          var text = data.content && data.content[0] ? data.content[0].text.trim() : '';
+          if (text === 'NOT_A_TICKET' || text.indexOf('NOT_A_TICKET') !== -1) {
+            onError('No ticket detected — try a clearer photo');
+          } else {
+            onResult(text);
+          }
+        })
+        .catch(function() { onError('Could not reach Claude — check your internet'); });
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Parse the structured Claude Vision reply into fields
+    function parseVisionReply(text) {
+      return {
+        amount:  (text.match(/AMOUNT:\s*([\d.]+)/i)  || [])[1] || null,
+        ref:     (text.match(/REF:\s*([^\n]+)/i)      || [])[1] ? (text.match(/REF:\s*([^\n]+)/i)[1].trim()) : null,
+        type:    (text.match(/TYPE:\s*(\w+)/i)         || [])[1] ? (text.match(/TYPE:\s*(\w+)/i)[1].toLowerCase()) : null,
+        date:    (text.match(/DATE:\s*([^\n]+)/i)      || [])[1] ? (text.match(/DATE:\s*([^\n]+)/i)[1].trim()) : null,
+        due:     (text.match(/DUE:\s*([^\n]+)/i)       || [])[1] ? (text.match(/DUE:\s*([^\n]+)/i)[1].trim()) : null,
+        advice:  (text.match(/ADVICE:\s*([^\n]+)/i)    || [])[1] ? (text.match(/ADVICE:\s*([^\n]+)/i)[1].trim()) : null
+      };
+    }
+
+    // ── Legal tab photo scan ──────────────────────────────
+    function scanLegalPhoto() {
+      var file = document.getElementById('legal-photo').files[0];
+      if (!file) return;
+      var status = document.getElementById('legal-scan-status');
+      status.className = 'vision-scan-status';
+      status.style.display = 'block';
+      status.textContent = '🤖 Claude is reading your ticket…';
+
+      if (!CLAUDE_API_KEY) {
+        status.className = 'vision-scan-status error';
+        status.textContent = '⚠️ Add your Claude API key in the code to enable Vision scanning';
+        return;
+      }
+
+      scanTicketWithVision(file,
+        function(text) {
+          var p = parseVisionReply(text);
+          // Fill the textarea with a human summary
+          var lines = [];
+          if (p.amount) lines.push('Fine: $' + p.amount);
+          if (p.ref)    lines.push('Ref: ' + p.ref);
+          if (p.type)   lines.push('Type: ' + p.type);
+          if (p.date && p.date !== 'unknown') lines.push('Date: ' + p.date);
+          if (p.due  && p.due  !== 'unknown') lines.push('Due: ' + p.due);
+          if (p.advice) lines.push('\n' + p.advice);
+          document.getElementById('legal-textarea').value = lines.join('\n');
+
+          // Also pre-fill Dashboard reminder ref
+          if (p.ref) {
+            var rr = document.getElementById('reminder-ref');
+            if (rr && !rr.value) rr.value = p.ref;
+          }
+          if (p.due && p.due !== 'unknown') {
+            var rd = document.getElementById('reminder-date');
+            if (rd && !rd.value) rd.value = p.due;
+          }
+
+          status.className = 'vision-scan-status done';
+          status.textContent = '✅ Ticket scanned — review details and tap Analyze';
+        },
+        function(err) {
+          status.className = 'vision-scan-status error';
+          status.textContent = '⚠️ ' + err;
+        }
+      );
+    }
+
+    // ── Chat panel photo scan ─────────────────────────────
+    function scanTicketFromChat() {
+      var file = document.getElementById('chat-photo-input').files[0];
+      if (!file) return;
+
+      if (!CLAUDE_API_KEY) {
+        appendChatMessage('bot', "⚠️ Vision scanning needs a Claude API key. Ask the developer to add it, or describe your ticket in text.");
+        return;
+      }
+
+      appendChatMessage('user', '📷 [Ticket photo attached]');
+      showChatTyping(true);
+
+      scanTicketWithVision(file,
+        function(text) {
+          showChatTyping(false);
+          var p = parseVisionReply(text);
+          var msg = '📋 **Ticket scanned:**\n';
+          if (p.amount) msg += '• Fine: **$' + p.amount + '**\n';
+          if (p.ref)    msg += '• Ref: ' + p.ref + '\n';
+          if (p.type)   msg += '• Type: ' + p.type + '\n';
+          if (p.due && p.due !== 'unknown') msg += '• Due: ' + p.due + '\n';
+          if (p.advice) msg += '\n' + p.advice;
+          appendChatMessage('bot', msg);
+          // Reset input
+          document.getElementById('chat-photo-input').value = '';
+        },
+        function(err) {
+          showChatTyping(false);
+          appendChatMessage('bot', '⚠️ ' + err + '. Try typing your ticket details instead.');
+          document.getElementById('chat-photo-input').value = '';
+        }
+      );
+    }
+
     function scanWithClaude(ocrText, statusEl) {
       fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
