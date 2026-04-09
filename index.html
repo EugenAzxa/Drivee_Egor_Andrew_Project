@@ -2452,7 +2452,7 @@
     </div>
     <div class="chat-suggestions" id="chat-suggestions"></div>
     <div class="chat-input-row">
-      <input type="file" id="chat-photo-input" accept="image/*" capture="environment" style="display:none" onchange="scanTicketFromChat()" />
+      <input type="file" id="chat-photo-input" accept="image/*" style="display:none" onchange="scanTicketFromChat()" />
       <button class="chat-photo-btn" onclick="document.getElementById('chat-photo-input').click()" title="Scan ticket photo">
         <i class="fa-solid fa-camera"></i>
       </button>
@@ -2536,7 +2536,7 @@
         <div class="card-title">📸 AI Ticket Scanner</div>
         <div class="card-subtitle">Scan any ticket or fine — get verdict, payment link &amp; auto-reminder</div>
 
-        <input type="file" id="ticket-photo" accept="image/*" capture="environment" style="display:none" onchange="scanTicketPhoto()" />
+        <input type="file" id="ticket-photo" accept="image/*" style="display:none" onchange="scanTicketPhoto()" />
         <button class="btn btn-primary" style="width:100%;margin-bottom:12px" onclick="document.getElementById('ticket-photo').click()">
           <i class="fa-solid fa-camera"></i> Scan Ticket Photo with AI
         </button>
@@ -2994,7 +2994,7 @@
 
           <div class="input-group">
             <label for="report-photo">Photo (optional)</label>
-            <input type="file" id="report-photo" accept="image/*" capture="environment" onchange="previewPhoto()" />
+            <input type="file" id="report-photo" accept="image/*" onchange="previewPhoto()" />
           </div>
 
           <!-- Photo preview — hidden until file chosen -->
@@ -3034,7 +3034,7 @@
         <div class="ai-advisor-sub">Photo scan or describe — get instant verdict</div>
 
         <!-- Photo scan — Claude Vision reads the ticket directly -->
-        <input type="file" id="legal-photo" accept="image/*" capture="environment" style="display:none" onchange="scanLegalPhoto()" />
+        <input type="file" id="legal-photo" accept="image/*" style="display:none" onchange="scanLegalPhoto()" />
         <button class="ai-advisor-photo-btn" onclick="document.getElementById('legal-photo').click()">
           <i class="fa-solid fa-camera"></i> Scan Ticket Photo with AI
         </button>
