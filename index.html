@@ -4,7 +4,11 @@
   <meta charset="UTF-8" />
   <!-- viewport-fit=cover is required for iPhone safe area (notch/home bar) to work -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0A84FF" /><!-- iOS status bar blue -->
+  <meta name="theme-color" content="#2563EB" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Drivee" />
+  <link rel="manifest" href="/manifest.json" />
   <title>Drivee</title>
 
   <!-- JetBrains Mono — used for ticket numbers and fine amounts -->
@@ -6082,6 +6086,64 @@
       }
       return { text: '👋 I can help with: paying fines, disputing tickets, finding lawyers, GPS Guardian, late fee calculations, and more. What specifically do you need help with?', tab: null };
     }
+
+    // ===================================================
+    // PWA SERVICE WORKER + DEADLINE NOTIFICATIONS
+    // ===================================================
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(function() {});
+    }
+
+    function requestNotificationPermission() {
+      if (!('Notification' in window)) return;
+      if (Notification.permission === 'default') {
+        Notification.requestPermission();
+      }
+    }
+
+    function checkDeadlineNotifications() {
+      if (!('Notification' in window) || Notification.permission !== 'granted') return;
+      var reminders = safeGet(REMINDERS_KEY) || [];
+      if (!reminders.length) return;
+
+      var now = new Date();
+      var notified = safeGet('drivee_notified') || {};
+
+      reminders.forEach(function(r) {
+        if (!r.dueDate || r.dueDate === 'unknown') return;
+
+        var due = new Date(r.dueDate + 'T23:59:59');
+        var diff = (due - now) / (1000 * 60 * 60); // hours until due
+
+        var key = r.id || r.ref;
+        if (notified[key]) return; // already notified this session
+
+        if (diff <= 0 && diff > -24) {
+          new Notification('Drivee — Deadline Today!', {
+            body: 'Your ticket ' + (r.ref || '') + ' is due TODAY. Pay now to avoid late fees.',
+            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">🚨</text></svg>'
+          });
+          notified[key] = true;
+        } else if (diff > 0 && diff <= 48) {
+          var days = diff <= 24 ? 'tomorrow' : 'in 2 days';
+          new Notification('Drivee — Deadline ' + days, {
+            body: 'Your ticket ' + (r.ref || '') + ' is due ' + days + '. Don\'t get hit with late fees!',
+            icon: 'data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><text y=".9em" font-size="90">⏰</text></svg>'
+          });
+          notified[key] = true;
+        }
+      });
+
+      safeSet('drivee_notified', notified);
+    }
+
+    // Ask for permission after a short delay (less intrusive)
+    setTimeout(requestNotificationPermission, 3000);
+
+    // Check deadlines on load and every hour
+    setTimeout(checkDeadlineNotifications, 4000);
+    setInterval(checkDeadlineNotifications, 60 * 60 * 1000);
+
   </script>
 
 </body>
