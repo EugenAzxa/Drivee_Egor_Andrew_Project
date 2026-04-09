@@ -2535,6 +2535,21 @@
         </div>
       </div>
 
+      <!-- Profile completion prompt — hidden when profile is complete -->
+      <div class="card" id="profile-prompt" style="display:none;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border:1px solid rgba(37,99,235,0.2)">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="font-size:28px;flex-shrink:0">👤</div>
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:14px;margin-bottom:2px">Complete your profile</div>
+            <div style="font-size:12px;color:var(--text-secondary)" id="profile-prompt-text">Add your name and plate number so scanned tickets auto-fill your details.</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:12px">
+          <button class="btn btn-primary" style="flex:1;font-size:13px;padding:10px" onclick="document.getElementById('profile-name').focus();document.getElementById('profile-prompt').scrollIntoView({behavior:'smooth',block:'center'});setTimeout(function(){document.getElementById('profile-card').scrollIntoView({behavior:'smooth'})},100)">Set Up Now</button>
+          <button class="btn btn-secondary" style="font-size:13px;padding:10px" onclick="this.parentElement.parentElement.style.display='none';safeSet('drivee_profile_dismissed',true)">Later</button>
+        </div>
+      </div>
+
       <!-- AI SCANNER + ANALYSER — combined card -->
       <div class="card">
         <div class="card-title">📸 AI Ticket Scanner</div>
@@ -2633,7 +2648,7 @@
       </div>
 
       <!-- Profile Card -->
-      <div class="card">
+      <div class="card" id="profile-card">
         <div class="card-title">Your Profile</div>
         <div class="card-subtitle">Saved locally on your device</div>
         <div class="input-group">
@@ -5870,6 +5885,23 @@
       if (authInput) authInput.value = savedEmail;
       if (psInput)   psInput.value   = savedEmail;
     }
+    // Show profile completion prompt if name or plate is missing
+    (function() {
+      if (safeGet('drivee_profile_dismissed')) return;
+      var p = safeGet(PROFILE_KEY) || {};
+      var prompt = document.getElementById('profile-prompt');
+      if (!prompt) return;
+      if (!p.name && !p.plate) {
+        document.getElementById('profile-prompt-text').textContent = 'Add your name and plate number so scanned tickets auto-fill your details.';
+        prompt.style.display = '';
+      } else if (!p.plate) {
+        document.getElementById('profile-prompt-text').textContent = 'Add your plate number to auto-match scanned tickets.';
+        prompt.style.display = '';
+      } else if (!p.name) {
+        document.getElementById('profile-prompt-text').textContent = 'Add your name for dispute letters and reminders.';
+        prompt.style.display = '';
+      }
+    })();
     // bell badge updated after splash hides, in updateBellBadge() below
 
     // ===================================================
