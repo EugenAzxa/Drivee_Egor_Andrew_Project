@@ -3775,6 +3775,26 @@
       renderReminders();
       updateHeroCard();
       showToast('🔔 Reminder added: ' + ref + ' due ' + formatDate(due));
+      // Auto-prompt to save to phone calendar for push notifications
+      setTimeout(function() { promptCalendarSave(ref, due); }, 1500);
+    }
+
+    function promptCalendarSave(ref, due) {
+      var el = document.getElementById('calendar-prompt');
+      if (el) el.remove();
+      var div = document.createElement('div');
+      div.id = 'calendar-prompt';
+      div.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);z-index:9999;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:16px;box-shadow:0 8px 32px rgba(0,0,0,0.18);max-width:340px;width:calc(100% - 40px);text-align:center';
+      div.innerHTML =
+        '<div style="font-weight:600;margin-bottom:6px">📅 Save to your calendar?</div>' +
+        '<div style="font-size:12px;color:var(--text-secondary);margin-bottom:12px">Get phone notifications 2 days, 1 day, and morning of your deadline — even when Drivee is closed.</div>' +
+        '<div style="display:flex;gap:8px">' +
+          '<button class="btn btn-primary" style="flex:1;font-size:13px;padding:10px" onclick="downloadICS(\'' + ref.replace(/'/g, "\\'") + '\',\'' + due + '\');this.parentElement.parentElement.remove()">Save to Calendar</button>' +
+          '<button class="btn btn-secondary" style="flex:1;font-size:13px;padding:10px" onclick="this.parentElement.parentElement.remove()">Not now</button>' +
+        '</div>';
+      document.body.appendChild(div);
+      // Auto-dismiss after 10 seconds
+      setTimeout(function() { if (document.getElementById('calendar-prompt')) div.remove(); }, 10000);
     }
 
     // Render scan history cards in the Dashboard
@@ -4787,9 +4807,19 @@
         'DESCRIPTION:Pay your Toronto parking fine before fees escalate.\\nReference: ' + ref + '\\nPay at: toronto.ca/parking-tickets',
         'LOCATION:Toronto\\, Ontario',
         'BEGIN:VALARM',
-        'TRIGGER:-PT24H',
+        'TRIGGER:-P2D',
         'ACTION:DISPLAY',
-        'DESCRIPTION:Parking fine due tomorrow — pay now to avoid $15+ late fee!',
+        'DESCRIPTION:Parking fine ' + ref + ' due in 2 days — pay now to avoid late fees!',
+        'END:VALARM',
+        'BEGIN:VALARM',
+        'TRIGGER:-P1D',
+        'ACTION:DISPLAY',
+        'DESCRIPTION:Parking fine ' + ref + ' due TOMORROW — pay now to avoid $15+ late fee!',
+        'END:VALARM',
+        'BEGIN:VALARM',
+        'TRIGGER:-PT2H',
+        'ACTION:DISPLAY',
+        'DESCRIPTION:Parking fine ' + ref + ' is due TODAY! Pay immediately to avoid penalties.',
         'END:VALARM',
         'END:VEVENT',
         'END:VCALENDAR'
