@@ -2556,6 +2556,14 @@
              class="btn btn-primary">
             💳 Pay Now →
           </a>
+          <div style="display:flex;gap:8px;margin-bottom:8px">
+            <button class="btn btn-secondary" style="flex:1;font-size:13px" onclick="shareTicketDetails()">
+              <i class="fa-solid fa-share-nodes"></i> Share
+            </button>
+            <button class="btn btn-secondary" style="flex:1;font-size:13px" onclick="copyTicketDetails()">
+              <i class="fa-regular fa-copy"></i> Copy
+            </button>
+          </div>
           <div id="scan-reminder-confirm" style="font-size:13px;color:var(--green);text-align:center;padding:4px 0;display:none">
             ✅ Reminder auto-set for due date
           </div>
@@ -3540,11 +3548,14 @@
       statusEl.style.animation  = 'pulse 1.5s ease-in-out infinite';
       statusEl.style.background = 'rgba(37,99,235,0.07)';
       statusEl.style.borderColor= 'rgba(37,99,235,0.2)';
+      window._lastScan = null;
       statusEl.style.color      = 'var(--blue)';
 
       scanTicketWithVision(file,
         function(text) {
           var p = parseVisionReply(text);
+
+          window._lastScan = p;
 
           // Fill analyser fields
           if (p.amount) document.getElementById('ticket-amount').value = parseFloat(p.amount);
@@ -5121,6 +5132,55 @@
         ta.select();
         document.execCommand('copy');
         showToast('Script copied to clipboard');
+      }
+    }
+
+    // ── Share / Copy ticket scan details ────────────────
+    function buildTicketText() {
+      var p = window._lastScan;
+      if (!p) return null;
+      var lines = ['🚗 Ticket Details — via Drivee (drivee.ca)'];
+      if (p.amount) lines.push('Amount: $' + p.amount);
+      if (p.ref)    lines.push('Reference: ' + p.ref);
+      if (p.plate && p.plate !== 'unknown') lines.push('Plate: ' + p.plate);
+      if (p.type)   lines.push('Type: ' + p.type);
+      if (p.province && p.province !== 'unknown') lines.push('Province: ' + p.province);
+      if (p.date && p.date !== 'unknown') lines.push('Date: ' + p.date);
+      if (p.due && p.due !== 'unknown')   lines.push('Due: ' + p.due);
+      if (p.advice) lines.push('\nAdvice: ' + p.advice);
+      lines.push('\nScanned with Drivee — drivee.ca');
+      return lines.join('\n');
+    }
+
+    function shareTicketDetails() {
+      var text = buildTicketText();
+      if (!text) { showToast('No scan data to share'); return; }
+      if (navigator.share) {
+        navigator.share({
+          title: 'Ticket Details — Drivee',
+          text: text,
+          url: 'https://drivee.ca'
+        }).catch(function() {});
+      } else {
+        copyTicketDetails();
+      }
+    }
+
+    function copyTicketDetails() {
+      var text = buildTicketText();
+      if (!text) { showToast('No scan data to copy'); return; }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+          showToast('Ticket details copied to clipboard');
+        });
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        document.body.removeChild(ta);
+        showToast('Ticket details copied to clipboard');
       }
     }
 
