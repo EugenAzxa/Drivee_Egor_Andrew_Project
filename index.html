@@ -2572,6 +2572,18 @@
       <!-- Is Parking Free Today? -->
       <div id="free-day-banner" style="display:none;border-radius:14px;padding:14px 16px;margin-bottom:12px;font-size:13px;text-align:center"></div>
 
+      <!-- Weekly Did You Know tip -->
+      <div id="weekly-tip" style="border-radius:14px;padding:14px 16px;margin-bottom:12px;background:linear-gradient(135deg,#EEF2FF,#E0E7FF);border:1px solid rgba(37,99,235,0.15)">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="font-size:18px">💡</span>
+          <span style="font-weight:700;font-size:13px;color:var(--blue)">Did You Know?</span>
+        </div>
+        <div id="weekly-tip-text" style="font-size:13px;color:var(--text-primary);line-height:1.5"></div>
+        <div style="text-align:right;margin-top:6px">
+          <button style="background:none;border:none;font-size:12px;color:var(--blue);font-weight:600;cursor:pointer;font-family:inherit" onclick="shareWeeklyTip()">Share this tip →</button>
+        </div>
+      </div>
+
       <!-- BENTO STATS -->
       <div class="bento-row">
         <div class="bento-card">
@@ -6121,6 +6133,87 @@
       }
     }
 
+    // ── Weekly Did You Know tips (52 weeks) ─────────────
+    var WEEKLY_TIPS = [
+      'A distracted driving ticket in Ontario adds 3 demerit points AND costs you ~$1,200+ extra in insurance over 3 years. The $615 fine is the cheap part.',
+      'Stunt driving (50km/h over the limit) gets your car impounded on the spot for 14 days. That\'s $2,000+ before you even see a judge.',
+      '15 demerit points = automatic licence suspension in Ontario. Most drivers don\'t know their current count.',
+      'Red light camera tickets carry ZERO demerit points \u2014 because the camera can\'t prove who was driving. Only officer-issued red light tickets affect your record.',
+      'Careless driving is one of the most serious non-criminal charges in Ontario \u2014 6 demerit points, up to $2,000 fine, and possible licence suspension.',
+      'Parking within 3 metres of a fire hydrant in Toronto is a $100 fine \u2014 even if you\'re just running in for 2 minutes.',
+      'If you miss a Toronto parking ticket past 60 days, your licence plate renewal gets blocked. Even $30 tickets can stop your sticker.',
+      'Toronto parking tickets jump from Day 15 to Day 31 \u2014 you pay an extra $32 just for waiting 2 weeks.',
+      'Parking in a bike lane in Toronto is a $150\u2013$300 fine. Enforcement has tripled since 2022.',
+      'A Toronto tow costs $250+ plus $75/day storage. If your car is towed on a Friday night, you could owe $400 before Monday morning.',
+      'School bus stop arm violations in Ontario carry a $400\u2013$2,000 fine and 6 demerit points \u2014 one of the harshest penalties on the road.',
+      'Parking in a no-stopping zone is different from a no-parking zone. No-stopping means you can\'t even pause with someone in the car.',
+      'You can dispute a Toronto parking ticket online within 15 days \u2014 no court appearance needed. Over 30% of disputes result in a reduced fine or dismissal.',
+      'If a parking sign is damaged or missing, that\'s a valid dispute reason in Toronto. Always photograph the sign when you get a ticket.',
+      'Paying a speeding ticket without disputing it is an automatic conviction on your driving record \u2014 even if you were only 1km/h over.',
+      'A paralegal costs $150\u2013$350 to fight a ticket \u2014 but can save you $1,000+ in insurance increases over 3 years on serious charges.',
+      'Ontario insurance companies look back 3 years for minor tickets and 6 years for serious convictions when calculating your premium.',
+      'In Ontario you must move over AND slow down for emergency vehicles AND tow trucks on the side of the highway. Fine: $400\u2013$2,000.',
+      'Honking your horn unnecessarily in Toronto is technically a $110 fine under the Highway Traffic Act.',
+      'You must signal at least 30 metres before turning in Ontario. Failure to signal properly is a 2-demerit-point offence.',
+      'Driving with a cracked windshield that obstructs your view is a ticketable offence in Ontario \u2014 $110 fine.',
+      'Winter tires are not mandatory in Ontario \u2014 but if you have an accident without them, your insurance company can reduce your claim.',
+      'In Toronto, the default speed limit on any road without posted signs is 50km/h. In school zones during hours: 40km/h.',
+      'Unpaid 407 ETR tolls in Ontario can result in your licence plate renewal being denied \u2014 same as unpaid parking tickets.',
+      'You must stop completely at a stop sign in Ontario \u2014 a rolling stop is a 3-demerit-point ticket, same as running a red light.',
+      'From December 1 to March 31, overnight parking on Toronto snow routes is banned from 2am\u20136am during snowfalls. Violation = tow.',
+      'Toronto had over 2.7 million parking tickets issued in 2023. That\'s roughly 7,400 tickets every single day.',
+      'The most ticketed street in Toronto is consistently Yonge St downtown \u2014 over 40,000 tickets per year.',
+      'Toronto\'s newest speed cameras are on school zone streets. Fines start at $5/km over with no demerit points \u2014 but they add up fast.',
+      'G1 drivers in Ontario must maintain absolute zero blood alcohol. Even a sip legally puts you at risk of a 30-day licence suspension.',
+      'You can check your demerit point balance online at ontario.ca for free \u2014 it\'s updated in real time.',
+      'Expired licence plates in Ontario carry a $110 fine. If your insurance lapses too, that\'s a separate $5,000\u2013$25,000 charge.',
+      'Toronto Green P parking is free on statutory holidays and Sundays in most locations \u2014 check signage to confirm.',
+      'If your parking meter breaks after you\'ve paid, keep your receipt as proof \u2014 it\'s a valid dispute reason.',
+      'Speeding in a construction zone doubles the fine in Ontario \u2014 even if no workers are present at the time.',
+      'You have 15 days to pay a Toronto parking ticket at the original amount. After that, late fees start piling up automatically.',
+      'Ontario\'s demerit point system works backwards \u2014 you start at 0 and points are added. At 9 points you get a warning letter.',
+      'Failing to report an accident over $2,000 in damage is a $110 fine and could void your insurance claim.',
+      'Driving without your licence on you is a $110 fine in Ontario \u2014 even if you have a valid licence at home.',
+      'Toronto parking enforcement officers work 7 days a week, including holidays. There is no safe day to risk it.',
+      'An HOV lane violation in Ontario is 3 demerit points \u2014 the same as running a red light.',
+      'If you get 2 distracted driving convictions within 5 years, you face a 30-day licence suspension.',
+      'Blocked driveways in Toronto are one of the most reported issues to 311 \u2014 and the fine is $150.',
+      'You can request a trial option instead of paying a parking ticket \u2014 this often leads to a reduced fine from the prosecutor.',
+      'Turning right on a red light is legal in Ontario EXCEPT where signs say otherwise \u2014 and you must still make a full stop first.',
+      'Driving 30km/h over in a community safety zone doubles the fine AND adds more demerit points.',
+      'Your insurance surcharge from a ticket conviction starts at your next renewal \u2014 not the day you get the ticket.',
+      'In Ontario, a police officer can charge you with careless driving even without a specific violation \u2014 it\'s a catch-all charge.',
+      'Toronto bike cops issue more parking tickets per officer than any other enforcement unit in the city.',
+      'If you receive a ticket while parked legally but your permit fell off the dash, photograph your permit and dispute it.',
+      'Ontario\'s Administrative Monetary Penalties (AMP) system means some tickets now bypass the court system entirely.',
+      'The Drivee True Cost Calculator shows you the REAL price of a ticket including insurance \u2014 it\'s always more than you think.'
+    ];
+
+    function getWeekNumber() {
+      var now = new Date();
+      var start = new Date(now.getFullYear(), 0, 1);
+      var diff = now - start;
+      return Math.floor(diff / (7 * 24 * 60 * 60 * 1000));
+    }
+
+    function showWeeklyTip() {
+      var el = document.getElementById('weekly-tip-text');
+      if (!el) return;
+      var week = getWeekNumber() % WEEKLY_TIPS.length;
+      el.textContent = WEEKLY_TIPS[week];
+    }
+
+    function shareWeeklyTip() {
+      var el = document.getElementById('weekly-tip-text');
+      if (!el) return;
+      var text = 'Did you know? ' + el.textContent + '\n\nMore tips at drivee.ca';
+      if (navigator.share) {
+        navigator.share({ title: 'Drivee Tip', text: text, url: 'https://drivee.ca' }).catch(function() {});
+      } else {
+        navigator.clipboard.writeText(text).then(function() { showToast('Tip copied!'); });
+      }
+    }
+
     // ON LOAD — show Dashboard tab by default
     // ===================================================
     showTab('tab-dashboard');
@@ -6131,6 +6224,7 @@
     renderScanHistory();  // Render ticket scan history on startup
     updateHeroCard();     // Sync hero card stats on load
     checkFreeParkingDay(); // Show free parking banner if applicable
+    showWeeklyTip();       // Rotate weekly Did You Know tip
     initSupabase();     // Start Supabase auth listener (non-blocking)
     // Auto-restart GPS if user left it on last session
     if (localStorage.getItem(GPS_KEY)) { startGPS(); }
