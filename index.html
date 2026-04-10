@@ -6425,6 +6425,9 @@
       }, 1100);
     }
 
+    var _chatMsgCount = 0;
+    var _feedbackShown = false;
+
     function sendChatMessage() {
       var input = document.getElementById('chat-input');
       if (!input || !input.value.trim()) return;
@@ -6433,8 +6436,41 @@
       document.getElementById('chat-suggestions').innerHTML = '';
       appendChatMessage('user', text);
       showChatTyping(true);
+      _chatMsgCount++;
+
+      // Show feedback prompt after 3 messages
+      if (_chatMsgCount >= 3 && !_feedbackShown) {
+        _feedbackShown = true;
+        setTimeout(function() { showChatFeedback(); }, 2000);
+      }
 
       callClaudeAPI(text);
+    }
+
+    function showChatFeedback() {
+      var msgs = document.getElementById('chat-messages');
+      if (!msgs) return;
+      var div = document.createElement('div');
+      div.className = 'chat-msg bot';
+      div.innerHTML =
+        '<div class="chat-msg-avatar"><i class="fa-solid fa-sparkles"></i></div>' +
+        '<div class="chat-msg-bubble" style="background:#f0f4ff;border:1px solid #c7d7f8">' +
+          '<div style="font-weight:600;margin-bottom:6px">How can we improve Drivee?</div>' +
+          '<div style="font-size:12px;color:var(--text-secondary);margin-bottom:8px">Your feedback helps us build a better app for Toronto drivers.</div>' +
+          '<textarea id="chat-feedback-text" style="width:100%;padding:8px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit;resize:none;box-sizing:border-box" rows="2" placeholder="Any ideas, bugs, or features you want?"></textarea>' +
+          '<button class="btn btn-primary" style="width:100%;margin-top:8px;font-size:13px;padding:10px" onclick="submitChatFeedback()">Send Feedback</button>' +
+        '</div>';
+      msgs.appendChild(div);
+      msgs.scrollTop = msgs.scrollHeight;
+    }
+
+    function submitChatFeedback() {
+      var ta = document.getElementById('chat-feedback-text');
+      if (!ta || !ta.value.trim()) { showToast('Please type your feedback first'); return; }
+      var feedback = ta.value.trim();
+      trackEvent('user_feedback', feedback);
+      ta.parentElement.innerHTML = '<div style="font-weight:600;color:var(--green)">Thanks for your feedback!</div>';
+      showToast('Feedback sent — thank you!');
     }
 
     // Claude API call (activated when CLAUDE_API_KEY is set)
