@@ -2281,6 +2281,56 @@
       }
     }
 
+    /* ── TRUE COST CALCULATOR ──────────────────────────── */
+    .true-cost-card { background:#fff; border-radius:16px; padding:20px; margin-bottom:16px; box-shadow:0 2px 12px rgba(0,0,0,0.06); }
+    .tcc-select { width:100%; padding:12px 32px 12px 14px; border:1.5px solid #e5e7eb; border-radius:10px; font-size:14px; font-family:inherit; background:#f9fafb url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236b7280' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 12px center; color:#1a1a2e; appearance:none; cursor:pointer; margin-bottom:12px; box-sizing:border-box; }
+    .tcc-select:focus { outline:none; border-color:var(--blue); background:#fff; }
+    .tcc-amount-wrap { position:relative; margin-bottom:12px; }
+    .tcc-dollar-sign { position:absolute; left:12px; top:50%; transform:translateY(-50%); font-size:15px; color:#6b7280; font-weight:600; pointer-events:none; }
+    .tcc-amount-input { width:100%; padding:12px 14px 12px 26px; border:1.5px solid #e5e7eb; border-radius:10px; font-size:14px; font-family:inherit; background:#f9fafb; color:#1a1a2e; box-sizing:border-box; }
+    .tcc-amount-input:focus { outline:none; border-color:var(--blue); background:#fff; }
+    .tcc-calc-btn { width:100%; padding:14px; background:var(--blue); color:#fff; border:none; border-radius:12px; font-size:15px; font-weight:700; font-family:inherit; cursor:pointer; margin-bottom:16px; }
+    .tcc-calc-btn:active { background:var(--primary-dim); }
+    .tcc-result { display:none; background:#f0f4ff; border-radius:14px; padding:18px; margin-bottom:12px; border:1.5px solid #c7d7f8; animation:tccFadeIn .3s ease; }
+    .tcc-result.visible { display:block; }
+    @keyframes tccFadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+    .tcc-result-title { font-size:13px; font-weight:600; color:var(--blue); text-transform:uppercase; letter-spacing:.5px; margin-bottom:14px; }
+    .tcc-line { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid #dce7fb; font-size:14px; }
+    .tcc-line:last-of-type { border-bottom:none; }
+    .tcc-line-label { color:#4b5563; }
+    .tcc-line-value { font-weight:600; color:#1a1a2e; }
+    .tcc-line-value.red { color:var(--red); }
+    .tcc-line-value.orange { color:var(--warning); }
+    .tcc-line-value.green { color:var(--green); }
+    .tcc-total-row { display:flex; justify-content:space-between; align-items:center; padding:14px 0 8px; border-top:2px solid var(--blue); margin-top:8px; }
+    .tcc-total-label { font-size:15px; font-weight:800; }
+    .tcc-total-value { font-size:22px; font-weight:900; color:var(--red); }
+    .tcc-verdict-box { margin-top:14px; padding:12px 14px; border-radius:10px; font-size:13px; font-weight:600; line-height:1.5; }
+    .tcc-verdict-box.fight { background:#fef3c7; border:1px solid #fbbf24; color:#92400e; }
+    .tcc-verdict-box.pay { background:#d1fae5; border:1px solid #34d399; color:#065f46; }
+    .tcc-verdict-box.serious { background:#fee2e2; border:1px solid #f87171; color:#991b1b; }
+    .tcc-points-badge { display:inline-flex; align-items:center; gap:5px; background:#1a1a2e; color:#fff; border-radius:20px; padding:3px 10px; font-size:12px; font-weight:700; margin-left:6px; }
+    .tcc-share-btn { width:100%; padding:13px; background:transparent; color:var(--blue); border:1.5px solid var(--blue); border-radius:12px; font-size:14px; font-weight:700; font-family:inherit; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:8px; }
+    .tcc-share-btn:active { background:#f0f4ff; }
+    .tcc-expert-card { background:linear-gradient(135deg,var(--blue) 0%,#1a6fd4 100%); border-radius:14px; padding:18px; margin-top:16px; color:#fff; animation:tccFadeIn .4s ease; }
+    .tcc-expert-header { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+    .tcc-expert-avatar { width:46px; height:46px; border-radius:50%; background:rgba(255,255,255,.2); display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0; }
+    .tcc-expert-name { font-size:15px; font-weight:700; }
+    .tcc-expert-role { font-size:12px; color:rgba(255,255,255,.75); margin-top:2px; }
+    .tcc-expert-desc { font-size:13px; color:rgba(255,255,255,.9); line-height:1.6; margin-bottom:14px; }
+    .tcc-situation-label { font-size:12px; font-weight:600; color:rgba(255,255,255,.8); text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; }
+    .tcc-situation-textarea { width:100%; min-height:90px; padding:12px; border:1.5px solid rgba(255,255,255,.3); border-radius:10px; font-size:14px; font-family:inherit; background:rgba(255,255,255,.12); color:#fff; resize:vertical; box-sizing:border-box; margin-bottom:12px; line-height:1.5; }
+    .tcc-situation-textarea::placeholder { color:rgba(255,255,255,.5); }
+    .tcc-situation-textarea:focus { outline:none; border-color:rgba(255,255,255,.7); background:rgba(255,255,255,.18); }
+    .tcc-contact-btns { display:flex; flex-direction:column; gap:8px; }
+    .tcc-contact-btn { display:flex; align-items:center; justify-content:center; gap:8px; padding:13px; border-radius:11px; font-size:14px; font-weight:700; font-family:inherit; cursor:pointer; border:none; width:100%; box-sizing:border-box; }
+    .tcc-contact-btn:active { opacity:.85; transform:scale(.98); }
+    .tcc-btn-whatsapp { background:#25D366; color:#fff; }
+    .tcc-btn-sms { background:rgba(255,255,255,.15); color:#fff; border:1.5px solid rgba(255,255,255,.35) !important; }
+    .tcc-btn-email { background:rgba(255,255,255,.15); color:#fff; border:1.5px solid rgba(255,255,255,.35) !important; }
+    .tcc-expert-note { font-size:11px; color:rgba(255,255,255,.65); text-align:center; margin-top:10px; line-height:1.6; }
+    .tcc-disclaimer { font-size:11px; color:#9ca3af; text-align:center; margin-top:12px; line-height:1.5; }
+
   </style>
 </head>
 
@@ -2704,6 +2754,69 @@
 
         <!-- Reminder cards render here -->
         <div id="reminders-list"></div>
+      </div>
+
+      <!-- TRUE COST CALCULATOR + EXPERT HELP -->
+      <div class="true-cost-card">
+        <div class="card-title">🧮 True Cost Calculator</div>
+        <div class="card-subtitle">See what a ticket REALLY costs including insurance — not just the fine</div>
+
+        <select id="tcc-violation" class="tcc-select">
+          <option value="">Select violation type…</option>
+          <option value="parking">🅿️ Parking Violation</option>
+          <option value="speeding_low">🚗 Speeding 1–15 km/h over</option>
+          <option value="speeding_mid">🚗 Speeding 16–29 km/h over</option>
+          <option value="speeding_high">🚗 Speeding 30–49 km/h over</option>
+          <option value="speeding_stunt">🚨 Speeding 50+ km/h over (Stunt)</option>
+          <option value="redlight_camera">📷 Red Light Camera</option>
+          <option value="redlight_officer">🚦 Running Red Light (Officer)</option>
+          <option value="distracted">📱 Distracted Driving</option>
+          <option value="careless">⚠️ Careless Driving</option>
+          <option value="seatbelt">🪢 Seatbelt Violation</option>
+          <option value="stop_sign">🛑 Fail to Stop (Stop Sign)</option>
+          <option value="school_bus">🚌 Fail to Stop (School Bus)</option>
+          <option value="hov">🛣️ HOV Lane Violation</option>
+          <option value="no_insurance">🚫 No Insurance</option>
+        </select>
+
+        <div class="tcc-amount-wrap">
+          <span class="tcc-dollar-sign">$</span>
+          <input type="number" id="tcc-amount" class="tcc-amount-input" placeholder="Fine amount on ticket" min="0" max="99999" />
+        </div>
+
+        <button class="tcc-calc-btn" onclick="calcTrueCost()">Calculate True Cost</button>
+
+        <div class="tcc-result" id="tcc-result">
+          <div class="tcc-result-title">📊 True Cost Breakdown</div>
+          <div id="tcc-lines"></div>
+          <div class="tcc-total-row">
+            <div class="tcc-total-label">TRUE TOTAL COST</div>
+            <div class="tcc-total-value" id="tcc-total">$0</div>
+          </div>
+          <div class="tcc-verdict-box" id="tcc-verdict"></div>
+          <button class="tcc-share-btn" onclick="shareTrueCost()">📤 Share This Result</button>
+
+          <div class="tcc-expert-card">
+            <div class="tcc-expert-header">
+              <div class="tcc-expert-avatar">👨‍💼</div>
+              <div>
+                <div class="tcc-expert-name">Evgen — Drivee Expert</div>
+                <div class="tcc-expert-role">Toronto Ticket &amp; Fine Specialist</div>
+              </div>
+            </div>
+            <div class="tcc-expert-desc">Not sure what to do next? Describe your situation below and I'll personally review it and tell you the best course of action — free of charge.</div>
+            <div class="tcc-situation-label">Describe your situation</div>
+            <textarea id="tcc-situation" class="tcc-situation-textarea" placeholder="e.g. I was pulled over on the 401 doing 130 in a 100 zone. First offence, clean record. What should I do?"></textarea>
+            <div class="tcc-contact-btns">
+              <button class="tcc-contact-btn tcc-btn-whatsapp" onclick="tccContactWhatsApp()">💬 Message Evgen on WhatsApp</button>
+              <button class="tcc-contact-btn tcc-btn-sms" onclick="tccContactSMS()">📱 Send as Text Message</button>
+              <button class="tcc-contact-btn tcc-btn-email" onclick="tccContactEmail()">📧 Send by Email</button>
+            </div>
+            <div class="tcc-expert-note">📞 Or call / text directly: <strong>+1 (647) 608-2988</strong><br>Evgen typically responds within a few hours · Free first consultation</div>
+          </div>
+        </div>
+
+        <div class="tcc-disclaimer">ⓘ Insurance estimates are Ontario averages. Actual impact varies by insurer, driving history &amp; conviction. Not legal advice.</div>
       </div>
 
       <!-- Fee Escalation Calculator Card -->
@@ -6450,6 +6563,111 @@
     // Check deadlines on load and every hour
     setTimeout(checkDeadlineNotifications, 4000);
     setInterval(checkDeadlineNotifications, 60 * 60 * 1000);
+
+    // ── TRUE COST CALCULATOR ──────────────────────────────
+    var DRIVEE_PHONE = '16476082988';
+    var DRIVEE_EMAIL = 'drivee.canada@gmail.com';
+
+    var TCC_DATA = {
+      parking:         { label:'Parking Violation',              points:0, insuranceYears:0, insurancePerYear:0,    severity:'pay',     tip:'Parking tickets carry zero demerit points and do NOT affect your insurance. Pay before Day 15 to avoid late fees.' },
+      speeding_low:    { label:'Speeding 1-15 km/h over',        points:0, insuranceYears:3, insurancePerYear:150,  severity:'pay',     tip:'No demerit points, minor insurance impact. Paying is usually fine but you can still dispute if you have grounds.' },
+      speeding_mid:    { label:'Speeding 16-29 km/h over',       points:3, insuranceYears:3, insurancePerYear:400,  severity:'fight',   tip:'Worth disputing. 3 demerit points stay 3 years. The insurance increase likely costs more than a paralegal ($150-$300).' },
+      speeding_high:   { label:'Speeding 30-49 km/h over',       points:4, insuranceYears:3, insurancePerYear:700,  severity:'fight',   tip:'Strongly consider fighting this. 4 demerit points + 3 years of premium increases. A paralegal can often reduce to a lesser charge.' },
+      speeding_stunt:  { label:'Stunt Driving / 50+ km/h over',  points:6, insuranceYears:6, insurancePerYear:1500, severity:'serious', tip:'Get a lawyer immediately. Stunt driving = roadside licence suspension + 14-day impound + potential criminal record. Do NOT go alone.' },
+      redlight_camera: { label:'Red Light Camera',               points:0, insuranceYears:0, insurancePerYear:0,    severity:'pay',     tip:'Camera tickets = zero demerit points. The camera cannot prove who was driving. No insurance impact. Just pay it.' },
+      redlight_officer:{ label:'Running Red Light (Officer)',     points:3, insuranceYears:3, insurancePerYear:450,  severity:'fight',   tip:'Unlike a camera ticket, officer-issued red light adds 3 demerit points. Worth disputing - officer must appear in court.' },
+      distracted:      { label:'Distracted Driving',             points:3, insuranceYears:3, insurancePerYear:600,  severity:'fight',   tip:'Fight this. 3 demerit points + one of Ontario\'s highest insurance surcharges. The fine is the cheapest part of this ticket.' },
+      careless:        { label:'Careless Driving',               points:6, insuranceYears:6, insurancePerYear:1200, severity:'serious', tip:'Hire a lawyer or paralegal. 6 demerit points, possible suspension, years of massive insurance increases. Never plead guilty.' },
+      seatbelt:        { label:'Seatbelt Violation',             points:2, insuranceYears:3, insurancePerYear:200,  severity:'fight',   tip:'2 demerit points. Worth disputing if you have grounds - especially if the belt was not visible to the officer.' },
+      stop_sign:       { label:'Fail to Stop (Stop Sign)',       points:3, insuranceYears:3, insurancePerYear:400,  severity:'fight',   tip:'Rolling stop = same as running a red light. 3 demerit points. Dispute it - officer must prove you didn\'t fully stop.' },
+      school_bus:      { label:'Fail to Stop (School Bus)',      points:6, insuranceYears:6, insurancePerYear:1200, severity:'serious', tip:'One of Ontario\'s harshest penalties. 6 demerit points, $400-$2,000 fine. Get legal help immediately.' },
+      hov:             { label:'HOV Lane Violation',             points:3, insuranceYears:3, insurancePerYear:350,  severity:'fight',   tip:'3 demerit points. Worth disputing - HOV compliance definitions can be argued in court.' },
+      no_insurance:    { label:'No Insurance',                   points:0, insuranceYears:6, insurancePerYear:2000, severity:'serious', tip:'A no-insurance conviction makes you nearly uninsurable for years. Fine: $5,000-$25,000. Get a lawyer now.' }
+    };
+
+    var _lastTcc = null;
+
+    function calcTrueCost() {
+      var type = document.getElementById('tcc-violation').value;
+      var fine = parseFloat(document.getElementById('tcc-amount').value) || 0;
+      if (!type) { showToast('Select a violation type first'); return; }
+      if (fine <= 0) { showToast('Enter your fine amount'); return; }
+
+      var d = TCC_DATA[type];
+      var insureTotal = d.insurancePerYear * d.insuranceYears;
+      var trueTotal = fine + insureTotal;
+
+      var html =
+        '<div class="tcc-line"><span class="tcc-line-label">Fine amount</span><span class="tcc-line-value">$' + fine.toFixed(2) + '</span></div>' +
+        '<div class="tcc-line"><span class="tcc-line-label">Demerit points <span class="tcc-points-badge">' + d.points + ' pts</span></span>' +
+        '<span class="tcc-line-value ' + (d.points >= 4 ? 'red' : d.points >= 2 ? 'orange' : 'green') + '">' +
+        (d.points === 0 ? 'None' : d.points + ' points') + '</span></div>';
+
+      if (d.insuranceYears > 0) {
+        html +=
+          '<div class="tcc-line"><span class="tcc-line-label">Est. insurance increase / yr</span><span class="tcc-line-value red">+$' + d.insurancePerYear.toLocaleString() + '</span></div>' +
+          '<div class="tcc-line"><span class="tcc-line-label">Insurance impact duration</span><span class="tcc-line-value orange">' + d.insuranceYears + ' years</span></div>' +
+          '<div class="tcc-line"><span class="tcc-line-label">Total insurance increase</span><span class="tcc-line-value red">+$' + insureTotal.toLocaleString() + '</span></div>';
+      } else {
+        html += '<div class="tcc-line"><span class="tcc-line-label">Insurance impact</span><span class="tcc-line-value green">None</span></div>';
+      }
+
+      document.getElementById('tcc-lines').innerHTML = html;
+      document.getElementById('tcc-total').textContent = '$' + trueTotal.toLocaleString();
+      document.getElementById('tcc-verdict').className = 'tcc-verdict-box ' + d.severity;
+      document.getElementById('tcc-verdict').textContent = d.tip;
+
+      var el = document.getElementById('tcc-result');
+      el.classList.add('visible');
+      el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+      _lastTcc = { violation: d.label, fine: fine, points: d.points, insureTotal: insureTotal, trueTotal: trueTotal, tip: d.tip };
+      trackEvent('true_cost_calc', d.label + ' $' + fine);
+    }
+
+    function shareTrueCost() {
+      if (!_lastTcc) return;
+      var r = _lastTcc;
+      var text =
+        'My ' + r.violation + ' ticket TRUE cost:\n\n' +
+        'Fine:                 $' + r.fine.toFixed(2) + '\n' +
+        'Est. insurance cost: +$' + r.insureTotal.toLocaleString() + '\n' +
+        'Demerit points:       ' + r.points + '\n' +
+        '-------------------------\n' +
+        'TRUE TOTAL COST: $' + r.trueTotal.toLocaleString() + '\n\n' +
+        r.tip + '\n\n' +
+        'Calculate yours at drivee.ca';
+
+      if (navigator.share) {
+        navigator.share({ title: 'Drivee - True Ticket Cost', text: text, url: 'https://drivee.ca' }).catch(function() {});
+      } else {
+        navigator.clipboard.writeText(text).then(function() { showToast('Copied! Paste to share.'); });
+      }
+    }
+
+    function _expertMsg() {
+      var r = _lastTcc;
+      var sit = (document.getElementById('tcc-situation').value || '').trim();
+      var calc = r ? 'Violation: ' + r.violation + '\nFine: $' + r.fine.toFixed(2) + '\nDemerit points: ' + r.points + '\nTrue total cost: $' + r.trueTotal.toLocaleString() + '\n\n' : '';
+      var desc = sit ? 'My situation:\n' + sit + '\n\n' : '';
+      return 'Hi Evgen, I used the Drivee True Cost Calculator and need your help.\n\n' + calc + desc + 'Can you tell me the best course of action? Thanks';
+    }
+
+    function tccContactWhatsApp() {
+      trackEvent('expert_contact', 'whatsapp');
+      window.open('https://wa.me/' + DRIVEE_PHONE + '?text=' + encodeURIComponent(_expertMsg()), '_blank');
+    }
+    function tccContactSMS() {
+      trackEvent('expert_contact', 'sms');
+      var sep = /iPhone|iPad|iPod/i.test(navigator.userAgent) ? '&' : '?';
+      window.open('sms:+' + DRIVEE_PHONE + sep + 'body=' + encodeURIComponent(_expertMsg()), '_blank');
+    }
+    function tccContactEmail() {
+      trackEvent('expert_contact', 'email');
+      var r = _lastTcc;
+      var sub = encodeURIComponent('Drivee Help - ' + (r ? r.violation : 'Ticket Question'));
+      window.open('mailto:' + DRIVEE_EMAIL + '?subject=' + sub + '&body=' + encodeURIComponent(_expertMsg()), '_blank');
+    }
 
   </script>
 
