@@ -2724,7 +2724,7 @@
           <label for="profile-plate">License Plate</label>
           <input type="text" id="profile-plate" placeholder="e.g. ABCD 123" />
         </div>
-        <button class="btn btn-primary" onclick="saveProfile()">Save Profile</button>
+        <button class="btn btn-primary" id="save-profile-btn" onclick="saveProfile()">Save Profile</button>
       </div>
 
       <!-- Scan History Card -->
@@ -4878,6 +4878,25 @@
       var prompt = document.getElementById('profile-prompt');
       if (prompt) prompt.style.display = 'none';
       updateHeroCard();
+
+      // Animate save button
+      var btn = document.getElementById('save-profile-btn');
+      if (btn) {
+        var original = btn.textContent;
+        btn.textContent = '✅ Saved!';
+        btn.style.background = 'var(--green)';
+        btn.style.transform = 'scale(1.05)';
+        btn.style.transition = 'all 0.3s ease';
+        setTimeout(function() {
+          btn.style.transform = 'scale(1)';
+        }, 200);
+        setTimeout(function() {
+          btn.textContent = original;
+          btn.style.background = '';
+          btn.style.transition = '';
+        }, 2000);
+      }
+
       showToast('✅ Profile saved' + (name ? ' — welcome, ' + name.split(' ')[0] + '!' : ''));
     }
 
