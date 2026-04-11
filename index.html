@@ -4640,13 +4640,7 @@
         console.log('Drivee: purged ' + (reports.length - kept.length) + ' reports older than 30 days');
       }
 
-      // Also clean Supabase
-      if (db) {
-        db.from('reports').delete().lt('created_at', thirtyDaysAgo.toISOString())
-          .then(function(res) {
-            if (res.error) console.warn('Drivee: purge error', res.error.message);
-          });
-      }
+      // Supabase cleanup handled server-side only (no client DELETE)
     }
 
     // Loads all saved reports from localStorage and draws pins on the map.
@@ -4958,7 +4952,7 @@
       }
       safeSet(PROFILE_KEY, { name: name, plate: plate });
       saveProfileToSupabase(name, plate); // sync to cloud if signed in
-      trackEvent('profile_saved', name + ' | ' + plate);
+      trackEvent('profile_saved');
       // Update greeting with first name
       if (name) {
         var firstName = name.split(' ')[0];
@@ -5747,7 +5741,7 @@
       }
       var btn = document.querySelector('.auth-send-btn');
       if (btn) { btn.textContent = 'Sending…'; btn.disabled = true; }
-      trackEvent('magic_link_sent', email);
+      trackEvent('magic_link_sent');
 
       db.auth.signInWithOtp({ email: email, options: { shouldCreateUser: true } })
         .then(function(res) {
@@ -5807,6 +5801,8 @@
       // Update profile sheet to show signed-out view
       document.getElementById('ps-signed-in').style.display  = 'none';
       document.getElementById('ps-signed-out').style.display = 'block';
+      // Clear stored email on sign-out
+      localStorage.removeItem('drivee_last_email');
     }
 
     // ── Profile Sheet ─────────────────────────────────────
@@ -5980,7 +5976,7 @@
       for (var i = 0; i < raw.length; i++) arr[i] = raw.charCodeAt(i);
       var blob = new Blob([arr], { type: mime });
       var path = 'reports/' + reportId + '.jpg';
-      return db.storage.from('report-photos').upload(path, blob, { upsert: true, contentType: 'image/jpeg' })
+      return db.storage.from('report-photos').upload(path, blob, { contentType: 'image/jpeg' })
         .then(function(res) {
           if (res.error) { console.warn('Photo upload error:', res.error.message); return null; }
           var urlRes = db.storage.from('report-photos').getPublicUrl(path);
@@ -6003,7 +5999,7 @@
           photo_url:   photoUrl,
           user_id:     currentUser ? currentUser.id : null
         };
-        return db.from('reports').upsert(row);
+        return db.from('reports').insert(row);
       }).then(function(res) {
         if (res && res.error) console.warn('Drivee: report save error', res.error.message);
       });
