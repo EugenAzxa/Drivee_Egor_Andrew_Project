@@ -2331,6 +2331,71 @@
     .tcc-expert-note { font-size:11px; color:rgba(255,255,255,.65); text-align:center; margin-top:10px; line-height:1.6; }
     .tcc-disclaimer { font-size:11px; color:#9ca3af; text-align:center; margin-top:12px; line-height:1.5; }
 
+    /* ── DESKTOP SIDE PANELS ───────────────────────────── */
+    .desktop-panel {
+      display: none;
+      position: fixed;
+      top: 0; bottom: 0;
+      width: calc((100vw - 500px) / 2 - 20px);
+      max-width: 340px;
+      overflow-y: auto;
+      padding: 40px 30px;
+      z-index: 0;
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+    .desktop-panel-left { left: 20px; }
+    .desktop-panel-right { right: 20px; }
+    .desktop-panel h2 {
+      font-size: 20px; font-weight: 800; color: var(--text-primary);
+      margin-bottom: 6px; letter-spacing: -0.3px;
+    }
+    .desktop-panel h3 {
+      font-size: 15px; font-weight: 700; color: var(--text-primary);
+      margin: 20px 0 8px;
+    }
+    .desktop-panel .dp-logo {
+      font-size: 28px; font-weight: 800; color: var(--blue); margin-bottom: 4px;
+    }
+    .desktop-panel .dp-tagline {
+      font-size: 13px; color: var(--text-tertiary); margin-bottom: 24px;
+    }
+    .desktop-panel .dp-step {
+      display: flex; align-items: flex-start; gap: 10px;
+      margin-bottom: 14px; font-size: 13px;
+    }
+    .desktop-panel .dp-step-num {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--blue); color: #fff; font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .desktop-panel .dp-bullet {
+      display: flex; align-items: flex-start; gap: 8px;
+      margin-bottom: 10px; font-size: 13px; line-height: 1.5;
+    }
+    .desktop-panel .dp-bullet-icon {
+      flex-shrink: 0; font-size: 16px; margin-top: 1px;
+    }
+    .desktop-panel .dp-divider {
+      height: 1px; background: var(--border); margin: 24px 0;
+    }
+    @media (min-width: 900px) {
+      .desktop-panel { display: block; }
+    }
+    @keyframes dpFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+    .dp-phone-mockup {
+      width: 100px; height: 180px;
+      border: 3px solid var(--text-tertiary); border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 36px; margin: 0 auto 16px;
+      animation: dpFloat 3s ease-in-out infinite;
+      background: var(--surface);
+    }
+
   </style>
 </head>
 
@@ -2547,6 +2612,97 @@
       <input type="text" id="chat-input" class="chat-input" placeholder="Type or scan a ticket…"
         onkeydown="if(event.key==='Enter'){sendChatMessage();event.preventDefault()}">
       <button class="chat-send" onclick="sendChatMessage()"><i class="fa-solid fa-paper-plane"></i></button>
+    </div>
+  </div>
+
+  <!-- DESKTOP SIDE PANELS — hidden on mobile -->
+  <div class="desktop-panel desktop-panel-left">
+    <div class="dp-logo">Drivee</div>
+    <div class="dp-tagline">Toronto Parking & Fines Manager</div>
+
+    <h2>Why Toronto Drivers Need This</h2>
+
+    <div class="dp-bullet">
+      <span class="dp-bullet-icon">🎫</span>
+      <span>Toronto issues <strong>7,400+ parking tickets every day</strong> — the most in Canada</span>
+    </div>
+    <div class="dp-bullet">
+      <span class="dp-bullet-icon">💸</span>
+      <span>Missing a 15-day deadline adds <strong>$80+ in late fees</strong> to a simple $30 ticket</span>
+    </div>
+    <div class="dp-bullet">
+      <span class="dp-bullet-icon">📈</span>
+      <span>One speeding ticket can increase your insurance by <strong>$400–$1,500/year for 3 years</strong></span>
+    </div>
+    <div class="dp-bullet">
+      <span class="dp-bullet-icon">⚖️</span>
+      <span>Over <strong>30% of disputed tickets</strong> are reduced or dismissed — most people don't know</span>
+    </div>
+    <div class="dp-bullet">
+      <span class="dp-bullet-icon">🚗</span>
+      <span>Unpaid tickets <strong>block your plate renewal</strong> — even a $30 ticket can stop your sticker</span>
+    </div>
+    <div class="dp-bullet">
+      <span class="dp-bullet-icon">🤖</span>
+      <span>Drivee's AI scanner reads your ticket in <strong>3 seconds</strong> and tells you exactly what to do</span>
+    </div>
+
+    <div class="dp-divider"></div>
+
+    <div style="font-size:12px;color:var(--text-tertiary);text-align:center">
+      Free · No sign-up required · Works offline<br>
+      <strong style="color:var(--blue)">drivee.ca</strong>
+    </div>
+  </div>
+
+  <div class="desktop-panel desktop-panel-right">
+    <h2>Save Drivee to Your Phone</h2>
+    <p style="font-size:13px;color:var(--text-tertiary);margin-bottom:20px">Install it like a real app — no App Store needed.</p>
+
+    <div class="dp-phone-mockup">🍎</div>
+    <h3>iPhone (Safari)</h3>
+    <div class="dp-step">
+      <div class="dp-step-num">1</div>
+      <span>Open <strong>drivee.ca</strong> in Safari</span>
+    </div>
+    <div class="dp-step">
+      <div class="dp-step-num">2</div>
+      <span>Tap the <strong>Share</strong> button (square with arrow)</span>
+    </div>
+    <div class="dp-step">
+      <div class="dp-step-num">3</div>
+      <span>Scroll down and tap <strong>"Add to Home Screen"</strong></span>
+    </div>
+    <div class="dp-step">
+      <div class="dp-step-num">4</div>
+      <span>Tap <strong>Add</strong> — Drivee appears on your home screen</span>
+    </div>
+
+    <div class="dp-divider"></div>
+
+    <div class="dp-phone-mockup" style="animation-delay:0.5s">🤖</div>
+    <h3>Android (Chrome)</h3>
+    <div class="dp-step">
+      <div class="dp-step-num">1</div>
+      <span>Open <strong>drivee.ca</strong> in Chrome</span>
+    </div>
+    <div class="dp-step">
+      <div class="dp-step-num">2</div>
+      <span>Tap the <strong>three dots</strong> menu (top right)</span>
+    </div>
+    <div class="dp-step">
+      <div class="dp-step-num">3</div>
+      <span>Tap <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong></span>
+    </div>
+    <div class="dp-step">
+      <div class="dp-step-num">4</div>
+      <span>Tap <strong>Install</strong> — opens full-screen like a native app</span>
+    </div>
+
+    <div class="dp-divider"></div>
+
+    <div style="font-size:12px;color:var(--text-tertiary);text-align:center">
+      Once installed, Drivee works offline<br>and sends deadline reminders via your calendar.
     </div>
   </div>
 
