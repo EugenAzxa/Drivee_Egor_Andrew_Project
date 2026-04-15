@@ -535,30 +535,145 @@ LESSON ARC — WHERE WE ARE
 Part 1 Foundation: COMPLETE
 Part 2 Functionality: COMPLETE
 Part 3 Polish: COMPLETE
-Part 4 Test: IN PROGRESS — app live on drivee.ca, real user launch tonight
+Part 4 Test: IN PROGRESS
 Part 5 Backend: COMPLETE
 Part 6 Launch: IN PROGRESS
 
 
+SESSION 7 — 13-15 April 2026
+------------------------------
+
+WHAT WAS BUILT
+
+This was the largest session to date with 27 commits covering bug fixes, new
+features, UX redesign, analytics, and a full security audit.
+
+1. Bug fix sprint (8 issues) — bell button now scrolls to reminders, feedback
+   email added to dashboard, nav bar spacing fixed, duplicate FAB removed,
+   scroll performance improved with GPU compositing, towed vehicles link fixed,
+   map photo popups improved, street checker dead code cleaned up.
+
+2. Full UX audit and fixes — Guide tab made reachable from nav bar, dead See
+   All lawyers link fixed, Services search bar made functional with live
+   filtering, lawyer firm tap targets increased from 34px to 42px, report flow
+   instructions clarified, splash screen reduced from 2.8s to 2.1s, Green P
+   link changed to App Store, email validation confirmed working.
+
+3. New features added:
+   - Free Parking Now card on Map tab: live calculation from 40-street database
+     plus current time, shows which streets are free right now and which are
+     free soon. Smart badge shows count, Soon, or Paid Hours.
+   - Community reports synced to Supabase with photo uploads to Storage bucket,
+     shared across all users. 30-day auto-purge added. Photo library selection
+     enabled (not camera-only).
+   - Is Parking Free Today banner on Dashboard: shows green banner on Toronto
+     statutory holidays, yellow countdown to next holiday on regular days.
+     Covers all 11 holidays with correct date calculation including Easter.
+     Updated to show holidays only (not Sundays) to avoid confusion.
+   - Weekly Did You Know tips: 52 Toronto driving tips that rotate weekly,
+     shareable via native share sheet.
+   - True Cost Calculator: shows real cost of a ticket including insurance
+     impact over 3-6 years, demerit points, and verdict (pay/fight/serious).
+     Includes expert contact via SMS and email. Links to ontario.ca for
+     demerit point info. Moved to Services tab in declutter.
+   - Ticket lookup card in Services: parking, speed camera, and provincial
+     HTA lookups linking to official government portals.
+   - Dispute Script Builder expanded from 4 to 10 reasons: added not driver,
+     outside enforcement hours, disability permit, vehicle sold, emergency,
+     active loading.
+   - Share/Copy ticket scan details with drivee.ca link and native share.
+   - Profile completion prompt on Dashboard that nudges users to add name
+     and plate, opens profile sheet, dismissible.
+   - Dynamic greeting: Good morning/afternoon/evening based on time of day,
+     updates with saved name immediately after profile save.
+   - Save Profile button animation: turns green with checkmark for 2 seconds.
+   - Calendar integration enhanced: 3 alarms (2 days, 1 day, morning of due
+     date), auto-prompt popup after scan to save to calendar.
+   - GPS Guardian retry button when location permission is denied.
+   - Chat feedback prompt after 3 messages asking users how to improve Drivee.
+   - PWA manifest and service worker for installability.
+
+4. Dashboard declutter — reduced from 14 scrollable sections to 7. Profile
+   and My Vehicles moved into the profile sheet (tap avatar). True Cost
+   Calculator moved to Services. Deadline ROI Calculator removed (redundant
+   with True Cost). Scan history collapsed to show last 2 with Show All toggle.
+   Support Drivee banner moved to bottom. Desktop side panels added showing
+   iPhone/Android install instructions on the left and why Drivee matters
+   bullet points on the right (hidden on mobile).
+
+5. Analytics and Telegram notifications — api/track.js serverless function
+   saves events to Supabase analytics table and forwards to Telegram bot.
+   Tracks: app opens, tab clicks, scans, reminders, profile saves, reports,
+   sign-ups, GPS starts, shares, disputes, true cost calculations, expert
+   contacts, and user feedback. Vercel environment variables configured.
+
+6. Security hardening — full red team audit identified 12 findings. Fixed all
+   Critical and High issues:
+   - api/claude.js: locked to 2 allowed models, max 500 tokens, origin check
+     restricted to drivee.ca, only safe fields forwarded.
+   - api/track.js: rate limited to 30 req/min per IP, event allowlist,
+     meta truncated to 200 chars with HTML stripped, removed parse_mode HTML
+     from Telegram.
+   - Reports table: changed upsert to insert (prevents overwrites), removed
+     client-side DELETE (prevents table wipe), removed upsert on photo uploads.
+   - PII removed: magic_link_sent and profile_saved no longer send emails or
+     names to analytics. Email cleared from localStorage on sign-out.
+
+7. Miscellaneous — fake lawyer discount badges removed, chat branded as
+   Powered by Eugen, AI disclaimer added to chat and Legal tab, feedback
+   email set to drivee.canada@gmail.com, FAB icon changed to robot.
+
+
+ISSUES TO CARRY FORWARD
+
+- Telegram notifications now working after Vercel env vars were added and
+  redeployed. Confirmed receiving test messages.
+- Supabase RLS policies should be verified by running:
+  SELECT tablename, policyname, cmd, qual FROM pg_policies WHERE schemaname = 'public';
+  This was recommended by the security audit but not yet done.
+- The analytics table should have its SELECT policy restricted so anon users
+  cannot read all analytics data. Currently only INSERT is needed.
+- Session notes file is getting long. Consider archiving older sessions.
+- Real users are signing up — first user feedback should drive next session.
+- PRD still says dark-mode and React/Vite/TypeScript. The app is light-mode
+  vanilla JS. PRD should be updated to reflect reality.
+
+
+PRD NOTES
+
+- True Cost Calculator extends PRD section 3.3 significantly — insurance
+  impact and demerit points were not in the original spec.
+- Dashboard declutter reorganisation differs from PRD section 3 layout but
+  is an improvement: profile and vehicles now in sheet, not inline.
+- Weekly tips, free parking banner, and community report sync are all beyond
+  the original PRD scope.
+- Analytics/Telegram tracking is new infrastructure not in the PRD.
+- Security hardening (API proxy lockdown, rate limiting) is production
+  infrastructure not covered by the PRD.
+- PRD section 2 still lists Guide tab as Book icon which matches current nav.
+
+
 NEXT SESSION TASKS
 
-1. Verify live AI chat is working on drivee.ca for real users
-2. Real iPhone testing of redesigned dashboard — check spacing, scan flow, Pay Now link
-3. Collect first user feedback and fix any bugs reported
-4. Consider moving Profile card higher or merging into hero card
+1. Run Supabase RLS verification query and fix any gaps
+2. Restrict analytics table SELECT policy to prevent data exposure
+3. Collect and act on first real user feedback
+4. Update PRD to match current app (light mode, vanilla JS, new features)
+5. Test full app flow on real iPhone in Safari
 
 
 HOMEWORK SET THIS SESSION
 
-Open drivee.ca on your iPhone. Go to the Dashboard tab and do this:
+Open drivee.ca on your iPhone and go through this checklist:
 
-1. Tap the Scan Ticket Photo with AI button
-2. Take a photo of any fine or bill you have — parking ticket, 407 ETR bill, anything
-3. Wait for the result — does it show the amount and a Pay Now button?
-4. Tap Pay Now — does it open the right payment website?
-5. Check if a reminder was automatically added in the Fine Reminders section below
+1. Open the app — did you get a Telegram notification?
+2. Tap the profile icon (top right) — do you see Profile and Vehicles inside?
+3. Save your name and plate — does the button turn green?
+4. Go to Services — type "tow" in the search bar — does it filter?
+5. Go to Services — scroll to True Cost Calculator — select Speeding 16-29
+   and enter $200 — does it show the insurance breakdown?
+6. Go to Map tab — do you see Free Parking Now with real streets?
+7. Share the app link (drivee.ca) with 3 friends and ask them to open it
+8. Check Telegram after they open it — did you get notifications?
 
-This tests the full scan-to-pay flow that was built today.
-If you get stuck, search for: Vercel environment variables to check the API key is set.
-
-Write down what worked and what did not. Bring to next session.
+Write down anything that looks wrong. Bring notes to next session.
