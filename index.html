@@ -2844,11 +2844,11 @@
             <div style="font-size:11px;color:var(--text-tertiary);background:rgba(0,0,0,0.03);border-radius:8px;padding:7px 9px;margin-bottom:10px">
               💡 Copy your ticket number above, then paste it on the payment page.
             </div>
-            <a id="scan-pay-btn" href="#" target="_blank" rel="noopener"
-               style="display:block;width:100%;text-align:center;text-decoration:none"
-               class="btn btn-primary">
+            <button id="scan-pay-btn" onclick="showPaymentGuide(window._lastScan||{})"
+                    style="display:block;width:100%;text-align:center;border:none;cursor:pointer"
+                    class="btn btn-primary">
               💳 Pay Now →
-            </a>
+            </button>
           </div>
 
           <div style="display:flex;gap:8px;margin-bottom:8px">
@@ -3791,7 +3791,7 @@
         return 'https://secure.toronto.ca/eConnectionFacade/faces/AnonymousPaymentFlow.jsp';
       }
       // Ontario court / HTA / Provincial Offences tickets
-      if (muni.indexOf('toronto') !== -1) return 'https://www.toronto.ca/courtlookup';
+      if (muni.indexOf('toronto') !== -1) return 'https://www.toronto.ca/services-payments/tickets-fines-penalties/courts/pay-your-provincial-offence/?WT_rd_id=%2FPOA';
       return 'https://www.ontario.ca/page/pay-traffic-ticket';
     }
 
@@ -3867,7 +3867,6 @@
           var payPortalBadge = document.getElementById('pay-portal-badge');
           var reminderConfirm = document.getElementById('scan-reminder-confirm');
           if (payBtn) {
-            payBtn.href = getPaymentUrl(p.type, p.province, p.municipality);
             payBtn.textContent = p.amount ? '💳 Pay $' + p.amount + ' Now →' : '💳 Pay Now →';
           }
           if (payRefDisplay)  payRefDisplay.textContent  = p.ref || '—';
@@ -6971,7 +6970,138 @@
       window.open('mailto:' + DRIVEE_EMAIL + '?subject=' + sub + '&body=' + encodeURIComponent(_expertMsg()), '_blank');
     }
 
+    // ── Payment Guide Sheet ──────────────────────────────────────
+    function showPaymentGuide(p) {
+      var url        = getPaymentUrl(p.type, p.province, p.municipality);
+      var portalName = getPortalName(p.type, p.province, p.municipality);
+      var steps      = getPaymentSteps(p.type, p.province, p.municipality);
+
+      var html = '';
+      html += '<div style="font-size:20px;font-weight:800;margin-bottom:2px">How to Pay</div>';
+      html += '<div style="font-size:13px;color:var(--text-secondary);margin-bottom:20px">via ' + esc(portalName.replace('\n', ' ')) + '</div>';
+
+      // Fields with copy buttons
+      if (p.ref)    html += _payField('Offence / Ticket Number', p.ref);
+      if (p.amount) html += _payField('Amount Due', '$' + p.amount);
+      if (p.plate && p.plate !== 'unknown') html += _payField('Licence Plate', p.plate);
+
+      html += '<div style="font-size:13px;font-weight:700;color:var(--text-primary);margin:18px 0 12px">Steps on the payment page:</div>';
+      steps.forEach(function(step, i) {
+        html +=
+          '<div style="display:flex;gap:12px;margin-bottom:12px;align-items:flex-start">' +
+            '<div style="min-width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">' + (i + 1) + '</div>' +
+            '<div style="font-size:13px;color:var(--text-primary);padding-top:4px;line-height:1.5">' + step + '</div>' +
+          '</div>';
+      });
+
+      html += '<a href="' + url + '" target="_blank" rel="noopener" onclick="closePayGuide()" ' +
+              'class="btn btn-primary" style="display:block;width:100%;text-align:center;text-decoration:none;margin-top:22px;padding:15px">' +
+              '💳 Open Payment Page →</a>';
+      html += '<button onclick="closePayGuide()" class="btn btn-secondary" ' +
+              'style="width:100%;margin-top:10px">Close</button>';
+
+      document.getElementById('pay-guide-content').innerHTML = html;
+
+      var overlay = document.getElementById('pay-guide-overlay');
+      var sheet   = document.getElementById('pay-guide-sheet');
+      overlay.style.display = 'block';
+      sheet.style.display   = 'block';
+      requestAnimationFrame(function() { sheet.style.transform = 'translateY(0)'; });
+
+      // Auto-copy ticket number so user can paste immediately
+      if (p.ref && navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(p.ref).then(function() {
+          showToast('Ticket number copied — paste it on the payment page');
+        }).catch(function(){});
+      }
+    }
+
+    function _payField(label, value) {
+      var uid = 'pgf_' + Math.random().toString(36).slice(2, 9);
+      return '<div style="background:rgba(0,0,0,0.04);border-radius:12px;padding:12px 14px;margin-bottom:10px">' +
+        '<div style="font-size:11px;font-weight:600;color:var(--text-secondary);margin-bottom:5px;text-transform:uppercase;letter-spacing:.4px">' + esc(label) + '</div>' +
+        '<div style="display:flex;align-items:center;gap:8px">' +
+          '<div id="' + uid + '" style="flex:1;font-family:\'JetBrains Mono\',monospace;font-size:16px;font-weight:700;color:var(--text-primary)">' + esc(value) + '</div>' +
+          '<button onclick="_copyPayField(\'' + uid + '\')" style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:7px 12px;font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0">Copy</button>' +
+        '</div>' +
+      '</div>';
+    }
+
+    function _copyPayField(uid) {
+      var el = document.getElementById(uid);
+      if (!el) return;
+      var val = el.textContent.trim();
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(val).then(function() { showToast('Copied: ' + val); }).catch(function(){});
+      }
+    }
+
+    function closePayGuide() {
+      var sheet = document.getElementById('pay-guide-sheet');
+      sheet.style.transform = 'translateY(100%)';
+      setTimeout(function() {
+        sheet.style.display = 'none';
+        document.getElementById('pay-guide-overlay').style.display = 'none';
+      }, 340);
+    }
+
+    function getPaymentSteps(type, province, municipality) {
+      var muni = (municipality || '').toLowerCase();
+      // Toronto parking
+      if (type === 'parking' && muni.indexOf('toronto') !== -1) {
+        return [
+          'Enter your <strong>Infraction Notice Number</strong> — it is copied to your clipboard, just paste it',
+          'Enter your <strong>Licence Plate Number</strong>',
+          'Review the fine amount and click <strong>Continue</strong>',
+          'Enter your credit or debit card to pay',
+          'Save or screenshot your <strong>confirmation number</strong>'
+        ];
+      }
+      // Other city parking
+      if (type === 'parking') {
+        return [
+          'Enter your <strong>Ticket / Infraction Number</strong> — copied to clipboard, just paste it',
+          'Follow the on-screen prompts',
+          'Pay with credit or debit card and save your confirmation'
+        ];
+      }
+      // Toronto court / HTA / Provincial Offences (POA)
+      if (muni.indexOf('toronto') !== -1) {
+        return [
+          'Enter your <strong>Offence Notice Number</strong> — it is copied to your clipboard, just paste it',
+          'Enter your <strong>Date of Birth</strong> — the city uses this to confirm your identity',
+          'Choose <strong>Voluntary Payment (Option 1)</strong> — this means you are paying without going to court',
+          'Enter your credit or debit card details',
+          'Save or screenshot your <strong>payment confirmation number</strong> — you will need it as proof'
+        ];
+      }
+      // Generic Ontario court
+      return [
+        'Enter your <strong>Offence Notice Number</strong> — copied to clipboard, just paste it',
+        'Enter your <strong>Date of Birth</strong> for identity verification',
+        'Select the voluntary payment option',
+        'Pay with credit or debit card and save your confirmation'
+      ];
+    }
+
   </script>
+
+  <!-- ── Payment Guide Sheet ──────────────────────────────────── -->
+  <div id="pay-guide-overlay" onclick="closePayGuide()"
+       style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;backdrop-filter:blur(2px)"></div>
+
+  <div id="pay-guide-sheet"
+       style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9001;
+              background:var(--surface);border-radius:22px 22px 0 0;
+              padding:12px 20px 44px;max-height:88vh;overflow-y:auto;
+              box-shadow:0 -8px 48px rgba(0,0,0,0.22);
+              transform:translateY(100%);transition:transform .32s cubic-bezier(.4,0,.2,1)">
+
+    <!-- drag handle -->
+    <div style="width:38px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px"></div>
+
+    <div id="pay-guide-content"></div>
+  </div>
 
 </body>
 </html>
