@@ -821,7 +821,9 @@
     .scan-history-card {
       display: flex; align-items: center; gap: 12px;
       padding: 10px 0; border-bottom: 1px solid var(--border);
+      cursor: pointer; transition: opacity .15s;
     }
+    .scan-history-card:active { opacity: .7; }
     .scan-history-card:last-child { border-bottom: none; padding-bottom: 0; }
     .scan-thumb {
       width: 52px; height: 52px; border-radius: 8px;
@@ -4047,7 +4049,7 @@
       reader.onload = function(e) {
         var img = new Image();
         img.onload = function() {
-          var maxW = 120, scale = Math.min(1, maxW / img.width);
+          var maxW = 300, scale = Math.min(1, maxW / img.width);
           var c = document.createElement('canvas');
           c.width  = Math.round(img.width  * scale);
           c.height = Math.round(img.height * scale);
@@ -4062,15 +4064,18 @@
     function saveScanToHistory(parsed, thumbDataUrl) {
       var scans = safeGet(SCANS_KEY) || [];
       scans.unshift({
-        id:     Date.now() + '_' + Math.floor(Math.random()*9999),
-        scannedAt: new Date().toLocaleDateString('en-CA'),
-        amount: parsed.amount,
-        ref:    parsed.ref,
-        plate:  parsed.plate,
-        type:   parsed.type,
-        due:    parsed.due,
-        advice: parsed.advice,
-        thumb:  thumbDataUrl || null
+        id:           Date.now() + '_' + Math.floor(Math.random()*9999),
+        scannedAt:    new Date().toLocaleDateString('en-CA'),
+        amount:       parsed.amount,
+        ref:          parsed.ref,
+        plate:        parsed.plate,
+        type:         parsed.type,
+        province:     parsed.province,
+        municipality: parsed.municipality,
+        date:         parsed.date,
+        due:          parsed.due,
+        advice:       parsed.advice,
+        thumb:        thumbDataUrl || null
       });
       // Keep last 20 scans only
       if (scans.length > 20) scans = scans.slice(0, 20);
@@ -4142,7 +4147,7 @@
       var visible = _showAllScans ? scans : scans.slice(0, 2);
       el.innerHTML = visible.map(function(s) {
         var dueLabel = s.due && s.due !== 'unknown' ? '<span style="color:var(--danger);font-size:11px">Due ' + formatDate(s.due) + '</span>' : '';
-        return '<div class="scan-history-card">' +
+        return '<div class="scan-history-card" onclick="openScanDetail(\'' + s.id + '\')">' +
           (s.thumb ? '<img class="scan-thumb" src="' + s.thumb + '" alt="Ticket">' : '<div class="scan-thumb-placeholder"><i class="fa-solid fa-ticket"></i></div>') +
           '<div class="scan-info">' +
             '<div class="scan-ref">' + esc(s.ref || 'Unknown ref') + '</div>' +
@@ -4151,7 +4156,7 @@
             dueLabel +
             '<div style="font-size:11px;color:var(--text-tertiary);margin-top:2px">' + s.scannedAt + '</div>' +
           '</div>' +
-          '<button class="scan-delete" onclick="deleteScan(\'' + s.id + '\')" title="Remove">&times;</button>' +
+          '<button class="scan-delete" onclick="event.stopPropagation();deleteScan(\'' + s.id + '\')" title="Remove">&times;</button>' +
         '</div>';
       }).join('');
       if (scans.length > 2 && !_showAllScans) {
@@ -6979,6 +6984,93 @@
       window.open('mailto:' + DRIVEE_EMAIL + '?subject=' + sub + '&body=' + encodeURIComponent(_expertMsg()), '_blank');
     }
 
+    // ── Scan Detail Sheet ─────────────────────────────────────────
+    function openScanDetail(id) {
+      var scans = safeGet(SCANS_KEY) || [];
+      var s = scans.find(function(x) { return x.id === id; });
+      if (!s) return;
+
+      var typeLabel = s.type ? s.type.charAt(0).toUpperCase() + s.type.slice(1).replace(/([a-z])([A-Z])/g, '$1 $2') : 'Ticket';
+      var html = '';
+
+      // Photo — full width, cropped to a nice height
+      if (s.thumb) {
+        html += '<img src="' + s.thumb + '" alt="Ticket photo" ' +
+          'style="width:100%;max-height:280px;object-fit:contain;border-radius:14px;' +
+          'background:rgba(0,0,0,0.04);margin-bottom:18px;display:block">';
+      }
+
+      // Header row — type + amount
+      html += '<div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px">';
+      html +=   '<div>';
+      html +=     '<div style="font-size:21px;font-weight:800;line-height:1.2">' + esc(typeLabel) + ' Ticket</div>';
+      if (s.municipality && s.municipality !== 'unknown') {
+        html +=   '<div style="font-size:13px;color:var(--text-secondary);margin-top:2px">📍 ' + esc(s.municipality) + (s.province && s.province !== 'unknown' ? ', ' + esc(s.province) : '') + '</div>';
+      }
+      html +=     '<div style="font-size:12px;color:var(--text-tertiary);margin-top:3px">Scanned ' + s.scannedAt + '</div>';
+      html +=   '</div>';
+      if (s.amount) {
+        html += '<div style="font-size:26px;font-weight:800;color:var(--danger);font-family:\'JetBrains Mono\',monospace">$' + s.amount + '</div>';
+      }
+      html += '</div>';
+
+      // Copyable fields
+      if (s.ref)    html += _payField('Ticket / Infraction Number', s.ref);
+      if (s.plate && s.plate !== 'unknown') html += _payField('Licence Plate', s.plate);
+      if (s.amount) html += _payField('Amount Due', '$' + s.amount);
+      if (s.due && s.due !== 'unknown') html += _payField('Payment Deadline', formatDate(s.due));
+      if (s.date && s.date !== 'unknown') html += _payField('Violation Date', formatDate(s.date));
+
+      // AI advice
+      if (s.advice) {
+        html += '<div style="background:rgba(10,132,255,0.07);border:1.5px solid rgba(10,132,255,0.18);border-radius:12px;padding:13px 14px;margin:16px 0">';
+        html +=   '<div style="font-size:11px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px">🤖 AI Advice</div>';
+        html +=   '<div style="font-size:13px;color:var(--text-primary);line-height:1.55">' + esc(s.advice) + '</div>';
+        html += '</div>';
+      }
+
+      // Actions
+      html += '<button onclick="openScanPayment(\'' + s.id + '\')" class="btn btn-primary" ' +
+              'style="width:100%;margin-bottom:10px;padding:15px;font-size:15px">💳 Pay Now →</button>';
+      html += '<button onclick="event.stopPropagation();deleteScan(\'' + s.id + '\');closeScanDetail()" ' +
+              'class="btn btn-secondary" style="width:100%;color:var(--danger);margin-bottom:8px">🗑 Delete this scan</button>';
+      html += '<button onclick="closeScanDetail()" class="btn btn-secondary" style="width:100%">Close</button>';
+
+      document.getElementById('scan-detail-content').innerHTML = html;
+      var overlay = document.getElementById('scan-detail-overlay');
+      var sheet   = document.getElementById('scan-detail-sheet');
+      overlay.style.display = 'block';
+      sheet.style.display   = 'block';
+      requestAnimationFrame(function() { sheet.style.transform = 'translateY(0)'; });
+    }
+
+    function closeScanDetail() {
+      var sheet = document.getElementById('scan-detail-sheet');
+      sheet.style.transform = 'translateY(100%)';
+      setTimeout(function() {
+        sheet.style.display = 'none';
+        document.getElementById('scan-detail-overlay').style.display = 'none';
+      }, 340);
+    }
+
+    function openScanPayment(id) {
+      var scans = safeGet(SCANS_KEY) || [];
+      var s = scans.find(function(x) { return x.id === id; });
+      if (!s) return;
+      closeScanDetail();
+      // Small delay so the detail sheet finishes closing before guide opens
+      setTimeout(function() {
+        showPaymentGuide({
+          ref:          s.ref,
+          amount:       s.amount,
+          plate:        s.plate,
+          type:         s.type,
+          province:     s.province || 'ON',
+          municipality: s.municipality || 'Toronto'
+        });
+      }, 360);
+    }
+
     // ── Payment Guide Sheet ──────────────────────────────────────
     function showPaymentGuide(p) {
       var url        = getPaymentUrl(p.type, p.province, p.municipality);
@@ -7121,6 +7213,20 @@
     }
 
   </script>
+
+  <!-- ── Scan Detail Sheet ────────────────────────────────────── -->
+  <div id="scan-detail-overlay" onclick="closeScanDetail()"
+       style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9000;backdrop-filter:blur(2px)"></div>
+
+  <div id="scan-detail-sheet"
+       style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9001;
+              background:var(--surface);border-radius:22px 22px 0 0;
+              padding:12px 20px 44px;max-height:92vh;overflow-y:auto;
+              box-shadow:0 -8px 48px rgba(0,0,0,0.22);
+              transform:translateY(100%);transition:transform .32s cubic-bezier(.4,0,.2,1)">
+    <div style="width:38px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px"></div>
+    <div id="scan-detail-content"></div>
+  </div>
 
   <!-- ── Payment Guide Sheet ──────────────────────────────────── -->
   <div id="pay-guide-overlay" onclick="closePayGuide()"
