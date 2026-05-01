@@ -2958,6 +2958,14 @@
       </div>
 
 
+      <!-- Demerit Points Tracker -->
+      <div class="card" data-search="demerit points licence record warning interview suspension G novice">
+        <div class="card-title">⚖️ Demerit Points Tracker</div>
+        <div class="card-subtitle">Active points on your Ontario record — last 2 years</div>
+        <div id="demerit-card-body"></div>
+      </div>
+
+
       <!-- Scan History Card -->
       <div class="card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
@@ -6463,6 +6471,7 @@
     renderCars();         // Render saved vehicles on startup
     renderReminders();    // Render any saved reminders on startup
     renderScanHistory();  // Render ticket scan history on startup
+    renderDemerits();     // Render demerit points tracker on startup
     updateHeroCard();     // Sync hero card stats on load
     checkFreeParkingDay(); // Show free parking banner if applicable
     showWeeklyTip();       // Rotate weekly Did You Know tip
@@ -7036,6 +7045,251 @@
       window.open('mailto:' + DRIVEE_EMAIL + '?subject=' + sub + '&body=' + encodeURIComponent(_expertMsg()), '_blank');
     }
 
+    // ── Demerit Points Tracker ────────────────────────────────────
+    var DEMERIT_KEY = 'drivee_demerits';
+
+    var DEMERIT_THRESHOLDS = {
+      G:      { warn: 6, interview: 9, suspend: 15, suspendName: '30-day suspension' },
+      novice: { warn: 2, interview: 4, suspend: 9,  suspendName: '60-day suspension' }
+    };
+
+    var DEMERIT_VIOLATIONS = [
+      { group: 'Speeding', items: [
+        { name: 'Speeding 16-29 km/h over',           points: 3 },
+        { name: 'Speeding 30-49 km/h over',           points: 4 },
+        { name: 'Speeding 50+ km/h over (stunt)',     points: 6 }
+      ]},
+      { group: 'Common Convictions', items: [
+        { name: 'Distracted driving / handheld device', points: 3 },
+        { name: 'Failing to stop at red light',         points: 3 },
+        { name: 'Failing to stop at stop sign',         points: 3 },
+        { name: 'Failing to yield',                     points: 3 },
+        { name: 'Following too closely',                points: 4 },
+        { name: 'Improper passing',                     points: 3 },
+        { name: 'HOV lane violation',                   points: 3 }
+      ]},
+      { group: 'Minor', items: [
+        { name: 'Improper turn',          points: 2 },
+        { name: 'Seatbelt violation',     points: 2 }
+      ]},
+      { group: 'Major', items: [
+        { name: 'Careless driving',                points: 6 },
+        { name: 'Stunt driving / racing',          points: 6 },
+        { name: 'DUI / impaired driving',          points: 7 },
+        { name: 'Failing to remain at scene',      points: 7 }
+      ]}
+    ];
+
+    function getLicenceClass() {
+      var p = safeGet(PROFILE_KEY) || {};
+      return p.licenceClass === 'novice' ? 'novice' : 'G';
+    }
+
+    function setLicenceClass(cls) {
+      var p = safeGet(PROFILE_KEY) || {};
+      p.licenceClass = (cls === 'novice') ? 'novice' : 'G';
+      safeSet(PROFILE_KEY, p);
+      renderDemerits();
+    }
+
+    function getActiveDemerits() {
+      var entries = safeGet(DEMERIT_KEY) || [];
+      var now = Date.now();
+      var twoYearsMs = 1000 * 60 * 60 * 24 * 365 * 2;
+      return entries.filter(function(e) {
+        var d = new Date(e.date).getTime();
+        return !isNaN(d) && (now - d) < twoYearsMs;
+      });
+    }
+
+    function _demeritZone(total, t) {
+      if (total >= t.suspend)   return { name: 'Suspension level',   color: '#ef4444' };
+      if (total >= t.interview) return { name: 'Interview level',    color: '#f97316' };
+      if (total >= t.warn)      return { name: 'Warning level',      color: '#eab308' };
+      return                          { name: 'Safe — clean record', color: '#22c55e' };
+    }
+
+    function renderDemerits() {
+      var card = document.getElementById('demerit-card-body');
+      if (!card) return;
+
+      var cls = getLicenceClass();
+      var t   = DEMERIT_THRESHOLDS[cls];
+      var entries = (safeGet(DEMERIT_KEY) || []).slice().sort(function(a, b) {
+        return new Date(b.date) - new Date(a.date);
+      });
+      var active = getActiveDemerits();
+      var total  = active.reduce(function(s, e) { return s + (e.points || 0); }, 0);
+      var zone   = _demeritZone(total, t);
+
+      var html = '';
+
+      // Licence-class toggle
+      var btnBase = 'flex:1;border:none;border-radius:8px;padding:9px;font-size:13px;font-weight:600;color:var(--text-primary);cursor:pointer;transition:background .2s';
+      var on  = 'background:var(--surface);box-shadow:0 1px 3px rgba(0,0,0,0.12)';
+      var off = 'background:transparent';
+      html += '<div style="display:flex;background:rgba(0,0,0,0.05);border-radius:10px;padding:3px;margin-bottom:16px">';
+      html +=   '<button onclick="setLicenceClass(\'G\')" style="' + btnBase + ';' + (cls === 'G' ? on : off) + '">Full G</button>';
+      html +=   '<button onclick="setLicenceClass(\'novice\')" style="' + btnBase + ';' + (cls === 'novice' ? on : off) + '">Novice (G1/G2)</button>';
+      html += '</div>';
+
+      // Big number + zone label
+      html += '<div style="text-align:center;padding:12px 0 6px">';
+      html +=   '<div style="font-size:46px;font-weight:800;color:' + zone.color + ';line-height:1;font-family:\'JetBrains Mono\',monospace">' + total + '</div>';
+      html +=   '<div style="font-size:12px;color:var(--text-secondary);margin-top:4px">active demerit points</div>';
+      html +=   '<div style="font-size:13px;font-weight:700;color:' + zone.color + ';margin-top:8px">' + zone.name + '</div>';
+      html += '</div>';
+
+      // Progress bar
+      var maxPts = t.suspend + 2;
+      var pct    = Math.min(100, (total / maxPts) * 100);
+      html += '<div style="position:relative;height:10px;background:rgba(0,0,0,0.06);border-radius:5px;margin:14px 0 8px;overflow:hidden">';
+      html +=   '<div style="height:100%;width:' + pct + '%;background:' + zone.color + ';border-radius:5px;transition:width .35s ease, background .35s ease"></div>';
+      html += '</div>';
+
+      // Threshold markers
+      html += '<div style="position:relative;height:18px;margin-bottom:14px;font-size:10px;font-weight:600;color:var(--text-tertiary)">';
+      html +=   '<span style="position:absolute;left:0;top:0">0</span>';
+      html +=   '<span style="position:absolute;left:' + ((t.warn / maxPts) * 100) + '%;top:0;transform:translateX(-50%);color:#eab308">' + t.warn + ' Warn</span>';
+      html +=   '<span style="position:absolute;left:' + ((t.interview / maxPts) * 100) + '%;top:0;transform:translateX(-50%);color:#f97316">' + t.interview + ' Interview</span>';
+      html +=   '<span style="position:absolute;left:' + ((t.suspend / maxPts) * 100) + '%;top:0;transform:translateX(-50%);color:#ef4444">' + t.suspend + ' Suspend</span>';
+      html += '</div>';
+
+      // Recent entries
+      if (entries.length === 0) {
+        html += '<div style="text-align:center;padding:14px 0;color:var(--text-secondary);font-size:13px">No convictions tracked yet — your record looks clean</div>';
+      } else {
+        html += '<div style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.4px;margin:14px 0 4px">Recent Convictions</div>';
+        entries.slice(0, 5).forEach(function(e) {
+          var d = new Date(e.date);
+          var ageMs = Date.now() - d.getTime();
+          var ageYears = ageMs / (1000 * 60 * 60 * 24 * 365);
+          var expired = ageYears >= 2;
+          var monthsLeft = Math.max(0, Math.ceil(24 - ageYears * 12));
+
+          html += '<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);' + (expired ? 'opacity:.45' : '') + '">';
+          html +=   '<div style="min-width:36px;height:36px;border-radius:50%;background:' + (expired ? '#a3a3a3' : zone.color) + ';color:#fff;font-size:13px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0">' + e.points + '</div>';
+          html +=   '<div style="flex:1;min-width:0">';
+          html +=     '<div style="font-size:13px;font-weight:600;color:var(--text-primary)">' + esc(e.violation) + '</div>';
+          html +=     '<div style="font-size:11px;color:var(--text-tertiary)">' + formatDate(e.date) + (expired ? ' · expired' : ' · ' + monthsLeft + ' months left') + '</div>';
+          html +=   '</div>';
+          html +=   '<button onclick="deleteDemerit(\'' + e.id + '\')" title="Remove" style="background:none;border:none;color:var(--text-tertiary);font-size:18px;cursor:pointer;padding:4px 6px;flex-shrink:0">×</button>';
+          html += '</div>';
+        });
+        if (entries.length > 5) {
+          html += '<div style="text-align:center;font-size:11px;color:var(--text-tertiary);padding:8px 0">+ ' + (entries.length - 5) + ' older entries</div>';
+        }
+      }
+
+      // Add button
+      html += '<button onclick="openAddDemeritSheet()" class="btn btn-primary" style="width:100%;margin-top:14px">+ Add Conviction</button>';
+
+      // Tip
+      html += '<div style="font-size:11px;color:var(--text-tertiary);margin-top:12px;line-height:1.5">💡 Points stay on your record for <strong>2 years from the offence date</strong>. Only add tickets you have been <em>convicted</em> on — pending or disputed tickets do not count yet.</div>';
+
+      card.innerHTML = html;
+    }
+
+    function openAddDemeritSheet() {
+      var today = new Date().toISOString().split('T')[0];
+      var html = '';
+
+      html += '<div style="font-size:20px;font-weight:800;margin-bottom:4px">Add a Conviction</div>';
+      html += '<div style="font-size:13px;color:var(--text-secondary);margin-bottom:18px">Only add tickets you have been convicted on</div>';
+
+      // Date
+      html += '<label style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">Offence Date</label>';
+      html += '<input type="date" id="demerit-date" value="' + today + '" max="' + today + '" style="width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;background:var(--surface);color:var(--text-primary);margin-bottom:14px;box-sizing:border-box">';
+
+      // Violation select
+      html += '<label style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">Violation</label>';
+      html += '<select id="demerit-violation" onchange="onDemeritViolationChange()" style="width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;background:var(--surface);color:var(--text-primary);margin-bottom:14px;box-sizing:border-box">';
+      html +=   '<option value="">— Select a violation —</option>';
+      DEMERIT_VIOLATIONS.forEach(function(g) {
+        html += '<optgroup label="' + esc(g.group) + '">';
+        g.items.forEach(function(v) {
+          html += '<option value="' + esc(v.name) + '|' + v.points + '">' + esc(v.name) + ' (' + v.points + ' pts)</option>';
+        });
+        html += '</optgroup>';
+      });
+      html +=   '<option value="custom|0">Other (specify points)</option>';
+      html += '</select>';
+
+      // Custom inputs (hidden until needed)
+      html += '<div id="demerit-custom-wrap" style="display:none">';
+      html +=   '<label style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">Custom Violation Name</label>';
+      html +=   '<input type="text" id="demerit-custom-name" placeholder="e.g. Failing to obey sign" style="width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;background:var(--surface);color:var(--text-primary);margin-bottom:10px;box-sizing:border-box">';
+      html +=   '<label style="font-size:11px;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:6px">Demerit Points</label>';
+      html +=   '<input type="number" id="demerit-custom-points" min="0" max="9" placeholder="0" style="width:100%;padding:11px 12px;border:1px solid var(--border);border-radius:10px;font-size:14px;background:var(--surface);color:var(--text-primary);margin-bottom:14px;box-sizing:border-box">';
+      html += '</div>';
+
+      // Save / Cancel
+      html += '<button onclick="saveDemerit()" class="btn btn-primary" style="width:100%;margin-top:6px;margin-bottom:8px;padding:14px">Add to Record</button>';
+      html += '<button onclick="closeAddDemerit()" class="btn btn-secondary" style="width:100%">Cancel</button>';
+
+      document.getElementById('demerit-sheet-content').innerHTML = html;
+      var overlay = document.getElementById('demerit-sheet-overlay');
+      var sheet   = document.getElementById('demerit-sheet');
+      overlay.style.display = 'block';
+      sheet.style.display   = 'block';
+      requestAnimationFrame(function() { sheet.style.transform = 'translateY(0)'; });
+    }
+
+    function onDemeritViolationChange() {
+      var sel  = document.getElementById('demerit-violation');
+      var wrap = document.getElementById('demerit-custom-wrap');
+      wrap.style.display = (sel.value === 'custom|0') ? 'block' : 'none';
+    }
+
+    function saveDemerit() {
+      var date = document.getElementById('demerit-date').value;
+      var sel  = document.getElementById('demerit-violation').value;
+
+      if (!date) { showToast('Pick the offence date'); return; }
+      if (!sel)  { showToast('Choose a violation'); return; }
+
+      var name, points;
+      if (sel === 'custom|0') {
+        name = (document.getElementById('demerit-custom-name').value || '').trim();
+        points = parseInt(document.getElementById('demerit-custom-points').value || '0', 10);
+        if (!name) { showToast('Name your violation'); return; }
+        if (isNaN(points) || points < 0) { showToast('Enter valid points'); return; }
+      } else {
+        var parts = sel.split('|');
+        name   = parts[0];
+        points = parseInt(parts[1], 10);
+      }
+
+      var entries = safeGet(DEMERIT_KEY) || [];
+      entries.push({
+        id: Date.now() + '_' + Math.floor(Math.random() * 9999),
+        date: date,
+        violation: name,
+        points: points,
+        source: 'manual',
+        addedAt: new Date().toISOString().split('T')[0]
+      });
+      safeSet(DEMERIT_KEY, entries);
+      closeAddDemerit();
+      renderDemerits();
+      showToast('Added ' + points + ' demerit point' + (points === 1 ? '' : 's'));
+    }
+
+    function closeAddDemerit() {
+      var sheet = document.getElementById('demerit-sheet');
+      sheet.style.transform = 'translateY(100%)';
+      setTimeout(function() {
+        sheet.style.display = 'none';
+        document.getElementById('demerit-sheet-overlay').style.display = 'none';
+      }, 340);
+    }
+
+    function deleteDemerit(id) {
+      var entries = (safeGet(DEMERIT_KEY) || []).filter(function(e) { return e.id !== id; });
+      safeSet(DEMERIT_KEY, entries);
+      renderDemerits();
+    }
+
     // ── Scan Detail Sheet ─────────────────────────────────────────
     function openScanDetail(id) {
       var scans = safeGet(SCANS_KEY) || [];
@@ -7265,6 +7519,20 @@
     }
 
   </script>
+
+  <!-- ── Add Demerit Sheet ────────────────────────────────────── -->
+  <div id="demerit-sheet-overlay" onclick="closeAddDemerit()"
+       style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.55);z-index:9000;backdrop-filter:blur(2px)"></div>
+
+  <div id="demerit-sheet"
+       style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9001;
+              background:var(--surface);border-radius:22px 22px 0 0;
+              padding:12px 20px 44px;max-height:88vh;overflow-y:auto;
+              box-shadow:0 -8px 48px rgba(0,0,0,0.22);
+              transform:translateY(100%);transition:transform .32s cubic-bezier(.4,0,.2,1)">
+    <div style="width:38px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 18px"></div>
+    <div id="demerit-sheet-content"></div>
+  </div>
 
   <!-- ── Scan Detail Sheet ────────────────────────────────────── -->
   <div id="scan-detail-overlay" onclick="closeScanDetail()"
