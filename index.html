@@ -3828,10 +3828,16 @@
     // ===================================================
     var mapInitialised = false;
     var driveeMap = null; // shared map instance — needed by dropReportPin()
-    var dangerCluster = null;  // marker cluster for hydrants / bike lanes / tow zones
-    var reportCluster = null;  // marker cluster for community reports
-    var lightTileLayer = null; // CARTO Voyager (default day)
-    var darkTileLayer  = null; // CARTO Dark Matter (night)
+    // Five distinct layer groups (Phase A1 architecture refactor)
+    var hydrantCluster = null;  // marker cluster — fire hydrants (Phase B will add citywide ~15K)
+    var bikeCluster    = null;  // marker cluster — protected bike lanes
+    var towCluster     = null;  // marker cluster — tow-away zones
+    var streetsLayer   = null;  // LayerGroup of street polylines (populated in Phase A2)
+    var eventLayer     = null;  // LayerGroup for Match Day overlays (populated in Phase C)
+    var heatLayer      = null;  // LayerGroup for predictive heatmap (populated in Phase D)
+    var reportCluster  = null;  // marker cluster — community reports
+    var lightTileLayer = null;  // CARTO Voyager (default day)
+    var darkTileLayer  = null;  // CARTO Dark Matter (night)
     var MAP_THEME_KEY  = 'drivee_map_theme';
 
     function initMap() {
@@ -3872,22 +3878,33 @@
         };
         themeControl.addTo(driveeMap);
 
-        // Marker clusters — separate groups so hydrant pins don't merge with reports
+        // ── Layer architecture (Phase A1) ──
+        // Five distinct layer groups, each toggleable independently.
+        var clusterOpts = { showCoverageOnHover: false, spiderfyOnMaxZoom: true, disableClusteringAtZoom: 17 };
         if (typeof L.markerClusterGroup === 'function') {
-          dangerCluster = L.markerClusterGroup({
-            showCoverageOnHover: false,
-            maxClusterRadius: 45,
-            spiderfyOnMaxZoom: true,
-            disableClusteringAtZoom: 17
-          });
-          reportCluster = L.markerClusterGroup({
-            showCoverageOnHover: false,
-            maxClusterRadius: 35,
-            spiderfyOnMaxZoom: true,
-            disableClusteringAtZoom: 17
-          });
-          driveeMap.addLayer(dangerCluster);
+          hydrantCluster = L.markerClusterGroup(Object.assign({ maxClusterRadius: 45 }, clusterOpts));
+          bikeCluster    = L.markerClusterGroup(Object.assign({ maxClusterRadius: 45 }, clusterOpts));
+          towCluster     = L.markerClusterGroup(Object.assign({ maxClusterRadius: 45 }, clusterOpts));
+          reportCluster  = L.markerClusterGroup(Object.assign({ maxClusterRadius: 35 }, clusterOpts));
+          driveeMap.addLayer(hydrantCluster);
+          driveeMap.addLayer(bikeCluster);
+          driveeMap.addLayer(towCluster);
           driveeMap.addLayer(reportCluster);
+        }
+        // Plain layer groups for non-marker overlays (polylines, heat). Created now, populated in later phases.
+        streetsLayer = L.layerGroup().addTo(driveeMap);   // Phase A2
+        eventLayer   = L.layerGroup();                    // Phase C — added to map only on match days
+        heatLayer    = L.layerGroup();                    // Phase D — added when heat data loads
+
+        // Layer toggle control (top-right, below the theme button)
+        if (hydrantCluster && bikeCluster && towCluster && reportCluster) {
+          var overlays = {
+            '🚒 Hydrants':   hydrantCluster,
+            '🚲 Bike Lanes': bikeCluster,
+            '⚠️ Tow Zones':  towCluster,
+            '📍 Reports':    reportCluster
+          };
+          L.control.layers(null, overlays, { position: 'topright', collapsed: true }).addTo(driveeMap);
         }
 
         mapInitialised = true;
@@ -3923,8 +3940,14 @@
         });
         var marker = L.marker([zone.lat, zone.lng], { icon: icon })
           .bindPopup('<strong>' + labels[zone.type] + '</strong>');
-        if (dangerCluster) {
-          dangerCluster.addLayer(marker);
+        // Route to the typed sub-cluster so layer-toggle works
+        var targetCluster = ({
+          hydrant: hydrantCluster,
+          bike:    bikeCluster,
+          tow:     towCluster
+        })[zone.type];
+        if (targetCluster) {
+          targetCluster.addLayer(marker);
         } else {
           marker.addTo(driveeMap);
         }
