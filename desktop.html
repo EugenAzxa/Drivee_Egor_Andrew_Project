@@ -1,0 +1,1770 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Drivee — The driver's app for Toronto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=IBM+Plex+Serif:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --bg: #EEF2FB;
+    --bg2: #E4EAF6;
+    --paper: #FFFFFF;
+    --ink: #0B1430;
+    --ink2: #4A5267;
+    --ink3: #8C95A7;
+    --line: rgba(11,20,48,0.08);
+    --line-s: rgba(11,20,48,0.05);
+    --blue: #2D63F0;
+    --blue-d: #1B45C2;
+    --blue-s: #DCE6FB;
+    --blue-50: #EAF0FD;
+    --green: #16A34A;
+    --amber: #E89B22;
+    --red: #E1473D;
+    --font: 'Plus Jakarta Sans', system-ui, sans-serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --serif: 'IBM Plex Serif', Georgia, serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    background: var(--bg); color: var(--ink);
+    font-family: var(--font);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  body { min-height: 100vh; }
+
+  /* ─────────── Intro overlay ─────────── */
+  .intro {
+    position: fixed; inset: 0; z-index: 100;
+    background: #1B45C2;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    pointer-events: all;
+  }
+  .intro.gone { pointer-events: none; }
+  .intro-bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 30% 20%, rgba(91,140,255,0.85), transparent 55%),
+      radial-gradient(circle at 70% 80%, rgba(45,99,240,0.95), transparent 55%),
+      linear-gradient(180deg, #2D63F0 0%, #1B45C2 60%, #0F2E8C 100%);
+    opacity: 0; animation: introBgIn 1.6s 0.1s ease forwards;
+  }
+  @keyframes introBgIn { to { opacity: 1; } }
+
+  .intro-grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.04) 1px, transparent 1px);
+    background-size: 48px 48px;
+    mask-image: radial-gradient(circle at center, black 30%, transparent 70%);
+    -webkit-mask-image: radial-gradient(circle at center, black 30%, transparent 70%);
+    opacity: 0; animation: introGridIn 1.8s 0.4s ease forwards;
+  }
+  @keyframes introGridIn { to { opacity: 1; } }
+
+  .intro-stage {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column; align-items: center;
+    color: white;
+  }
+
+  .intro-meta {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 2px; font-weight: 700;
+    color: rgba(255,255,255,0.5);
+    display: flex; align-items: center; gap: 10px;
+    opacity: 0; transform: translateY(8px);
+    animation: introFade 0.6s 0.3s ease forwards;
+  }
+  .intro-meta .dot {
+    width: 6px; height: 6px; border-radius: 999px; background: var(--green);
+    animation: pulseDot 1.6s infinite;
+    box-shadow: 0 0 12px var(--green);
+  }
+  @keyframes pulseDot { 0%,100% { opacity: 0.5; transform: scale(1); } 50% { opacity: 1; transform: scale(1.3); } }
+  @keyframes introFade { to { opacity: 1; transform: translateY(0); } }
+
+  .intro-logo {
+    margin-top: 32px;
+    font-size: 120px; font-weight: 800; letter-spacing: -5px;
+    line-height: 1;
+    display: flex;
+  }
+  .intro-logo span {
+    display: inline-block;
+    opacity: 0; transform: translateY(60px) rotateX(40deg);
+    animation: letterIn 0.7s cubic-bezier(0.2,0.7,0.2,1) forwards;
+  }
+  .intro-logo .dot {
+    color: var(--blue);
+    text-shadow: 0 0 40px rgba(46,100,255,0.7);
+  }
+  @keyframes letterIn { to { opacity: 1; transform: translateY(0) rotateX(0); } }
+
+  .intro-tag {
+    margin-top: 28px;
+    font-size: 16px; font-weight: 500; color: rgba(255,255,255,0.7);
+    opacity: 0; transform: translateY(8px);
+    animation: introFade 0.6s 1.5s ease forwards;
+  }
+
+  .intro-bar {
+    margin-top: 36px; width: 320px; height: 2px;
+    background: rgba(255,255,255,0.12); position: relative; overflow: hidden;
+    opacity: 0; animation: introFade 0.5s 1.7s ease forwards;
+  }
+  .intro-bar::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(90deg, transparent, var(--blue), transparent);
+    transform: translateX(-100%);
+    animation: introBarMove 1.4s 1.8s cubic-bezier(0.5,0,0.5,1) forwards;
+  }
+  @keyframes introBarMove { to { transform: translateX(100%); } }
+
+  /* ─────────── Chase scene (officer chasing car) ─────────── */
+  .chase {
+    margin-top: 22px; position: relative; width: 320px; height: 64px;
+    opacity: 0; animation: introFade 0.5s 1.5s ease forwards;
+  }
+  .chase-ground {
+    position: absolute; left: 0; right: 0; bottom: 6px; height: 1px;
+    background: repeating-linear-gradient(90deg,
+      rgba(255,255,255,0.35) 0 8px, transparent 8px 16px);
+    transform-origin: 0 0;
+    animation: chaseGround 0.5s linear infinite 1.6s;
+  }
+  @keyframes chaseGround { to { background-position: -16px 0; } }
+
+  .chase-car, .chase-cop {
+    position: absolute; bottom: 8px;
+    will-change: transform;
+  }
+  .chase-car {
+    left: 0;
+    animation:
+      carDrive 3.6s cubic-bezier(0.45,0.05,0.55,0.95) infinite 1.6s,
+      carBob 0.35s ease-in-out infinite 1.6s;
+  }
+  .chase-cop {
+    left: 0;
+    animation:
+      copChase 3.6s cubic-bezier(0.4,0.1,0.6,0.9) infinite 1.6s,
+      copBob 0.28s ease-in-out infinite 1.6s;
+  }
+  @keyframes carDrive {
+    0%   { transform: translateX(-30px); }
+    18%  { transform: translateX(60px); }
+    100% { transform: translateX(360px); }
+  }
+  @keyframes carBob {
+    0%, 100% { translate: 0 0; }
+    50%      { translate: 0 -1px; }
+  }
+  @keyframes copChase {
+    0%   { transform: translateX(-90px); }
+    18%  { transform: translateX(0px); }
+    65%  { transform: translateX(120px); }
+    100% { transform: translateX(180px); }
+  }
+  @keyframes copBob {
+    0%, 100% { translate: 0 0; }
+    50%      { translate: 0 -3px; }
+  }
+
+  .cop-leg-front { transform-origin: 11px 22px; animation: legFront 0.42s linear infinite 1.6s; }
+  .cop-leg-back  { transform-origin: 11px 22px; animation: legBack  0.42s linear infinite 1.6s; }
+  .cop-arm-front { transform-origin: 11px 12px; animation: armFront 0.42s linear infinite 1.6s; }
+  .cop-arm-back  { transform-origin: 11px 12px; animation: armBack  0.42s linear infinite 1.6s; }
+  @keyframes legFront { 0%,100% { transform: rotate(35deg);} 50% { transform: rotate(-35deg);} }
+  @keyframes legBack  { 0%,100% { transform: rotate(-35deg);} 50% { transform: rotate(35deg);} }
+  @keyframes armFront { 0%,100% { transform: rotate(-30deg);} 50% { transform: rotate(40deg);} }
+  @keyframes armBack  { 0%,100% { transform: rotate(40deg);} 50% { transform: rotate(-30deg);} }
+
+  .car-wheel { transform-origin: center; animation: wheelSpin 0.25s linear infinite 1.6s; }
+  @keyframes wheelSpin { to { transform: rotate(360deg); } }
+
+  /* exhaust puff — trails behind the right-facing car (so emitted on its left/rear) */
+  .car-puff {
+    position: absolute; left: -2px; bottom: 14px;
+    width: 8px; height: 8px; border-radius: 999px;
+    background: rgba(255,255,255,0.55);
+    animation: puffOut 0.9s ease-out infinite 1.6s;
+  }
+  @keyframes puffOut {
+    0%   { opacity: 0.9; transform: translate(0,0) scale(0.6); }
+    100% { opacity: 0;   transform: translate(-22px, -6px) scale(1.6); }
+  }
+
+  .intro-receipt {
+    position: absolute; left: 50%; top: 50%;
+    transform: translate(-50%, -50%) scale(0.4) rotate(-8deg);
+    width: 320px; height: 480px;
+    background: white;
+    box-shadow: 0 60px 120px -40px rgba(0,0,0,0.6), 0 30px 60px -30px rgba(46,100,255,0.4);
+    opacity: 0;
+    animation: receiptIn 1.4s 3.0s cubic-bezier(0.2,0.7,0.2,1) forwards;
+  }
+  @keyframes receiptIn {
+    0% { opacity: 0; transform: translate(-50%, 30%) scale(0.4) rotate(-8deg); }
+    100% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(-3deg); }
+  }
+
+  .intro.fade-out { animation: introOut 0.9s 4.4s cubic-bezier(0.5,0,0.5,1) forwards; }
+  @keyframes introOut {
+    to { opacity: 0; transform: scale(1.08); pointer-events: none; }
+  }
+
+  /* ─────────── Page reveal ─────────── */
+  .page { opacity: 1; }
+
+  /* ─────────── Nav ─────────── */
+  nav.top {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+    padding: 18px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+    transition: backdrop-filter 0.3s, background 0.3s, border-color 0.3s;
+    border-bottom: 1px solid transparent;
+  }
+  nav.top.scrolled {
+    background: rgba(250,251,253,0.78);
+    backdrop-filter: saturate(180%) blur(18px);
+    -webkit-backdrop-filter: saturate(180%) blur(18px);
+    border-bottom-color: var(--line);
+  }
+  nav.top .brand {
+    font-size: 20px; font-weight: 800; letter-spacing: -0.7px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  nav.top .brand .dot { color: var(--blue); }
+  nav.top .links { display: flex; gap: 28px; }
+  nav.top .links a {
+    color: var(--ink2); font-size: 14px; font-weight: 500; text-decoration: none;
+    transition: color 0.2s;
+  }
+  nav.top .links a:hover { color: var(--ink); }
+  nav.top .cta {
+    padding: 10px 18px; background: var(--ink); color: white;
+    border: none; border-radius: 10px; font-family: var(--font);
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* ─────────── Hero ─────────── */
+  .hero {
+    padding: 140px 32px 80px;
+    max-width: 1320px; margin: 0 auto;
+    display: grid; grid-template-columns: 1.1fr 1fr; gap: 64px;
+    align-items: center;
+    position: relative;
+  }
+  .hero-bg {
+    position: absolute; top: 0; right: -20%; width: 80%; height: 100%;
+    background: radial-gradient(ellipse at center, rgba(46,100,255,0.10), transparent 60%);
+    pointer-events: none;
+  }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 6px 14px; border-radius: 999px;
+    background: var(--blue-50); color: var(--blue-d);
+    font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 1.5px;
+    border: 1px solid var(--blue-s);
+  }
+  .eyebrow .dot { width: 6px; height: 6px; background: var(--green); border-radius: 999px; animation: pulseDot 1.6s infinite; }
+
+  h1.hero-title {
+    margin-top: 24px;
+    font-size: 88px; font-weight: 800; letter-spacing: -3.5px;
+    line-height: 0.96;
+  }
+  h1.hero-title .underline {
+    position: relative; white-space: nowrap;
+  }
+  h1.hero-title .underline::after {
+    content: ""; position: absolute;
+    left: 0; right: 0; bottom: 6px; height: 14px;
+    background: var(--blue-s); z-index: -1;
+    border-radius: 4px;
+  }
+
+  .hero-sub {
+    margin-top: 28px; font-size: 19px; color: var(--ink2);
+    line-height: 1.55; max-width: 560px;
+  }
+
+  .hero-actions { margin-top: 36px; display: flex; gap: 12px; align-items: center; }
+  .btn-primary {
+    padding: 14px 24px; background: var(--ink); color: white; border: none;
+    border-radius: 12px; font-size: 14px; font-weight: 700; font-family: var(--font);
+    cursor: pointer; display: inline-flex; align-items: center; gap: 10px;
+    transition: transform 0.15s, background 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .btn-primary:hover { background: var(--blue); transform: translateY(-1px); }
+  .btn-primary::after {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.20) 50%, transparent 70%);
+    transform: translateX(-110%);
+    animation: btnShine 4s 6s infinite;
+  }
+  @keyframes btnShine { 0% { transform: translateX(-110%); } 25%,100% { transform: translateX(110%); } }
+  .btn-ghost {
+    padding: 14px 18px; background: transparent; color: var(--ink); border: 1px solid var(--line);
+    border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--font);
+  }
+  .btn-ghost:hover { border-color: var(--ink); }
+
+  .hero-meta {
+    margin-top: 28px; display: flex; gap: 28px;
+    font-family: var(--mono); font-size: 11px; color: var(--ink3); font-weight: 600; letter-spacing: 1.2px;
+  }
+  .hero-meta b { color: var(--ink); font-weight: 800; }
+
+  /* hero elements visible by default; intro overlay covers them during reveal */
+
+  /* ─────────── Hero receipt mockup ─────────── */
+  .receipt-wrap {
+    position: relative; height: 640px;
+    perspective: 1600px;
+  }
+  .receipt {
+    position: absolute; top: 0; left: 50%;
+    width: 360px; transform: translateX(-50%) rotate(-3deg);
+    background: white;
+    box-shadow:
+      0 40px 80px -30px rgba(11,20,48,0.30),
+      0 20px 40px -20px rgba(46,100,255,0.20);
+    transition: transform 0.6s cubic-bezier(0.2,0.7,0.2,1);
+    overflow: hidden;
+  }
+  .receipt:hover { transform: translateX(-50%) rotate(0); }
+  .receipt::before, .receipt::after {
+    content: ""; position: absolute; left: 0; right: 0; height: 14px;
+    background-image: radial-gradient(circle at 7px 7px, var(--bg) 5px, transparent 5px);
+    background-size: 14px 14px;
+  }
+  .receipt::before { top: -7px; }
+  .receipt::after { bottom: -7px; }
+
+  .receipt-head {
+    padding: 22px 22px 18px;
+    border-bottom: 1px dashed var(--line);
+  }
+  .receipt-head .meta {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; color: var(--ink2); font-weight: 700;
+  }
+  .receipt-head h2 {
+    font-family: var(--serif); font-size: 26px; font-weight: 700; letter-spacing: -0.6px; margin-top: 4px;
+  }
+  .receipt-head .dotline {
+    margin-top: 10px; height: 6px;
+    background: repeating-linear-gradient(90deg, var(--ink) 0 6px, transparent 6px 10px);
+    opacity: 0.85;
+  }
+
+  .receipt-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 22px;
+    font-size: 13px;
+  }
+  .receipt-row .k {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 0.7px; font-weight: 600; color: var(--ink2); text-transform: uppercase;
+  }
+  .receipt-row .v { font-family: var(--mono); font-weight: 700; }
+
+  .scanner {
+    margin: 14px 22px;
+    border: 2px dashed var(--ink); border-radius: 6px;
+    padding: 16px; position: relative; overflow: hidden;
+    background: var(--blue-50);
+  }
+  .scanner-shimmer {
+    position: absolute; inset: 0;
+    background: linear-gradient(110deg, transparent 30%, rgba(46,100,255,0.18) 50%, transparent 70%);
+    transform: translateX(-110%);
+    animation: scannerShine 2.6s linear infinite 6s;
+  }
+  @keyframes scannerShine { 0% { transform: translateX(-110%); } 100% { transform: translateX(110%); } }
+  .scanner-row { display: flex; align-items: center; gap: 8px; position: relative; }
+  .scanner-icon {
+    width: 28px; height: 28px; border-radius: 7px;
+    background: var(--blue); color: white;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .scanner-title { font-family: var(--mono); font-size: 11px; letter-spacing: 1.2px; font-weight: 700; }
+  .scanner-line { flex: 1; height: 1px; border-top: 1px dotted var(--ink); }
+  .scanner h3 { font-family: var(--serif); font-size: 17px; margin-top: 10px; font-weight: 700; line-height: 1.25; }
+  .scanner p { font-size: 12px; color: var(--ink2); margin-top: 4px; line-height: 1.45; }
+  .scanner-btn {
+    margin-top: 12px; height: 40px; width: 100%;
+    background: var(--ink); color: white; border: none; border-radius: 8px;
+    font-family: var(--mono); font-size: 11px; font-weight: 800; letter-spacing: 1.5px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+  }
+
+  .receipt-section {
+    padding: 14px 22px 8px;
+    display: flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 10px; letter-spacing: 1.2px; font-weight: 800; color: var(--ink);
+  }
+  .receipt-section .l { flex: 1; height: 1px; border-top: 1px dashed var(--line); }
+
+  .reminder-row {
+    margin: 0 14px 8px; padding: 10px 14px;
+    background: var(--bg); border: 1px solid var(--line); border-radius: 8px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .reminder-row .left { display: flex; flex-direction: column; gap: 3px; }
+  .reminder-row .ref { font-family: var(--mono); font-size: 9px; color: var(--ink3); font-weight: 700; letter-spacing: 0.5px; }
+  .reminder-row .ttl { font-size: 12px; font-weight: 700; }
+  .reminder-row .right { display: flex; align-items: center; gap: 10px; }
+  .reminder-row .amt { font-family: var(--mono); font-size: 16px; font-weight: 800; }
+  .stamp {
+    display: inline-block; padding: 3px 8px;
+    border: 1.5px solid currentColor; border-radius: 3px;
+    font-family: var(--mono); font-size: 9px; font-weight: 800; letter-spacing: 1.2px;
+    transform: rotate(-3deg);
+  }
+  .stamp.amber { color: var(--amber); }
+  .stamp.green { color: var(--green); }
+  .stamp.red   { color: var(--red); }
+  .stamp.blue  { color: var(--blue); }
+
+  .receipt-foot {
+    padding: 12px 22px 18px;
+    text-align: center;
+    font-family: var(--mono); font-size: 10px; color: var(--ink3); letter-spacing: 1.5px;
+  }
+
+  /* Floating badges around hero receipt */
+  .float-card {
+    position: absolute; padding: 12px 14px;
+    background: white; border: 1px solid var(--line); border-radius: 12px;
+    box-shadow: 0 20px 40px -20px rgba(11,20,48,0.18);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .float-card .ic {
+    width: 32px; height: 32px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    color: white;
+  }
+  .float-card .lbl { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 1px; color: var(--ink2); }
+  .float-card .val { font-size: 14px; font-weight: 700; }
+
+  .float-1 { top: 60px; right: -30px; }
+  .float-1 .ic { background: var(--green); }
+  .float-1 .val { color: var(--green); }
+
+  .float-2 { bottom: 80px; left: -30px; }
+  .float-2 .ic { background: var(--blue); }
+  .float-2 .val { color: var(--blue); }
+
+  .float-3 { top: 240px; right: -50px; }
+  .float-3 .ic { background: var(--amber); }
+
+  /* glow behind receipt */
+  .receipt-glow {
+    position: absolute; top: 50%; left: 50%;
+    width: 460px; height: 460px;
+    transform: translate(-50%,-50%);
+    background: radial-gradient(circle, rgba(46,100,255,0.18), transparent 60%);
+    filter: blur(40px);
+    animation: glowPulse 5s ease-in-out infinite;
+  }
+  @keyframes glowPulse { 0%,100% { opacity: 0.6; } 50% { opacity: 1; } }
+
+  /* ─────────── Logo strip ─────────── */
+  .strip {
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    padding: 28px 32px;
+    display: flex; align-items: center; justify-content: center; gap: 60px;
+    flex-wrap: wrap;
+    background: var(--bg2);
+  }
+  .strip .label { font-family: var(--mono); font-size: 11px; letter-spacing: 1.5px; color: var(--ink2); font-weight: 700; }
+  .strip .pill {
+    padding: 6px 14px; border-radius: 6px; background: white;
+    font-family: var(--mono); font-size: 12px; font-weight: 700; letter-spacing: 0.5px;
+    border: 1px solid var(--line);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .strip .pill .dot { width: 6px; height: 6px; border-radius: 999px; background: var(--green); }
+
+  /* ─────────── Sections ─────────── */
+  section.block {
+    padding: 120px 32px;
+    max-width: 1320px; margin: 0 auto;
+  }
+  .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.9s ease, transform 0.9s cubic-bezier(0.2,0.7,0.2,1); }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+
+  .section-head { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: end; margin-bottom: 56px; }
+  .section-kicker {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 2px; font-weight: 700; color: var(--blue);
+  }
+  .section-kicker .num { color: var(--ink3); margin-right: 12px; }
+  .section-title { margin-top: 14px; font-size: 56px; font-weight: 800; letter-spacing: -2px; line-height: 1; }
+  .section-sub { font-size: 17px; color: var(--ink2); line-height: 1.55; max-width: 520px; }
+
+  /* Three-feature grid */
+  .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .feature {
+    background: white; border: 1px solid var(--line); border-radius: 18px;
+    padding: 32px; position: relative; overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+  }
+  .feature:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 48px -24px rgba(11,20,48,0.18);
+    border-color: var(--blue-s);
+  }
+  .feature .num {
+    font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 1.5px; color: var(--ink3);
+  }
+  .feature .icon-box {
+    width: 48px; height: 48px; border-radius: 12px;
+    background: var(--blue-50); color: var(--blue);
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 24px;
+  }
+  .feature h3 { margin-top: 18px; font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .feature p { margin-top: 10px; font-size: 14px; color: var(--ink2); line-height: 1.55; }
+
+  .feature-tag {
+    margin-top: 18px; display: inline-flex;
+    padding: 4px 10px; border-radius: 6px;
+    background: var(--bg2); color: var(--ink2);
+    font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: 1px;
+    border: 1px solid var(--line-s);
+  }
+
+  /* Showcase / split */
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+  .split.right { grid-template-columns: 1fr 1.1fr; }
+  .split-text h2 { font-size: 52px; font-weight: 800; letter-spacing: -1.8px; line-height: 1.05; margin-bottom: 18px; }
+  .split-text p { font-size: 17px; color: var(--ink2); line-height: 1.55; }
+
+  /* Phone mock - reused style for sections */
+  .phone-mock {
+    width: 320px; height: 640px; margin: 0 auto;
+    background: var(--ink); border-radius: 42px;
+    padding: 8px; position: relative;
+    box-shadow: 0 40px 80px -30px rgba(11,20,48,0.4);
+  }
+  .phone-mock .screen {
+    width: 100%; height: 100%; background: var(--paper); border-radius: 36px;
+    overflow: hidden; position: relative;
+  }
+  .phone-mock .notch {
+    position: absolute; top: 12px; left: 50%; transform: translateX(-50%);
+    width: 110px; height: 30px; background: var(--ink); border-radius: 999px; z-index: 5;
+  }
+
+  /* Map section */
+  .map-card {
+    background: white; border: 1px solid var(--line); border-radius: 24px;
+    padding: 32px;
+    position: relative; overflow: hidden;
+  }
+  .map-canvas {
+    aspect-ratio: 16/9; border-radius: 16px;
+    background:
+      linear-gradient(135deg, var(--blue-50) 0%, var(--bg2) 100%);
+    position: relative; overflow: hidden;
+    border: 1px solid var(--line-s);
+  }
+  .map-canvas svg { width: 100%; height: 100%; display: block; }
+  .map-canvas iframe { filter: saturate(0.85) contrast(0.95); }
+  .map-pin {
+    position: absolute; transform: translate(-50%, -50%);
+    pointer-events: auto; cursor: pointer;
+  }
+  .map-pin .dot {
+    display: block; width: 18px; height: 18px; border-radius: 999px;
+    background: var(--red); border: 3px solid white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.35);
+  }
+  .map-pin.amber .dot { background: var(--amber); }
+  .map-pin.green .dot { background: var(--green); }
+  .map-pin.you .dot   { background: var(--blue); width: 22px; height: 22px; }
+  .map-pin .ring {
+    position: absolute; top: -10px; left: -10px;
+    width: 38px; height: 38px; border-radius: 999px;
+    background: var(--red); opacity: 0.4;
+    animation: pinPulse 1.6s infinite;
+  }
+  .map-pin.amber .ring { background: var(--amber); }
+  .map-pin.green .ring { background: var(--green); }
+  .map-pin.you .ring   { background: var(--blue); top: -14px; left: -14px; width: 50px; height: 50px; }
+  @keyframes pinPulse {
+    0%   { transform: scale(0.6); opacity: 0.5; }
+    100% { transform: scale(2.0); opacity: 0; }
+  }
+  .map-pin .lbl {
+    position: absolute; top: -38px; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: white;
+    font-family: var(--mono); font-size: 10px; font-weight: 800; letter-spacing: 1.2px;
+    padding: 4px 8px; border-radius: 6px;
+    white-space: nowrap;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.3);
+  }
+  .map-pin.you .lbl { background: var(--blue); }
+
+  /* Stat Strip */
+  .stat-strip {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+    border: 1px solid var(--line); border-radius: 20px; overflow: hidden;
+    background: white;
+  }
+  .stat-cell { padding: 32px; border-right: 1px solid var(--line); }
+  .stat-cell:last-child { border-right: none; }
+  .stat-cell .k { font-family: var(--mono); font-size: 11px; letter-spacing: 1.5px; font-weight: 700; color: var(--ink2); }
+  .stat-cell .v { font-size: 56px; font-weight: 800; letter-spacing: -2.5px; margin-top: 10px; font-family: var(--mono); }
+  .stat-cell .v.blue { color: var(--blue); }
+  .stat-cell .v.green { color: var(--green); }
+  .stat-cell .sub { font-size: 12px; color: var(--ink2); margin-top: 4px; }
+
+  /* Timeline */
+  .timeline { position: relative; padding-left: 40px; }
+  .timeline::before {
+    content: ""; position: absolute; left: 16px; top: 0; bottom: 0;
+    width: 2px; background: var(--line);
+  }
+  .timeline-step { position: relative; padding-bottom: 36px; }
+  .timeline-step:last-child { padding-bottom: 0; }
+  .timeline-step::before {
+    content: ""; position: absolute; left: -32px; top: 4px;
+    width: 18px; height: 18px; border-radius: 999px;
+    background: white; border: 2px solid var(--blue);
+  }
+  .timeline-step.done::before { background: var(--blue); }
+  .timeline-step .step-meta {
+    font-family: var(--mono); font-size: 10px; letter-spacing: 1.5px; font-weight: 700; color: var(--ink2);
+  }
+  .timeline-step h4 { font-size: 20px; font-weight: 700; margin-top: 6px; }
+  .timeline-step p { font-size: 14px; color: var(--ink2); margin-top: 6px; line-height: 1.5; }
+
+  /* CTA */
+  .cta-block {
+    margin: 80px 32px 80px;
+    max-width: 1320px; margin-left: auto; margin-right: auto;
+    background: var(--ink); color: white;
+    border-radius: 28px; padding: 80px;
+    position: relative; overflow: hidden;
+    text-align: center;
+  }
+  .cta-block::before {
+    content: ""; position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 20% 30%, rgba(46,100,255,0.4), transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(122,92,240,0.25), transparent 50%);
+  }
+  .cta-block > * { position: relative; }
+  .cta-block h2 { font-size: 80px; font-weight: 800; letter-spacing: -3.5px; line-height: 0.96; }
+  .cta-block .grad {
+    background: linear-gradient(90deg, #7A5CF0, var(--blue), var(--green));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .cta-block p { margin-top: 22px; font-size: 18px; color: rgba(255,255,255,0.7); max-width: 560px; margin-left: auto; margin-right: auto; line-height: 1.55; }
+  .cta-block .row { margin-top: 36px; display: flex; gap: 12px; justify-content: center; }
+  .cta-block .btn-primary { background: white; color: var(--ink); }
+  .cta-block .btn-primary:hover { background: var(--blue); color: white; }
+
+  /* Footer */
+  footer {
+    padding: 60px 32px 32px;
+    max-width: 1320px; margin: 0 auto;
+    border-top: 1px solid var(--line);
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px;
+  }
+  footer h4 { font-family: var(--mono); font-size: 11px; letter-spacing: 1.5px; color: var(--ink2); font-weight: 700; margin-bottom: 14px; }
+  footer a { display: block; padding: 6px 0; color: var(--ink); font-size: 14px; text-decoration: none; }
+  footer a:hover { color: var(--blue); }
+  footer .brand-foot { font-size: 28px; font-weight: 800; letter-spacing: -1px; }
+  footer .brand-foot .dot { color: var(--blue); }
+  footer .brand-sub { color: var(--ink2); font-size: 13px; max-width: 320px; margin-top: 12px; line-height: 1.5; }
+  .legal {
+    max-width: 1320px; margin: 0 auto;
+    padding: 24px 32px;
+    border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between;
+    color: var(--ink3); font-size: 12px; font-family: var(--mono); letter-spacing: 0.5px;
+  }
+
+  /* skip intro button */
+  .skip-intro {
+    position: fixed; bottom: 24px; right: 24px; z-index: 101;
+    padding: 8px 14px; border-radius: 999px;
+    background: rgba(255,255,255,0.08); color: white;
+    border: 1px solid rgba(255,255,255,0.15);
+    font-family: var(--mono); font-size: 11px; font-weight: 700; letter-spacing: 1px;
+    cursor: pointer; transition: background 0.2s;
+    opacity: 0; animation: introFade 0.5s 1s ease forwards;
+  }
+  .skip-intro:hover { background: rgba(255,255,255,0.15); }
+
+  /* Responsive */
+  @media (max-width: 960px) {
+    .hero { grid-template-columns: 1fr; gap: 32px; padding: 100px 20px 60px; }
+    h1.hero-title { font-size: 56px; letter-spacing: -2px; }
+    .feature-grid { grid-template-columns: 1fr; }
+    .split, .split.right { grid-template-columns: 1fr; gap: 32px; }
+    .section-head { grid-template-columns: 1fr; gap: 16px; }
+    .section-title { font-size: 40px; }
+    .stat-strip { grid-template-columns: 1fr 1fr; }
+    .stat-cell { border-right: none; border-bottom: 1px solid var(--line); }
+    footer { grid-template-columns: 1fr 1fr; }
+    .cta-block { padding: 48px 24px; }
+    .cta-block h2 { font-size: 48px; letter-spacing: -2px; }
+    .intro-logo { font-size: 72px; letter-spacing: -3px; }
+    nav.top { padding: 14px 20px; }
+    nav.top .links { display: none; }
+  }
+  /* ─────────── Install Guide section ─────────── */
+  .install-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-top: 48px;
+  }
+  .install-card {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 36px 32px;
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 36px;
+    align-items: center;
+  }
+  .install-card .ic-meta {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 2px; font-weight: 700;
+    color: var(--ink3); display: flex; align-items: center; gap: 10px;
+  }
+  .install-card .ic-meta svg { width: 14px; height: 14px; }
+  .install-card h3 { font-size: 24px; font-weight: 800; letter-spacing: -0.6px; margin-top: 10px; line-height: 1.15; }
+  .install-steps { margin-top: 22px; counter-reset: step; display: flex; flex-direction: column; gap: 14px; padding: 0; }
+  .install-steps li {
+    position: relative; padding-left: 38px;
+    font-size: 14.5px; line-height: 1.5; color: var(--ink2);
+    list-style: none;
+  }
+  .install-steps li::before {
+    counter-increment: step;
+    content: counter(step, decimal-leading-zero);
+    position: absolute; left: 0; top: 3px;
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    color: var(--blue); letter-spacing: 1px;
+  }
+  /* (cinematic scrolly section reverted) */
+
+  /* ─────────── Hero install nudge ─────────── */
+  .install-nudge {
+    margin-top: 22px;
+    display: inline-flex; align-items: center; gap: 12px;
+    padding: 10px 16px 10px 12px;
+    background: var(--blue-50);
+    border: 1px solid var(--blue-s);
+    border-radius: 999px;
+    color: var(--ink); text-decoration: none;
+    font-size: 14px; font-weight: 500;
+    position: relative;
+    transition: transform 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+    animation: nudgeBob 2.8s ease-in-out infinite 2.5s;
+  }
+  .install-nudge:hover {
+    background: var(--blue-s);
+    transform: translateY(-2px);
+    box-shadow: 0 12px 24px -12px rgba(45,99,240,0.35);
+  }
+  @keyframes nudgeBob {
+    0%, 100% { transform: translateY(0); }
+    50%      { transform: translateY(-3px); }
+  }
+  .install-nudge .nudge-txt b { color: var(--blue); font-weight: 700; }
+  .install-nudge .nudge-arrow {
+    width: 14px; height: 14px; color: var(--blue);
+    animation: nudgeArrow 1.4s ease-in-out infinite;
+  }
+  @keyframes nudgeArrow {
+    0%, 100% { transform: translateX(0); }
+    50%      { transform: translateX(4px); }
+  }
+  .cursor-tap {
+    position: relative; width: 28px; height: 28px;
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--blue);
+  }
+  .cursor-tap svg {
+    width: 18px; height: 18px;
+    animation: tapPulse 1.6s ease-in-out infinite;
+    transform-origin: 70% 30%;
+  }
+  @keyframes tapPulse {
+    0%, 100% { transform: scale(1); }
+    40%      { transform: scale(0.78); }
+    60%      { transform: scale(1.02); }
+  }
+  .ripple {
+    position: absolute; left: 50%; top: 50%;
+    width: 10px; height: 10px; margin: -5px 0 0 -5px;
+    border-radius: 999px;
+    border: 2px solid var(--blue);
+    opacity: 0;
+    animation: ripple 1.6s ease-out infinite;
+  }
+  .ripple.r2 { animation-delay: 0.5s; }
+  @keyframes ripple {
+    0%   { opacity: 0.7; transform: scale(0.5); }
+    80%  { opacity: 0;   transform: scale(2.6); }
+    100% { opacity: 0;   transform: scale(2.6); }
+  }
+  .install-steps .pill {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 1px 8px; border-radius: 6px;
+    background: var(--blue-50); color: var(--blue);
+    font-size: 12.5px; font-weight: 700;
+    vertical-align: 2px; margin: 0 2px;
+  }
+  .install-steps .pill svg { width: 11px; height: 11px; }
+
+  /* Compact phone mockups (illustrative, not real frames) */
+  .mini-phone {
+    width: 200px; height: 380px; margin: 0 auto;
+    background: var(--ink); border-radius: 32px;
+    padding: 8px; position: relative;
+    box-shadow: 0 30px 60px -30px rgba(11,20,48,0.45),
+                0 12px 30px -16px rgba(45,99,240,0.35);
+  }
+  .mini-phone::before {
+    content: ""; position: absolute; top: 14px; left: 50%;
+    transform: translateX(-50%);
+    width: 80px; height: 18px; border-radius: 12px;
+    background: #000; z-index: 3;
+  }
+  .mini-phone.android::before {
+    width: 6px; height: 6px; top: 16px;
+  }
+  .mp-screen {
+    width: 100%; height: 100%; border-radius: 26px;
+    background: var(--blue);
+    background-image:
+      linear-gradient(180deg, var(--blue) 0%, var(--blue-d) 100%);
+    overflow: hidden; position: relative;
+  }
+  .mp-bar {
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 14px;
+    font-family: var(--mono); font-size: 9px; color: rgba(255,255,255,0.85);
+    z-index: 2;
+  }
+  .mp-content {
+    position: absolute; top: 40px; left: 14px; right: 14px;
+    color: white;
+  }
+  .mp-content .brand {
+    font-weight: 800; font-size: 22px; letter-spacing: -0.8px;
+  }
+  .mp-content .brand .dot { color: #5B8CFF; }
+  .mp-content .greet {
+    margin-top: 10px; font-size: 11px; opacity: 0.85; line-height: 1.4;
+  }
+  .mp-tile {
+    margin-top: 14px;
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 12px; padding: 10px;
+    backdrop-filter: blur(8px);
+  }
+  .mp-tile .label { font-family: var(--mono); font-size: 8px; opacity: 0.7; letter-spacing: 1px; }
+  .mp-tile .num { font-size: 18px; font-weight: 800; margin-top: 4px; }
+  .mp-tiles3 {
+    margin-top: 12px;
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;
+  }
+  .mp-mini { background: rgba(255,255,255,0.10); border-radius: 8px; padding: 6px 4px; text-align: center; }
+  .mp-mini .n { font-size: 13px; font-weight: 800; }
+  .mp-mini .l { font-family: var(--mono); font-size: 7px; opacity: 0.7; letter-spacing: 0.5px; margin-top: 2px; }
+
+  /* Step callout overlays the phone */
+  .mp-overlay {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    background: var(--ink); color: white;
+    padding: 8px 12px; border-radius: 999px;
+    font-family: var(--mono); font-size: 10px; font-weight: 700;
+    letter-spacing: 1px; white-space: nowrap;
+    box-shadow: 0 8px 20px -8px rgba(0,0,0,0.5);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .mp-overlay svg { width: 12px; height: 12px; }
+  .mp-overlay.top { top: -14px; }
+  .mp-overlay.bottom { bottom: -14px; background: var(--blue); }
+
+  /* Bottom row: QR + reassurance */
+  .install-foot {
+    margin-top: 36px;
+    display: grid; grid-template-columns: auto 1fr auto; gap: 28px;
+    align-items: center;
+    background: var(--paper); border: 1px solid var(--line);
+    border-radius: 20px; padding: 22px 28px;
+  }
+  .install-qr {
+    width: 84px; height: 84px;
+    background:
+      conic-gradient(from 0deg at 15% 15%, var(--ink) 0 25%, transparent 0 100%),
+      conic-gradient(from 0deg at 85% 15%, var(--ink) 0 25%, transparent 0 100%),
+      conic-gradient(from 0deg at 15% 85%, var(--ink) 0 25%, transparent 0 100%),
+      repeating-conic-gradient(var(--ink) 0% 25%, white 0% 50%);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 14px 14px;
+    background-repeat: no-repeat, no-repeat, no-repeat, repeat;
+    border-radius: 8px;
+    border: 6px solid white;
+    box-shadow: inset 0 0 0 1px var(--line);
+    flex-shrink: 0;
+  }
+  .install-foot .ftxt { font-size: 14px; color: var(--ink2); line-height: 1.5; }
+  .install-foot .ftxt b { color: var(--ink); }
+  .install-foot .ftxt .sub {
+    font-family: var(--mono); font-size: 11px; letter-spacing: 1.5px;
+    color: var(--ink3); margin-bottom: 4px; display: block;
+  }
+  .install-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 10px 16px; border-radius: 999px;
+    background: var(--ink); color: white;
+    font-size: 13px; font-weight: 600; white-space: nowrap;
+  }
+  .install-badge .strike { text-decoration: line-through; opacity: 0.5; }
+  .install-badge svg { width: 14px; height: 14px; }
+
+  @media (max-width: 960px) {
+    .install-grid { grid-template-columns: 1fr; }
+    .install-card { grid-template-columns: 1fr; padding: 28px 22px; gap: 28px; }
+    .install-foot { grid-template-columns: 1fr; text-align: center; padding: 22px; }
+    .install-foot .install-qr { margin: 0 auto; }
+  }
+</style>
+</head>
+<body>
+
+<script>
+  // ─── Mobile detection: redirect phones straight to the app ───
+  (function() {
+    const ua = navigator.userAgent || "";
+    const isPhone = /iPhone|Android.*Mobile|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua)
+                    || (window.matchMedia && window.matchMedia("(max-width: 768px)").matches && /Mobi/i.test(ua));
+    const skipRedirect = window.location.hash === "#desktop" || window.location.search.includes("desktop=1");
+    if (isPhone && !skipRedirect) {
+      window.location.replace("/?app=1");
+    }
+  })();
+</script>
+
+<!-- ═══════════════════ INTRO OVERLAY ═══════════════════ -->
+<div class="intro" id="intro">
+  <div class="intro-bg"></div>
+  <div class="intro-grid"></div>
+  <div class="intro-stage">
+    <div class="intro-meta">
+      <span class="dot"></span>
+      <span>DRIVEE.CA · INITIALIZING</span>
+    </div>
+    <div class="intro-logo" id="introLogo"></div>
+    <div class="intro-tag">The driver's app for Toronto.</div>
+    <div class="intro-bar"></div>
+    <div class="chase" aria-hidden="true">
+      <div class="chase-ground"></div>
+
+      <!-- Officer running, ticket pad in hand -->
+      <div class="chase-cop">
+        <svg width="34" height="48" viewBox="0 0 34 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- back leg -->
+          <rect class="cop-leg-back" x="9" y="22" width="4" height="14" rx="1.5" fill="#0F2E8C"/>
+          <!-- back arm -->
+          <rect class="cop-arm-back" x="9" y="12" width="3.5" height="11" rx="1.5" fill="#5B8CFF"/>
+          <!-- torso (uniform) -->
+          <rect x="7" y="11" width="11" height="13" rx="2" fill="#1B45C2"/>
+          <!-- belt -->
+          <rect x="7" y="22" width="11" height="2" fill="#0F2E8C"/>
+          <!-- head -->
+          <circle cx="12.5" cy="7" r="4.2" fill="#F2C9A0"/>
+          <!-- cap -->
+          <path d="M7.8 6.2 Q12.5 2 17.2 6.2 L17.2 7.4 L7.8 7.4 Z" fill="#0F2E8C"/>
+          <rect x="7" y="7" width="11" height="1.6" fill="#0F2E8C"/>
+          <!-- front leg -->
+          <rect class="cop-leg-front" x="9" y="22" width="4" height="14" rx="1.5" fill="#0B2470"/>
+          <!-- front arm holding ticket pad -->
+          <g class="cop-arm-front">
+            <rect x="9" y="12" width="3.5" height="11" rx="1.5" fill="#2D63F0"/>
+            <!-- ticket pad -->
+            <rect x="6" y="20" width="9" height="11" rx="1" fill="#FFFFFF"/>
+            <rect x="7.5" y="22" width="6" height="1" fill="#0F2E8C"/>
+            <rect x="7.5" y="24" width="6" height="1" fill="#0F2E8C"/>
+            <rect x="7.5" y="26" width="4" height="1" fill="#0F2E8C"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Car with driver — facing right, fleeing -->
+      <div class="chase-car">
+        <div class="car-puff"></div>
+        <svg width="56" height="36" viewBox="0 0 56 36" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform: scaleX(-1);">
+          <!-- shadow -->
+          <ellipse cx="28" cy="32" rx="22" ry="2" fill="rgba(0,0,0,0.25)"/>
+          <!-- body lower -->
+          <path d="M3 24 Q3 18 9 17 L17 17 Q22 9 30 9 L40 9 Q46 9 49 17 L52 18 Q54 18 54 22 L54 26 Q54 28 52 28 L4 28 Q3 28 3 26 Z" fill="#E1473D"/>
+          <!-- body highlight -->
+          <path d="M9 17 L17 17 Q22 9 30 9 L40 9 Q46 9 49 17 L47 18 Q44 11 39 11 L30 11 Q23 11 19 17 Z" fill="#C2382F"/>
+          <!-- cabin / windows -->
+          <path d="M19 17 Q23 11 30 11 L39 11 Q44 11 47 17 Z" fill="#5B8CFF"/>
+          <!-- window divider -->
+          <rect x="32" y="11" width="1.2" height="6" fill="#E1473D"/>
+          <!-- driver silhouette -->
+          <circle cx="35" cy="15" r="2.2" fill="#0F2E8C"/>
+          <path d="M32.5 17 Q35 14.5 37.5 17 L37.5 18 L32.5 18 Z" fill="#0F2E8C"/>
+          <!-- headlight (now on the left of the SVG, becomes the right-facing front after mirror) -->
+          <rect x="51" y="20" width="3" height="3" rx="1" fill="#FFE57A"/>
+          <!-- taillight -->
+          <rect x="3" y="20" width="2.5" height="3" rx="1" fill="#7A1C16"/>
+          <!-- wheels -->
+          <g transform="translate(13 28)"><circle class="car-wheel" r="4" fill="#0B1430"/><circle r="1.6" fill="#5B8CFF"/></g>
+          <g transform="translate(43 28)"><circle class="car-wheel" r="4" fill="#0B1430"/><circle r="1.6" fill="#5B8CFF"/></g>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <button class="skip-intro" id="skipIntro">SKIP →</button>
+</div>
+
+<!-- (officer scene removed — pending direction) -->
+
+<!-- ═══════════════════ PAGE ═══════════════════ -->
+<div class="page" id="page">
+
+  <nav class="top" id="topnav">
+    <div class="brand">Drivee<span class="dot">.</span></div>
+    <div class="links">
+      <a href="#features">Features</a>
+      <a href="#scanner">Scanner</a>
+      <a href="#hotspots">Hotspots</a>
+      <a href="#legal">Legal</a>
+      <a href="#guide">Guide</a>
+    </div>
+    <a href="/?app=1" class="cta" style="text-decoration: none;">Open the app →</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div>
+      <div class="anim a1 eyebrow">
+        <span class="dot"></span>
+        <span>NOW LIVE IN TORONTO</span>
+      </div>
+      <h1 class="hero-title">
+        <span class="anim a2">Park, pay,</span><br/>
+        <span class="anim a3">dispute — </span>
+        <span class="anim a4 underline">in seconds.</span>
+      </h1>
+      <p class="hero-sub anim a5">
+        Drivee scans your parking ticket, tells you whether to fight it or pay it,
+        and warns you before the next one. Built for Toronto drivers, by Toronto drivers.
+      </p>
+      <a href="#guide" class="install-nudge anim a5" id="installNudge">
+        <span class="cursor-tap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11V6a2 2 0 0 1 4 0v5"/><path d="M13 11V4a2 2 0 0 1 4 0v9"/><path d="M17 11V6a2 2 0 0 1 4 0v9a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 17V4a2 2 0 0 1 4 0v7"/></svg>
+          <span class="ripple"></span>
+          <span class="ripple r2"></span>
+        </span>
+        <span class="nudge-txt">Tap here — <b>install Drivee on your phone</b> in 2 taps</span>
+        <svg class="nudge-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </a>
+      <div class="hero-actions anim a5">
+        <button class="btn-primary">
+          Get Drivee free
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+        <button class="btn-ghost">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          Watch 60-sec demo
+        </button>
+      </div>
+      <div class="hero-meta anim a5">
+        <div><b>$142</b> SAVED YTD</div>
+        <div><b>74%</b> DISPUTES WON</div>
+      </div>
+    </div>
+
+    <!-- HERO RECEIPT -->
+    <div class="receipt-wrap">
+      <div class="receipt-glow"></div>
+
+      <div class="receipt">
+        <div class="receipt-head">
+          <div class="meta">DRIVEE · NO. 0481 · APR 30</div>
+          <h2>Hi, Eugen.</h2>
+          <div class="dotline"></div>
+        </div>
+        <div class="receipt-row">
+          <span class="k">Balance owed</span>
+          <span class="v" style="font-size: 22px;">$255.00</span>
+        </div>
+        <div class="receipt-row" style="padding-top: 0;">
+          <span class="k">Reminders</span>
+          <span class="v">3 active</span>
+        </div>
+        <div class="receipt-row" style="padding-top: 0;">
+          <span class="k">Saved YTD</span>
+          <span class="v" style="color: var(--green);">$142.50</span>
+        </div>
+
+        <div class="scanner">
+          <div class="scanner-shimmer"></div>
+          <div class="scanner-row">
+            <div class="scanner-icon">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3 1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3Z"/></svg>
+            </div>
+            <span class="scanner-title">OCR + AI VISION</span>
+            <span class="scanner-line"></span>
+          </div>
+          <h3>Snap the ticket. We read it.</h3>
+          <p>From paper to filed reminder in under 60 seconds. No data leaves your phone.</p>
+          <button class="scanner-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z"/><circle cx="12" cy="13" r="3"/></svg>
+            SCAN TICKET
+          </button>
+        </div>
+
+        <div class="receipt-section">
+          <span>§ REMINDERS</span><span class="l"></span><span>03</span>
+        </div>
+        <div class="reminder-row">
+          <div class="left">
+            <span class="ref">REF · TR-2841093</span>
+            <span class="ttl">No Standing — King St W</span>
+          </div>
+          <div class="right">
+            <span class="amt">$65</span>
+            <span class="stamp amber">TODAY</span>
+          </div>
+        </div>
+        <div class="reminder-row">
+          <div class="left">
+            <span class="ref">REF · CMR-92841</span>
+            <span class="ttl">Speed Camera — Bathurst</span>
+          </div>
+          <div class="right">
+            <span class="amt">$110</span>
+            <span class="stamp green">3D</span>
+          </div>
+        </div>
+        <div class="reminder-row" style="margin-bottom: 14px;">
+          <div class="left">
+            <span class="ref">REF · TR-2839102</span>
+            <span class="ttl">Permit Only — Dundas E</span>
+          </div>
+          <div class="right">
+            <span class="amt">$80</span>
+            <span class="stamp red">OVRDUE</span>
+          </div>
+        </div>
+        <div class="receipt-foot">━━━ KEEP THIS RECEIPT ━━━</div>
+      </div>
+
+      <!-- floating cards -->
+      <div class="float-card float-1">
+        <div class="ic">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M20 6 9 17l-5-5"/></svg>
+        </div>
+        <div>
+          <div class="lbl">DISPUTE WON</div>
+          <div class="val">+$65</div>
+        </div>
+      </div>
+
+      <div class="float-card float-2">
+        <div class="ic">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3 1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3Z"/></svg>
+        </div>
+        <div>
+          <div class="lbl">AI VERDICT</div>
+          <div class="val">Contest it</div>
+        </div>
+      </div>
+
+      <div class="float-card float-3">
+        <div class="ic">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s-8-4.5-8-12a8 8 0 0 1 16 0c0 7.5-8 12-8 12Z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div>
+          <div class="lbl">BIKE LANE</div>
+          <div class="val" style="color: var(--amber);">22m away</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LOGO STRIP -->
+  <div class="strip">
+    <span class="label">CONNECTS DIRECTLY TO</span>
+    <span class="pill"><span class="dot"></span>City of Toronto</span>
+    <span class="pill"><span class="dot"></span>Court Services</span>
+    <span class="pill"><span class="dot"></span>Green P</span>
+    <span class="pill"><span class="dot"></span>MTO Ontario</span>
+    <span class="pill"><span class="dot"></span>311 Toronto</span>
+  </div>
+
+  <!-- FEATURES SECTION -->
+  <section class="block reveal" id="features">
+    <div class="section-head">
+      <div>
+        <div class="section-kicker"><span class="num">01</span>WHAT IT DOES</div>
+        <h2 class="section-title">Five features.<br/>One driver.</h2>
+      </div>
+      <div>
+        <p class="section-sub">Drivee replaces the City of Toronto, MTO, court portals, and a parking lawyer with one calm app. We handle the paperwork; you handle the wheel.</p>
+      </div>
+    </div>
+
+    <div class="feature-grid">
+      <div class="feature">
+        <div class="num">01</div>
+        <div class="icon-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z"/><circle cx="12" cy="13" r="3"/></svg>
+        </div>
+        <h3>AI ticket scanner</h3>
+        <p>Snap any parking ticket, camera fine, or warning. We extract amount, deadline, location, and verdict — usually in under 8 seconds.</p>
+        <div class="feature-tag">OCR · GPT-4 VISION</div>
+      </div>
+
+      <div class="feature">
+        <div class="num">02</div>
+        <div class="icon-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s-8-4.5-8-12a8 8 0 0 1 16 0c0 7.5-8 12-8 12Z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <h3>Hotspot guardian</h3>
+        <p>Live GPS warnings before you cross into a bike lane, fire route, or red-zone street. Backed by 14k+ community-reported pins.</p>
+        <div class="feature-tag">LIVE · ±4M ACCURACY</div>
+      </div>
+
+      <div class="feature">
+        <div class="num">03</div>
+        <div class="icon-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
+        </div>
+        <h3>AI legal verdict</h3>
+        <p>One paragraph telling you whether to pay or fight your ticket — and a generated dispute letter you can copy in one tap.</p>
+        <div class="feature-tag">74% SUCCESS RATE</div>
+      </div>
+
+      <div class="feature">
+        <div class="num">04</div>
+        <div class="icon-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        </div>
+        <h3>Late-fee shield</h3>
+        <p>We track every deadline. Early-pay discount, day-30 surcharge, day-60 court referral — Drivee shows you the cost of waiting.</p>
+        <div class="feature-tag">SAVES $79.59 AVG</div>
+      </div>
+
+      <div class="feature">
+        <div class="num">05</div>
+        <div class="icon-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13"/><path d="M2.5 6.253c4.5-1.5 9.5-1.5 9.5 0M21.5 6.253c-4.5-1.5-9.5-1.5-9.5 0"/></svg>
+        </div>
+        <h3>Lawyer marketplace</h3>
+        <p>Vetted Toronto defence firms — sorted by win rate, fee, and language. Free 15-min consults, no commission, no upsells.</p>
+        <div class="feature-tag">42 FIRMS · ALL VETTED</div>
+      </div>
+
+      <div class="feature">
+        <div class="num">06</div>
+        <div class="icon-box">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1 0-5H20"/></svg>
+        </div>
+        <h3>3-min onboarding</h3>
+        <p>Plate in, photo in, you're done. We pull your existing City of Toronto fines and import them automatically.</p>
+        <div class="feature-tag">8 STEPS · 3 MINUTES</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STAT STRIP -->
+  <section class="block reveal" style="padding-top: 0;">
+    <div class="stat-strip">
+      <div class="stat-cell">
+        <div class="k">DRIVERS PROTECTED</div>
+        <div class="v" data-counter="1240">0</div>
+        <div class="sub">in Toronto · GTA</div>
+      </div>
+      <div class="stat-cell">
+        <div class="k">SAVED FROM FINES</div>
+        <div class="v blue" data-counter="200" data-suffix="K" data-prefix="$">$0</div>
+        <div class="sub">since launch</div>
+      </div>
+      <div class="stat-cell">
+        <div class="k">DISPUTES WON</div>
+        <div class="v green" data-counter="68" data-suffix="%">0%</div>
+        <div class="sub">vs 12% city avg</div>
+      </div>
+      <div class="stat-cell">
+        <div class="k">AVG SCAN TIME</div>
+        <div class="v" data-counter="7.2" data-suffix="s">0s</div>
+        <div class="sub">photo to verdict</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCANNER SECTION (split) -->
+  <section class="block reveal" id="scanner">
+    <div class="split right">
+      <div class="split-text">
+        <div class="section-kicker"><span class="num">02</span>THE AI SCANNER</div>
+        <h2 style="margin-top: 14px;">A receipt in.<br/>An answer out.</h2>
+        <p style="margin-top: 22px;">Drag, snap, or paste any Toronto fine. Our model reads the ticket type, charge code, location, and deadline — then crosses that against 12k+ historical disputes to tell you exactly what to do next.</p>
+        <div class="timeline" style="margin-top: 36px;">
+          <div class="timeline-step done">
+            <div class="step-meta">STEP 01 · 0.4s</div>
+            <h4>Photo captured</h4>
+            <p>Auto-deskew, glare removal, edge detection.</p>
+          </div>
+          <div class="timeline-step done">
+            <div class="step-meta">STEP 02 · 2.1s</div>
+            <h4>OCR + classification</h4>
+            <p>Charge code, plate, amount, location, time.</p>
+          </div>
+          <div class="timeline-step done">
+            <div class="step-meta">STEP 03 · 4.7s</div>
+            <h4>Verdict generated</h4>
+            <p>"Contest" — sign visibility issues at this corner.</p>
+          </div>
+          <div class="timeline-step">
+            <div class="step-meta">STEP 04 · You</div>
+            <h4>One-tap action</h4>
+            <p>Pay it, fight it, or save it for later. Your call.</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="receipt" style="position: relative; left: auto; top: auto; transform: rotate(2deg); margin: 0 auto;">
+          <div class="receipt-head">
+            <div class="meta">SCAN · TR-2841093 · 14:32</div>
+            <h2 style="font-size: 22px;">Verdict: Contest</h2>
+            <div class="dotline"></div>
+          </div>
+          <div class="receipt-row">
+            <span class="k">Charge code</span>
+            <span class="v">001 · No Standing</span>
+          </div>
+          <div class="receipt-row" style="padding-top: 0;">
+            <span class="k">Location</span>
+            <span class="v">King W (Bathurst)</span>
+          </div>
+          <div class="receipt-row" style="padding-top: 0;">
+            <span class="k">Amount</span>
+            <span class="v">$65.00</span>
+          </div>
+          <div class="receipt-row" style="padding-top: 0;">
+            <span class="k">Success odds</span>
+            <span class="v" style="color: var(--green);">MED-HIGH</span>
+          </div>
+
+          <div style="padding: 8px 22px;">
+            <div class="receipt-section" style="padding-left: 0; padding-right: 0;">
+              <span>§ AI NOTES</span><span class="l"></span>
+            </div>
+            <p style="font-family: var(--serif); font-size: 13px; line-height: 1.5; color: var(--ink); padding: 4px 0 14px;">
+              Sign at this corner is partially obstructed by construction hoarding (verified Apr 18). Of 28 disputes filed at this location in 2025, 21 were dismissed.
+            </p>
+          </div>
+
+          <div style="padding: 0 14px 14px; display: flex; gap: 8px;">
+            <button class="scanner-btn" style="flex: 1; background: var(--blue);">GENERATE LETTER</button>
+            <button class="scanner-btn" style="flex: 1; background: white; color: var(--ink); border: 1px solid var(--line);">PAY $65</button>
+          </div>
+          <div class="receipt-foot">━━━ END OF VERDICT ━━━</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- HOTSPOTS SECTION -->
+  <section class="block reveal" id="hotspots">
+    <div class="section-head">
+      <div>
+        <div class="section-kicker"><span class="num">03</span>HOTSPOTS · LIVE</div>
+        <h2 class="section-title">14,283 pins.<br/>One Toronto.</h2>
+      </div>
+      <div>
+        <p class="section-sub">Every bike lane, fire route, permit-only block, and rush-hour stop-tow zone — mapped, color-coded, and updated by other Drivee drivers in real time.</p>
+      </div>
+    </div>
+
+    <div class="map-card">
+      <div class="map-canvas" style="position: relative;">
+        <iframe
+          src="https://www.google.com/maps?q=Toronto+downtown&amp;t=m&amp;z=14&amp;output=embed"
+          width="100%" height="100%" style="border:0; display:block; border-radius: 16px;"
+          loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+          title="Drivee live ticket hotspots — Toronto"></iframe>
+        <!-- Hotspot pin overlay -->
+        <div style="position: absolute; inset: 0; pointer-events: none;">
+          <div class="map-pin red"   style="left: 22%; top: 32%;"><span class="dot"></span><span class="ring"></span><span class="lbl">$11K · KING+SPADINA</span></div>
+          <div class="map-pin amber" style="left: 46%; top: 58%;"><span class="dot"></span><span class="ring"></span><span class="lbl">$3.2K · PERMIT</span></div>
+          <div class="map-pin green" style="left: 68%; top: 42%;"><span class="dot"></span><span class="lbl">FREE · 14 SPOTS</span></div>
+          <div class="map-pin red"   style="left: 78%; top: 72%;"><span class="dot"></span><span class="ring"></span><span class="lbl">$6.7K · LAKESHORE</span></div>
+          <div class="map-pin amber" style="left: 14%; top: 70%;"><span class="dot"></span><span class="lbl">$2.8K · QUEEN W</span></div>
+          <div class="map-pin you"   style="left: 50%; top: 48%;"><span class="dot"></span><span class="ring"></span><span class="lbl">YOU · CRWZ 449</span></div>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-top: 24px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="width: 12px; height: 12px; background: var(--red); border-radius: 999px;"></span>
+          <div>
+            <div style="font-size: 12px; font-weight: 700;">Red zone</div>
+            <div style="font-family: var(--mono); font-size: 10px; color: var(--ink2);">$200+ FINE</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="width: 12px; height: 12px; background: var(--amber); border-radius: 999px;"></span>
+          <div>
+            <div style="font-size: 12px; font-weight: 700;">Permit only</div>
+            <div style="font-family: var(--mono); font-size: 10px; color: var(--ink2);">$80 FINE</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="width: 12px; height: 12px; background: var(--green); border-radius: 999px;"></span>
+          <div>
+            <div style="font-size: 12px; font-weight: 700;">Free now</div>
+            <div style="font-family: var(--mono); font-size: 10px; color: var(--ink2);">CONFIRMED · 14:32</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="width: 12px; height: 12px; background: var(--blue); border-radius: 999px;"></span>
+          <div>
+            <div style="font-size: 12px; font-weight: 700;">You</div>
+            <div style="font-family: var(--mono); font-size: 10px; color: var(--ink2);">±4M ACCURACY</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LEGAL SECTION -->
+  <section class="block reveal" id="legal">
+    <div class="split">
+      <div>
+        <div class="section-kicker"><span class="num">04</span>LEGAL · WITHOUT THE LEGALESE</div>
+        <h2 style="margin-top: 14px; font-size: 56px; font-weight: 800; letter-spacing: -2px; line-height: 1;">Pay it. Or<br/>fight it. We'll<br/>tell you which.</h2>
+        <p style="margin-top: 22px; font-size: 17px; color: var(--ink2); line-height: 1.55;">Drivee crosses your specific ticket against thousands of historical Toronto disputes — then issues a verdict in plain English. If we say "fight it," you'll have a printable letter in 30 seconds.</p>
+        <div style="margin-top: 32px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+          <div style="padding: 16px; background: white; border: 1px solid var(--line); border-radius: 12px;">
+            <span class="stamp red">URGENT</span>
+            <div style="font-size: 13px; margin-top: 10px; color: var(--ink2); line-height: 1.4;">Don't pay yet — court referral risk.</div>
+          </div>
+          <div style="padding: 16px; background: white; border: 1px solid var(--line); border-radius: 12px;">
+            <span class="stamp amber">SERIOUS</span>
+            <div style="font-size: 13px; margin-top: 10px; color: var(--ink2); line-height: 1.4;">Worth fighting — hire a lawyer.</div>
+          </div>
+          <div style="padding: 16px; background: var(--blue-50); border: 2px solid var(--blue); border-radius: 12px;">
+            <span class="stamp blue">CONTEST</span>
+            <div style="font-size: 13px; margin-top: 10px; color: var(--ink2); line-height: 1.4;">DIY dispute — we draft the letter.</div>
+          </div>
+          <div style="padding: 16px; background: white; border: 1px solid var(--line); border-radius: 12px;">
+            <span class="stamp green">MINOR</span>
+            <div style="font-size: 13px; margin-top: 10px; color: var(--ink2); line-height: 1.4;">Just pay it. It's cheaper than time.</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="background: white; border: 1px solid var(--line); border-radius: 20px; padding: 28px; box-shadow: 0 30px 60px -30px rgba(11,20,48,0.18);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <div style="font-family: var(--mono); font-size: 11px; letter-spacing: 1.5px; font-weight: 800;">DEFENCE FIRMS · TORONTO</div>
+          <span style="font-family: var(--mono); font-size: 11px; color: var(--ink2);">42 VETTED</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="padding: 16px; border: 1px solid var(--line); border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-family: var(--serif); font-size: 16px; font-weight: 700;">Pinto Wray James LLP</div>
+              <div style="font-family: var(--mono); font-size: 10px; color: var(--ink2); margin-top: 2px;">PARKING DISPUTES · FREE 15-MIN</div>
+              <div style="display: flex; gap: 4px; margin-top: 8px;">
+                <span style="font-family: var(--mono); font-size: 9px; padding: 2px 6px; background: var(--ink); color: white; font-weight: 700;">EN</span>
+                <span style="font-family: var(--mono); font-size: 9px; padding: 2px 6px; background: var(--ink); color: white; font-weight: 700;">FR</span>
+                <span style="font-family: var(--mono); font-size: 9px; padding: 2px 6px; background: var(--ink); color: white; font-weight: 700;">UK</span>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-family: var(--mono); font-size: 18px; font-weight: 800;">82%</div>
+              <div style="font-family: var(--mono); font-size: 10px; color: var(--ink2);">WIN RATE</div>
+            </div>
+          </div>
+          <div style="padding: 16px; border: 1px solid var(--line); border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-family: var(--serif); font-size: 16px; font-weight: 700;">Yatar &amp; Yatar</div>
+              <div style="font-family: var(--mono); font-size: 10px; color: var(--ink2); margin-top: 2px;">CAMERA FINES · CONTINGENCY</div>
+              <div style="display: flex; gap: 4px; margin-top: 8px;">
+                <span style="font-family: var(--mono); font-size: 9px; padding: 2px 6px; background: var(--ink); color: white; font-weight: 700;">EN</span>
+                <span style="font-family: var(--mono); font-size: 9px; padding: 2px 6px; background: var(--ink); color: white; font-weight: 700;">TR</span>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-family: var(--mono); font-size: 18px; font-weight: 800;">76%</div>
+              <div style="font-family: var(--mono); font-size: 10px; color: var(--ink2);">WIN RATE</div>
+            </div>
+          </div>
+          <div style="padding: 16px; border: 1px solid var(--line); border-radius: 12px; display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <div style="font-family: var(--serif); font-size: 16px; font-weight: 700;">Edelson Friedman</div>
+              <div style="font-family: var(--mono); font-size: 10px; color: var(--ink2); margin-top: 2px;">DUI / IMPAIRED · FLAT $850</div>
+              <div style="display: flex; gap: 4px; margin-top: 8px;">
+                <span style="font-family: var(--mono); font-size: 9px; padding: 2px 6px; background: var(--ink); color: white; font-weight: 700;">EN</span>
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <div style="font-family: var(--mono); font-size: 18px; font-weight: 800;">71%</div>
+              <div style="font-family: var(--mono); font-size: 10px; color: var(--ink2);">WIN RATE</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INSTALL GUIDE -->
+  <section class="block reveal" id="guide">
+    <div class="section-head">
+      <div>
+        <div class="section-kicker"><span class="num">06</span>GET DRIVEE · INSTALL</div>
+        <h2 class="section-title">No App Store.<br/>Just two taps.</h2>
+      </div>
+      <div>
+        <p class="section-sub">Drivee lives on the web — open <b style="color:var(--ink)">drivee.ca</b> in your phone's browser, then add it to your home screen. Same icon. Same speed. No download, no update prompts, no 200 MB sitting on your phone.</p>
+      </div>
+    </div>
+
+    <div class="install-grid">
+      <!-- iPhone card -->
+      <div class="install-card">
+        <div class="mini-phone">
+          <div class="mp-overlay top">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+            TAP SHARE
+          </div>
+          <div class="mp-screen">
+            <div class="mp-bar"><span>9:41</span><span>● ● ●</span></div>
+            <div class="mp-content">
+              <div class="brand">Drivee<span class="dot">.</span></div>
+              <div class="greet">Good morning, Eugen</div>
+              <div class="mp-tile">
+                <div class="label">BALANCE OWED</div>
+                <div class="num">$255.00</div>
+              </div>
+              <div class="mp-tiles3">
+                <div class="mp-mini"><div class="n">3</div><div class="l">REM</div></div>
+                <div class="mp-mini"><div class="n">2</div><div class="l">RPT</div></div>
+                <div class="mp-mini"><div class="n">$0</div><div class="l">DUE</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="mp-overlay bottom">+ ADD TO HOME SCREEN</div>
+        </div>
+        <div>
+          <div class="ic-meta">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 12.5c0-2.5 2-3.7 2.1-3.8-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.2 1-4 2.4-1.7 3-.4 7.4 1.3 9.8.8 1.2 1.8 2.5 3.1 2.4 1.2 0 1.7-.8 3.2-.8s2 .8 3.2.8c1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.4-2.8-.1 0-2.7-1-2.7-3.8zM15.3 5.1c.7-.8 1.1-2 1-3.1-1 0-2.2.7-2.9 1.5-.6.7-1.2 1.9-1 3 1.1.1 2.2-.6 2.9-1.4z"/></svg>
+            iPHONE · iPAD · SAFARI
+          </div>
+          <h3>Add Drivee to your iPhone home screen</h3>
+          <ol class="install-steps">
+            <li>Open <b>drivee.ca</b> in <b>Safari</b> (not Chrome — Apple only allows install from Safari).</li>
+            <li>Tap the <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>Share</span> icon at the bottom of the screen.</li>
+            <li>Scroll down and choose <b>Add to Home Screen</b>.</li>
+            <li>Confirm the name (Drivee) and tap <b>Add</b>. The icon appears on your home screen — tap it like any app.</li>
+          </ol>
+        </div>
+      </div>
+
+      <!-- Android card -->
+      <div class="install-card">
+        <div class="mini-phone android">
+          <div class="mp-overlay top">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/></svg>
+            TAP MENU
+          </div>
+          <div class="mp-screen">
+            <div class="mp-bar"><span>9:41</span><span>▮▮▮ ◐</span></div>
+            <div class="mp-content">
+              <div class="brand">Drivee<span class="dot">.</span></div>
+              <div class="greet">Good morning, Eugen</div>
+              <div class="mp-tile">
+                <div class="label">BALANCE OWED</div>
+                <div class="num">$255.00</div>
+              </div>
+              <div class="mp-tiles3">
+                <div class="mp-mini"><div class="n">3</div><div class="l">REM</div></div>
+                <div class="mp-mini"><div class="n">2</div><div class="l">RPT</div></div>
+                <div class="mp-mini"><div class="n">$0</div><div class="l">DUE</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="mp-overlay bottom">+ INSTALL APP</div>
+        </div>
+        <div>
+          <div class="ic-meta">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18a1 1 0 0 1-1-1V8h14v9a1 1 0 0 1-1 1H6zM8.5 6a3.5 3.5 0 0 1 7 0v1h-7V6zm9 1.7-.9-1.6a.5.5 0 0 0-.9.5l.8 1.4A4.5 4.5 0 0 1 12 5a4.5 4.5 0 0 1-4.5 3l.8-1.4a.5.5 0 0 0-.9-.5L6.5 7.7A1 1 0 0 0 6 8.5V19a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V8.5a1 1 0 0 0-.5-.8z"/><circle cx="9" cy="14" r="1"/><circle cx="15" cy="14" r="1"/></svg>
+            ANDROID · CHROME · SAMSUNG
+          </div>
+          <h3>Add Drivee to your Android home screen</h3>
+          <ol class="install-steps">
+            <li>Open <b>drivee.ca</b> in <b>Chrome</b> (or Samsung Internet, Edge — any modern browser).</li>
+            <li>You may see an <b>Install app</b> banner at the bottom — tap it. If not, continue to step 3.</li>
+            <li>Tap the <span class="pill"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="12" cy="5" r="1.4"/><circle cx="12" cy="12" r="1.4"/><circle cx="12" cy="19" r="1.4"/></svg>menu</span> in the top-right corner of the browser.</li>
+            <li>Choose <b>Install app</b> (or <b>Add to Home screen</b>) and confirm. Drivee installs like any Play Store app.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="install-foot">
+      <div class="install-qr" aria-label="QR code to drivee.ca"></div>
+      <div class="ftxt">
+        <span class="sub">ON DESKTOP? SCAN TO INSTALL</span>
+        <b>Point your phone camera at the QR code</b> — it opens drivee.ca in your browser. Then follow the steps above for your device.
+      </div>
+      <div class="install-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+        <span><span class="strike">App Store</span> &nbsp; 0 MB · 0 reviews · 0 wait</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <div class="cta-block reveal">
+    <h2>Stop paying<br/><span class="grad">tickets you<br/>could fight.</span></h2>
+    <p>Free for life. Free to scan. Free to dispute. We make money when lawyers do — never from you.</p>
+    <div class="row">
+      <button class="btn-primary">
+        Get Drivee free
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+      </button>
+      <button class="btn-ghost" style="color: white; border-color: rgba(255,255,255,0.25);">
+        See pricing
+      </button>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div>
+      <div class="brand-foot">Drivee<span class="dot">.</span></div>
+      <p class="brand-sub">The driver's app for Toronto. Built independently. Not affiliated with the City of Toronto, MTO, or any law firm listed.</p>
+    </div>
+    <div>
+      <h4>PRODUCT</h4>
+      <a href="#">Scanner</a>
+      <a href="#">Hotspots</a>
+      <a href="#">Legal AI</a>
+      <a href="#">Pricing</a>
+    </div>
+    <div>
+      <h4>COMPANY</h4>
+      <a href="#">About</a>
+      <a href="#">Careers</a>
+      <a href="#">Press</a>
+      <a href="#">Contact</a>
+    </div>
+    <div>
+      <h4>LEGAL</h4>
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="#">Security</a>
+      <a href="#">Status</a>
+    </div>
+  </footer>
+  <div class="legal">
+    <span>© 2026 DRIVEE TECHNOLOGIES INC. · TORONTO, ON</span>
+    <span>v3.2.0 · BUILT 30.04.2026</span>
+  </div>
+</div>
+
+<script>
+  // ─────── Intro logo letter-by-letter ───────
+  const logoText = "Drivee.";
+  const logoEl = document.getElementById("introLogo");
+  [...logoText].forEach((ch, i) => {
+    const span = document.createElement("span");
+    span.textContent = ch;
+    span.style.animationDelay = (0.6 + i * 0.09) + "s";
+    if (ch === ".") span.classList.add("dot");
+    logoEl.appendChild(span);
+  });
+
+  // ─────── Intro fade out + page in ───────
+  const intro = document.getElementById("intro");
+  const page = document.getElementById("page");
+  function revealHero() {
+    document.body.classList.add("ready");
+  }
+
+  function endIntro() {
+    intro.classList.add("fade-out");
+    setTimeout(revealHero, 4400);
+    setTimeout(() => { intro.classList.add("gone"); intro.style.display = "none"; }, 5400);
+  }
+  endIntro();
+
+  document.getElementById("skipIntro").addEventListener("click", () => {
+    intro.style.transition = "opacity 0.4s ease";
+    intro.style.opacity = "0";
+    revealHero();
+    setTimeout(() => { intro.style.display = "none"; }, 400);
+  });
+
+  // ─────── Sticky nav blur on scroll ───────
+  const topnav = document.getElementById("topnav");
+  window.addEventListener("scroll", () => {
+    if (window.scrollY > 40) topnav.classList.add("scrolled");
+    else topnav.classList.remove("scrolled");
+  });
+
+  // ─────── Reveal on scroll ───────
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add("in");
+        // counters
+        e.target.querySelectorAll("[data-counter]").forEach(el => {
+          if (el.dataset.animated) return;
+          el.dataset.animated = "1";
+          const target = parseFloat(el.dataset.counter);
+          const suffix = el.dataset.suffix || "";
+          const prefix = el.dataset.prefix || "";
+          const decimals = (el.dataset.counter.split(".")[1] || "").length;
+          const start = performance.now();
+          const dur = 1400;
+          const tick = (t) => {
+            const p = Math.min(1, (t - start) / dur);
+            const eased = 1 - Math.pow(1 - p, 3);
+            const v = (target * eased);
+            el.textContent = prefix + (decimals ? v.toFixed(decimals) : Math.round(v).toLocaleString()) + suffix;
+            if (p < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        });
+      }
+    });
+  }, { threshold: 0.15 });
+  document.querySelectorAll(".reveal").forEach(el => io.observe(el));
+
+</script>
+
+</body>
+</html>

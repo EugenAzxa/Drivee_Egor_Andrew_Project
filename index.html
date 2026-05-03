@@ -2,6 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+
+  <!-- ═══════════════════════════════════════════════════════════════
+       DESKTOP/TABLET REDIRECT TO LANDING PAGE
+       Phones (iPhone/Android) keep this app. Tablets + PCs see desktop.html.
+       Bypass with ?app=1 (sticks for the session via sessionStorage).
+       To REVERSE: delete this entire <script> block.
+  ═══════════════════════════════════════════════════════════════ -->
+  <script>
+    (function() {
+      var ua = navigator.userAgent || "";
+      var isPhone = /iPhone|Android.*Mobile|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+      var forceApp = new URLSearchParams(location.search).has('app')
+                  || sessionStorage.getItem('drivee_app') === '1';
+      if (forceApp) sessionStorage.setItem('drivee_app', '1');
+      if (!isPhone && !forceApp) {
+        location.replace('/desktop.html');
+      }
+    })();
+  </script>
+
   <!-- viewport-fit=cover is required for iPhone safe area (notch/home bar) to work -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#2563EB" />
