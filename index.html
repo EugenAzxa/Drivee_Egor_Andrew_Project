@@ -2865,6 +2865,7 @@
             <div class="hero-stat-label">Emergency</div>
           </div>
         </div>
+        <div id="hero-clock" aria-live="polite" style="margin-top:14px;text-align:center;font-size:13px;font-weight:600;color:rgba(255,255,255,0.92);letter-spacing:0.6px;font-variant-numeric:tabular-nums">⏱ —</div>
         <div class="hero-divider" style="margin-top:14px"></div>
         <!-- Auth embedded in hero -->
         <div id="auth-signout-state" style="margin-top:12px">
@@ -5362,6 +5363,19 @@
       if (sd) sd.textContent = upcoming;
     }
 
+    function startHeroClock() {
+      var el = document.getElementById('hero-clock');
+      if (!el) return;
+      function tick() {
+        var now = new Date();
+        var time = now.toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+        var day  = now.toLocaleDateString('en-CA', { weekday: 'short', month: 'short', day: 'numeric' });
+        el.textContent = '⏱ ' + day + ' · ' + time;
+      }
+      tick();
+      setInterval(tick, 1000);
+    }
+
     // ===================================================
     // FEATURE 2 — FINE REMINDERS
     // ===================================================
@@ -6686,6 +6700,7 @@
     updateTowWindowState();                       // Initial tow-window pulse check
     setInterval(updateTowWindowState, 60 * 1000); // Re-check each minute so pulse turns on/off as time passes
     updateHeroCard();     // Sync hero card stats on load
+    startHeroClock();     // Live clock in the hero card
     checkFreeParkingDay(); // Show free parking banner if applicable
     showWeeklyTip();       // Rotate weekly Did You Know tip
     initSupabase();     // Start Supabase auth listener (non-blocking)
