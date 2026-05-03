@@ -1,0 +1,11 @@
+api/
+*.md
+.claude/
+.gitignore
+.assetsignore
+wrangler.toml
+vercel.json
+desktop.html
+code-explorer-security-skill/
+cloudflare-deploy/
+node_modules/
