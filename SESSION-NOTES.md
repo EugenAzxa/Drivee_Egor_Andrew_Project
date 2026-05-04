@@ -677,3 +677,99 @@ Open drivee.ca on your iPhone and go through this checklist:
 8. Check Telegram after they open it — did you get notifications?
 
 Write down anything that looks wrong. Bring notes to next session.
+
+
+SESSION 8 — 3 May 2026
+------------------------
+
+WHAT WAS BUILT
+
+1. Desktop landing page experiment added — copied the 1770-line Drivee Landing.html
+   from the external Drivee wesbite folder into the project as desktop.html. This
+   is a marketing-style landing page with intro animation, hero, features, install
+   guide, and a top-nav Open the app CTA button. Both internal Drivee App.html
+   links inside it were rewired to /?app=1 so the CTA lands on the real app.
+
+2. Smart device-aware redirect added to index.html (lines 6 to 23) — phones detected
+   by user agent (iPhone, Android Mobile, iPod, BlackBerry, IEMobile, Opera Mini)
+   stay on the real app. Tablets and desktops get redirected to /desktop.html.
+   The ?app=1 query param bypasses the redirect, and sessionStorage makes the
+   bypass sticky for the whole session so a PC user who clicks Open the app
+   stays in the app even on refresh. The block is self-documenting with a
+   To REVERSE comment so it can be removed in one delete.
+
+3. Collaborator GitHub repo set up — added a second git remote named collab
+   pointing to github.com/EugenAzxa/Drivee_Egor_Andrew_Project.git. Pushed all
+   commits and history across. Reset main branch tracking back to origin/main
+   so a bare git push still deploys to drivee.ca production as before. To push
+   to the shared repo you now run git push collab main explicitly.
+
+
+ISSUES TO CARRY FORWARD
+
+- Today's changes are committed locally (auto-save commit 942b8c7) but not yet
+  pushed to origin, so drivee.ca has not received the desktop landing yet.
+- No real device testing done. The redirect logic looks correct but has not
+  been verified on a real iPhone, iPad, or laptop visiting drivee.ca.
+- Friend Andrew has the new repo URL but is not yet a GitHub collaborator.
+  Must invite him via GitHub Settings, Collaborators, Add people before he
+  can push code.
+- The two repos (origin/Drivee for production, collab/Drivee_Egor_Andrew_Project
+  for shared work) will drift apart unless deliberately synced. There is no
+  auto-sync. If Andrew pushes to collab and you want his work on drivee.ca,
+  you must manually git pull collab main and git push origin main.
+- Landing page intro animation runs on every first load. May feel heavy for
+  return visitors — consider a session-based skip later.
+- Local file:/// testing of the Open the app button will not work because
+  /?app=1 is an absolute path. Only works on a real domain.
+
+
+PRD NOTES
+
+- PRD has zero mentions of desktop, landing, tablet, or redirect. The whole
+  spec is mobile-first. Today's desktop landing is a brand-new surface area
+  that the PRD does not cover.
+- PRD should be updated next session to describe the split: phones get the
+  app, tablets and desktops get the landing page that promotes installation.
+- The redirect block adds 17 lines of JavaScript at the top of index.html
+  before the existing app code. PRD does not need to mention this implementation
+  detail but should mention the user-facing behaviour.
+
+
+NEXT SESSION TASKS
+
+1. Run git push to deploy today's changes to drivee.ca production.
+2. Test on a real iPhone Safari — drivee.ca should load the original app
+   without ever flashing the landing page.
+3. Test on a real iPad or laptop — drivee.ca should redirect to the landing,
+   and clicking Open the app should land on the real app and stay there.
+4. Invite Andrew as a GitHub collaborator on the new repo.
+5. Decide if the landing page text and sections need editing for Drivee
+   specifically (some content was generic exploration material).
+6. Update PRD with a short section on the desktop landing surface.
+
+
+HOMEWORK SET THIS SESSION
+
+A 15 to 20 minute task to deploy and verify today's work yourself.
+
+1. Open a terminal in the DRIVEE folder.
+2. Run git push.
+3. Wait one minute for Vercel to redeploy.
+4. On your laptop or PC, open drivee.ca in a fresh browser tab. You should
+   see the new landing page with the blue intro animation.
+5. Click Open the app at the top right. You should land on the real app
+   you have been building all along.
+6. Refresh the page. You should still see the app, not the landing.
+   This is the sessionStorage bypass working.
+7. Now open drivee.ca on your iPhone. You should see the regular app
+   immediately — no landing, no flash.
+8. If anything looks wrong, make a note of which device, which browser,
+   and what you saw. Bring the notes to next session.
+
+If git push asks for credentials and you do not remember them, search
+github personal access token vercel deploy and follow the GitHub help
+page. If the redirect does not fire on desktop, open browser DevTools,
+check the Console tab for errors, and search MDN sessionStorage to
+revisit how that storage layer works.
+
