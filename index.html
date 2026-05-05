@@ -2847,14 +2847,174 @@
     }
 
     /* Hide v1 page titles when v2 is on so heroes replace them */
-    .design-v2 #tab-services > h1.page-title,
+    .design-v2 .page-title,
     .design-v2 #tab-services > .services-search,
-    .design-v2 #tab-hotspots > h1.page-title,
     .design-v2 #tab-hotspots > .map-legend,
-    .design-v2 #tab-legal > h1.page-title,
     .design-v2 #tab-legal > .ai-advisor-hero,
     .design-v2 #tab-guide > .tab-header {
       display: none !important;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       v2 COMPREHENSIVE COMPONENT OVERRIDES
+       Universal polish across every card, button, input, list, badge.
+       Goal: cohesive, premium, not-overloaded look.
+    ═══════════════════════════════════════════════════════════════ */
+
+    /* Page background + body type */
+    .design-v2 body,
+    .design-v2 .tab-section {
+      background: var(--dv2-bg) !important;
+      font-family: var(--dv2-font) !important;
+      color: var(--dv2-ink);
+    }
+
+    /* Card — universal paper treatment */
+    .design-v2 .card,
+    .design-v2 .svc-card,
+    .design-v2 .legal-card,
+    .design-v2 .guide-card {
+      background: var(--dv2-paper) !important;
+      border: 1px solid var(--dv2-line-soft) !important;
+      border-radius: 16px !important;
+      padding: 18px !important;
+      box-shadow: 0 6px 18px -12px rgba(14,27,61,0.10) !important;
+      margin: 0 0 12px 0 !important;
+    }
+
+    /* Card titles → serif, smaller, calm */
+    .design-v2 .card-title {
+      font-family: var(--dv2-serif) !important;
+      font-size: 17px !important;
+      font-weight: 700 !important;
+      letter-spacing: -0.3px !important;
+      color: var(--dv2-ink) !important;
+      margin-bottom: 4px !important;
+      line-height: 1.3 !important;
+    }
+    .design-v2 .card-subtitle {
+      font-family: var(--dv2-font) !important;
+      font-size: 13px !important;
+      color: var(--dv2-ink2) !important;
+      margin-bottom: 14px !important;
+      line-height: 1.45 !important;
+      font-weight: 500 !important;
+    }
+
+    /* Buttons — rounded, modern */
+    .design-v2 button:not(.dv2-icon-btn):not(.pill-btn):not(.dv2-hsimple-filter):not(.tab-btn):not(.nav-fab),
+    .design-v2 .btn,
+    .design-v2 .btn-primary,
+    .design-v2 input[type="submit"] {
+      font-family: var(--dv2-font) !important;
+      font-weight: 700 !important;
+      border-radius: 12px !important;
+      transition: transform 0.1s, box-shadow 0.2s, background 0.15s !important;
+    }
+    .design-v2 .btn-primary,
+    .design-v2 button.primary {
+      background: var(--dv2-blue) !important;
+      color: white !important;
+      box-shadow: 0 8px 18px -8px rgba(46,100,255,0.40) !important;
+      border: none !important;
+    }
+    .design-v2 .btn-primary:hover {
+      background: var(--dv2-blue-d) !important;
+    }
+
+    /* Inputs */
+    .design-v2 input[type="text"],
+    .design-v2 input[type="email"],
+    .design-v2 input[type="tel"],
+    .design-v2 input[type="number"],
+    .design-v2 input[type="date"],
+    .design-v2 textarea,
+    .design-v2 select {
+      background: var(--dv2-paper) !important;
+      border: 1px solid var(--dv2-line) !important;
+      border-radius: 12px !important;
+      padding: 12px 14px !important;
+      font-family: var(--dv2-font) !important;
+      font-size: 14px !important;
+      color: var(--dv2-ink) !important;
+      outline: none !important;
+      transition: border-color 0.15s, box-shadow 0.15s !important;
+    }
+    .design-v2 input:focus,
+    .design-v2 textarea:focus {
+      border-color: var(--dv2-blue) !important;
+      box-shadow: 0 0 0 3px rgba(46,100,255,0.12) !important;
+    }
+
+    /* Tab section padding — give content breathing room from edges */
+    .design-v2 .tab-section {
+      padding: 0 16px 100px !important;
+    }
+    /* but heroes get to bleed full-width */
+    .design-v2 .tab-section > .dv2-hero,
+    .design-v2 .tab-section > .dv2-tab-hero {
+      margin-left: -16px !important;
+      margin-right: -16px !important;
+    }
+
+    /* Ticket chase + visual noise removal */
+    .design-v2 .ticket-chase,
+    .design-v2 .chase-caption,
+    .design-v2 .holiday-banner-emoji,
+    .design-v2 .pwa-badge {
+      display: none !important;
+    }
+
+    /* Generic badges/pills inside cards — soft, not loud */
+    .design-v2 .badge,
+    .design-v2 .status-pill {
+      border-radius: 999px !important;
+      font-family: var(--dv2-mono) !important;
+      font-weight: 800 !important;
+      letter-spacing: 0.8px !important;
+      font-size: 10px !important;
+      padding: 4px 10px !important;
+      text-transform: uppercase !important;
+    }
+
+    /* List items / rows — clean separators */
+    .design-v2 .reminder-item,
+    .design-v2 .scanned-item,
+    .design-v2 .vehicle-item {
+      background: var(--dv2-paper) !important;
+      border: 1px solid var(--dv2-line-soft) !important;
+      border-radius: 12px !important;
+      padding: 14px !important;
+      margin-bottom: 8px !important;
+    }
+
+    /* Profile completion prompt — restyle to match */
+    .design-v2 #profile-prompt {
+      background: var(--dv2-blue-50) !important;
+      border: 1px solid rgba(46,100,255,0.15) !important;
+      border-radius: 16px !important;
+      padding: 16px !important;
+      box-shadow: none !important;
+    }
+
+    /* Headings throughout */
+    .design-v2 h1, .design-v2 h2, .design-v2 h3 {
+      font-family: var(--dv2-serif);
+      letter-spacing: -0.4px;
+      color: var(--dv2-ink);
+    }
+
+    /* Reduce padding density on toolbars/auth bars */
+    .design-v2 .auth-input-row {
+      gap: 8px;
+    }
+
+    /* Map tab specific — rounded card around the leaflet map */
+    .design-v2 #map-container,
+    .design-v2 #leaflet-map {
+      border-radius: 16px !important;
+      overflow: hidden;
+      box-shadow: 0 8px 24px -16px rgba(14,27,61,0.12);
     }
   </style>
 </head>
