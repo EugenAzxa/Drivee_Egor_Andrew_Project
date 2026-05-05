@@ -3466,6 +3466,50 @@
       max-width: 80px;
     }
 
+    /* ─── Free parking / Holiday status card ─── */
+    .dv2-fp-card {
+      width: 100%;
+      display: flex; align-items: center; gap: 14px;
+      background: white;
+      border: 1px solid var(--dv2-line-soft);
+      border-radius: 14px;
+      padding: 14px;
+      cursor: pointer;
+      text-align: left;
+      font-family: var(--dv2-font);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .dv2-fp-card:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 18px -10px rgba(14,27,61,0.15);
+    }
+    .dv2-fp-icon {
+      width: 46px; height: 46px; border-radius: 12px;
+      background: rgba(31,171,107,0.18);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+    /* When showing "next holiday" countdown — switch to amber */
+    #dv2-fp-section.dv2-fp-countdown .dv2-fp-icon {
+      background: rgba(232,155,34,0.15);
+    }
+    .dv2-fp-info { flex: 1; min-width: 0; }
+    .dv2-fp-meta {
+      font-family: var(--dv2-mono); font-size: 9px; font-weight: 800;
+      letter-spacing: 1.4px; color: var(--dv2-ink2);
+    }
+    .dv2-fp-title {
+      font-family: var(--dv2-serif); font-size: 16px; font-weight: 700;
+      letter-spacing: -0.3px; color: var(--dv2-ink); margin-top: 2px;
+      line-height: 1.2;
+    }
+    .dv2-fp-sub {
+      font-size: 12px; color: var(--dv2-ink2); margin-top: 2px;
+      line-height: 1.4;
+    }
+    .dv2-fp-arrow { color: var(--dv2-ink3); flex-shrink: 0; }
+
     /* Quick action tiles (2x2 grid inside sky section) */
     .dv2-quick-grid {
       display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
@@ -3873,6 +3917,19 @@
         </button>
       </div>
 
+      <!-- Free parking / Holidays status -->
+      <div class="dv2-tab-hero dv2-section dv2-section-mint" id="dv2-fp-section">
+        <button class="dv2-fp-card" type="button" onclick="if(typeof showTab==='function') showTab('tab-hotspots');">
+          <div class="dv2-fp-icon" id="dv2-fp-icon">🅿️</div>
+          <div class="dv2-fp-info">
+            <div class="dv2-fp-meta" id="dv2-fp-meta">FREE PARKING · TORONTO</div>
+            <div class="dv2-fp-title" id="dv2-fp-title">Loading…</div>
+            <div class="dv2-fp-sub" id="dv2-fp-sub"></div>
+          </div>
+          <svg class="dv2-fp-arrow" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </div>
+
       <!-- Open reminders (sand) -->
       <div class="dv2-tab-hero dv2-section dv2-section-sand">
         <div class="dv2-section-head">
@@ -3919,6 +3976,16 @@
             <div class="dv2-quick-sub">3 RED ZONES</div>
           </button>
         </div>
+      </div>
+
+      <!-- Ask Drivee — AI chat prompt (dark/ink section) -->
+      <div class="dv2-tab-hero dv2-section dv2-section-ink">
+        <div class="dv2-ink-meta">✦ ASK DRIVEE</div>
+        <div class="dv2-ink-question">"Should I pay or fight my $65 King St ticket?"</div>
+        <button class="dv2-ink-btn" type="button" onclick="if(typeof openChat==='function') openChat();">
+          Ask AI
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
       </div>
 
       <!-- HERO CARD — greeting + stats + auth -->
@@ -6739,6 +6806,87 @@
 
       // Render the v2 dashboard reminder rows inline
       dv2RenderReminders();
+      // Refresh the free-parking / holiday banner
+      dv2RenderFreeParking();
+    }
+
+    // ─── v2 Free parking / holidays banner ───
+    function dv2RenderFreeParking() {
+      var section = document.getElementById('dv2-fp-section');
+      var titleEl = document.getElementById('dv2-fp-title');
+      var subEl   = document.getElementById('dv2-fp-sub');
+      var iconEl  = document.getElementById('dv2-fp-icon');
+      var metaEl  = document.getElementById('dv2-fp-meta');
+      if (!section || !titleEl || !subEl) return;
+
+      // Self-contained Toronto holidays (matches v1 list exactly)
+      function nthWeekday(y, month, weekday, n) {
+        var d = new Date(y, month, 1), c = 0;
+        while (c < n) {
+          if (d.getDay() === weekday) c++;
+          if (c < n) d.setDate(d.getDate() + 1);
+        }
+        return d;
+      }
+      function easter(y) {
+        var a=y%19, b=Math.floor(y/100), c=y%100, d=Math.floor(b/4), e=b%4;
+        var f=Math.floor((b+8)/25), g=Math.floor((b-f+1)/3), h=(19*a+b-d-g+15)%30;
+        var i=Math.floor(c/4), k=c%4, l=(32+2*e+2*i-h-k)%7;
+        var m=Math.floor((a+11*h+22*l)/451), month=Math.floor((h+l-7*m+114)/31)-1;
+        var day=((h+l-7*m+114)%31)+1;
+        return new Date(y, month, day);
+      }
+      function torontoHolidays(year) {
+        var ed = easter(year);
+        var gf = new Date(ed); gf.setDate(ed.getDate() - 2);
+        return [
+          { date: new Date(year, 0, 1),  name: "New Year's Day" },
+          { date: nthWeekday(year, 1, 1, 3), name: 'Family Day' },
+          { date: gf, name: 'Good Friday' },
+          { date: nthWeekday(year, 4, 1, 3), name: 'Victoria Day' },
+          { date: new Date(year, 6, 1),  name: 'Canada Day' },
+          { date: nthWeekday(year, 7, 1, 1), name: 'Civic Holiday' },
+          { date: nthWeekday(year, 8, 1, 1), name: 'Labour Day' },
+          { date: nthWeekday(year, 9, 1, 2), name: 'Thanksgiving' },
+          { date: new Date(year, 11, 25), name: 'Christmas Day' },
+          { date: new Date(year, 11, 26), name: 'Boxing Day' }
+        ];
+      }
+
+      var today = new Date(); today.setHours(0,0,0,0);
+      var year = today.getFullYear();
+      var holidays = torontoHolidays(year).concat(torontoHolidays(year + 1));
+      holidays.forEach(function(h) { h.date.setHours(0,0,0,0); });
+
+      var todayHoliday = null;
+      for (var i = 0; i < holidays.length; i++) {
+        if (holidays[i].date.getTime() === today.getTime()) {
+          todayHoliday = holidays[i]; break;
+        }
+      }
+
+      if (todayHoliday) {
+        section.className = 'dv2-tab-hero dv2-section dv2-section-mint';
+        if (iconEl)  iconEl.textContent = '🎉';
+        if (metaEl)  metaEl.textContent = 'FREE TODAY · TORONTO';
+        titleEl.textContent = 'Free street parking today!';
+        subEl.textContent = todayHoliday.name + ' — all metered streets are free. Always check signs.';
+      } else {
+        var nextHoliday = null;
+        for (var j = 0; j < holidays.length; j++) {
+          if (holidays[j].date > today) { nextHoliday = holidays[j]; break; }
+        }
+        if (nextHoliday) {
+          var diff = Math.ceil((nextHoliday.date - today) / 86400000);
+          var months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+          var dateStr = months[nextHoliday.date.getMonth()] + ' ' + nextHoliday.date.getDate();
+          section.className = 'dv2-tab-hero dv2-section dv2-section-sand dv2-fp-countdown';
+          if (iconEl)  iconEl.textContent = '🅿️';
+          if (metaEl)  metaEl.textContent = 'NEXT FREE DAY';
+          titleEl.textContent = nextHoliday.name;
+          subEl.textContent = dateStr + ' · ' + diff + ' day' + (diff !== 1 ? 's' : '') + ' away';
+        }
+      }
     }
 
     // ─── v2 inline reminders (Open reminders section on dashboard) ───
