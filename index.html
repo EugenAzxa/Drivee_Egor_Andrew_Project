@@ -14,13 +14,13 @@
       var ua = navigator.userAgent || "";
       var isPhone = /iPhone|Android.*Mobile|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
       var params = new URLSearchParams(location.search);
-      // ?app=1 OR ?design=… both bypass the landing page so demos work on PC.
+      // Only ?app=1 (or sticky session flag from clicking "Open the app") bypasses the landing.
+      // Wipe any stale ?design=… session flag that used to bypass — landing should always show on PC.
+      try { sessionStorage.removeItem('drivee_design'); } catch (e) {}
       var forceApp = params.has('app')
-                  || params.has('design')
-                  || sessionStorage.getItem('drivee_app') === '1'
-                  || sessionStorage.getItem('drivee_design') === 'v2';
-      if (params.has('app') || sessionStorage.getItem('drivee_app') === '1') {
-        sessionStorage.setItem('drivee_app', '1');
+                  || sessionStorage.getItem('drivee_app') === '1';
+      if (params.has('app')) {
+        try { sessionStorage.setItem('drivee_app', '1'); } catch (e) {}
       }
       if (!isPhone && !forceApp) {
         location.replace('/desktop.html');
@@ -2819,34 +2819,35 @@
       color: var(--dv2-blue-d);
     }
 
-    /* ─── v2 FAB — Drivee parking-officer mascot ─── */
+    /* ─── v2 FAB — Drivee parking-officer mascot (BIG + chat bubble) ─── */
     .design-v2 .nav-fab {
-      width: 64px !important;
-      height: 64px !important;
+      width: 76px !important;
+      height: 76px !important;
       background:
-        radial-gradient(circle at 30% 30%, #EAF0FF 0%, #C8D7FF 70%, #B6C9FF 100%) !important;
+        radial-gradient(circle at 30% 30%, #FFFFFF 0%, #DCE6FB 60%, #B6C9FF 100%) !important;
       color: var(--dv2-ink) !important;
       box-shadow:
-        0 18px 32px -10px rgba(46,100,255,0.45),
-        0 6px 12px -4px rgba(14,27,61,0.20),
-        inset 0 -3px 0 rgba(0,0,0,0.05) !important;
-      border: 2px solid rgba(255,255,255,0.85) !important;
+        0 24px 48px -10px rgba(46,100,255,0.55),
+        0 10px 20px -6px rgba(14,27,61,0.25),
+        inset 0 -3px 0 rgba(0,0,0,0.06) !important;
+      border: 3px solid rgba(255,255,255,0.95) !important;
       position: relative;
       animation: dv2FabBob 3.2s ease-in-out infinite;
       padding: 0 !important;
       overflow: visible;
       bottom: 110px !important;
-      right: 16px !important;
+      right: 18px !important;
+      z-index: 50 !important;
     }
     .design-v2 .nav-fab:hover {
-      transform: scale(1.06) !important;
+      transform: scale(1.08) !important;
       box-shadow:
-        0 22px 40px -10px rgba(46,100,255,0.55),
-        0 8px 16px -4px rgba(14,27,61,0.24) !important;
+        0 30px 56px -10px rgba(46,100,255,0.65),
+        0 12px 24px -6px rgba(14,27,61,0.30) !important;
     }
     @keyframes dv2FabBob {
       0%, 100% { transform: translateY(0); }
-      50%      { transform: translateY(-3px); }
+      50%      { transform: translateY(-4px); }
     }
 
     /* SVG mascot fills the FAB nicely */
@@ -2857,37 +2858,75 @@
     }
     .design-v2 .dv2-fab-fa { display: none !important; }
 
-    /* Replace the v1 chat/sparkle pulse ring with a calmer ring for the mascot */
+    /* Pulse ring (now stronger) */
     .design-v2 .nav-fab::before {
       content: "";
       position: absolute;
-      inset: -6px;
+      inset: -8px;
       border-radius: 999px;
-      border: 2px solid rgba(46,100,255,0.40);
-      animation: dv2FabRing 2.4s infinite;
+      border: 2.5px solid rgba(46,100,255,0.50);
+      animation: dv2FabRing 2.2s infinite;
       pointer-events: none;
     }
     @keyframes dv2FabRing {
-      0%   { transform: scale(0.92); opacity: 0.85; }
-      100% { transform: scale(1.35); opacity: 0; }
+      0%   { transform: scale(0.92); opacity: 1; }
+      100% { transform: scale(1.45); opacity: 0; }
     }
-    /* Tiny green "online" dot (top-right of FAB) */
+    /* Green "online" dot (top-right) — bigger */
     .design-v2 .nav-fab::after {
       content: "";
       position: absolute;
       top: 4px;
       right: 4px;
-      width: 12px;
-      height: 12px;
+      width: 14px;
+      height: 14px;
       border-radius: 999px;
       background: #1FAB6B;
-      border: 2px solid white;
-      box-shadow: 0 0 8px rgba(31,171,107,0.6);
+      border: 2.5px solid white;
+      box-shadow: 0 0 10px rgba(31,171,107,0.7);
       animation: dv2FabDot 1.8s infinite;
     }
     @keyframes dv2FabDot {
-      0%, 100% { opacity: 0.7; }
-      50%      { opacity: 1; }
+      0%, 100% { opacity: 0.75; transform: scale(1); }
+      50%      { opacity: 1;    transform: scale(1.15); }
+    }
+
+    /* Floating "Hi! 👋 Ask me" speech bubble next to the FAB */
+    .design-v2 .nav-fab .dv2-fab-bubble {
+      position: absolute;
+      bottom: 50%;
+      right: calc(100% + 14px);
+      transform: translateY(50%);
+      background: white;
+      color: var(--dv2-ink);
+      padding: 10px 14px;
+      border-radius: 14px;
+      font-family: var(--dv2-font);
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+      box-shadow:
+        0 12px 28px -10px rgba(14,27,61,0.30),
+        0 0 0 1px rgba(14,27,61,0.06);
+      pointer-events: none;
+      animation: dv2FabBubble 8s ease-in-out infinite;
+      opacity: 0;
+    }
+    /* Tail of the speech bubble (small triangle pointing right toward the FAB) */
+    .design-v2 .nav-fab .dv2-fab-bubble::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      right: -6px;
+      transform: translateY(-50%);
+      width: 0; height: 0;
+      border: 6px solid transparent;
+      border-left-color: white;
+    }
+    @keyframes dv2FabBubble {
+      0%, 6%   { opacity: 0; transform: translate(8px, 50%); }
+      10%, 24% { opacity: 1; transform: translate(0,    50%); }
+      28%, 100%{ opacity: 0; transform: translate(8px, 50%); }
     }
     .design-v2 .nav-fab::before {
       content: "";
@@ -3304,61 +3343,99 @@
       display: none !important;
     }
 
-    /* Scanner CTA: blue → purple gradient */
+    /* Scanner CTA: blue → purple gradient — flagship card, MAXIMUM visibility */
     .dv2-scanner-cta {
       width: 100%;
       text-align: left;
-      padding: 18px;
-      border-radius: 16px;
+      padding: 24px;
+      border-radius: 20px;
       border: none;
       cursor: pointer;
-      background: linear-gradient(135deg, #2E64FF 0%, #6B4EE0 100%);
+      background:
+        radial-gradient(circle at 100% 0%, rgba(255,255,255,0.20), transparent 50%),
+        linear-gradient(135deg, #2E64FF 0%, #6B4EE0 100%);
       color: white;
-      box-shadow: 0 14px 28px -10px rgba(46,100,255,0.5);
+      box-shadow:
+        0 22px 44px -14px rgba(46,100,255,0.55),
+        0 8px 20px -8px rgba(107,78,224,0.40),
+        inset 0 1px 0 rgba(255,255,255,0.20);
       position: relative;
       overflow: hidden;
       font-family: var(--dv2-font);
       margin: 0 0 4px 0;
+      animation: dv2ScannerGlow 3.6s ease-in-out infinite;
     }
+    @keyframes dv2ScannerGlow {
+      0%, 100% { box-shadow: 0 22px 44px -14px rgba(46,100,255,0.55), 0 8px 20px -8px rgba(107,78,224,0.40), inset 0 1px 0 rgba(255,255,255,0.20); }
+      50%      { box-shadow: 0 26px 52px -12px rgba(46,100,255,0.70), 0 10px 24px -6px rgba(107,78,224,0.55), inset 0 1px 0 rgba(255,255,255,0.20); }
+    }
+    /* Decorative blurred circles in the corner */
     .dv2-scanner-cta::before {
       content: ""; position: absolute;
-      top: -20px; right: -20px; width: 120px; height: 120px;
-      border-radius: 999px; background: rgba(255,255,255,0.10);
+      top: -30px; right: -30px; width: 160px; height: 160px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(255,255,255,0.18), rgba(255,255,255,0) 70%);
+      filter: blur(4px);
       pointer-events: none;
     }
     .dv2-scanner-cta::after {
       content: ""; position: absolute;
-      top: 30px; right: 50px; width: 30px; height: 30px;
-      border-radius: 999px; background: rgba(255,255,255,0.08);
+      top: 40px; right: 60px; width: 40px; height: 40px;
+      border-radius: 999px;
+      background: radial-gradient(circle, rgba(255,255,255,0.20), rgba(255,255,255,0) 60%);
       pointer-events: none;
     }
-    .dv2-scanner-row {
-      position: relative; display: flex; align-items: center; gap: 8px;
-      margin-bottom: 8px;
+    /* Diagonal light sweep across the card */
+    .dv2-scanner-shimmer {
+      position: absolute; inset: 0;
+      background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.18) 50%, transparent 65%);
+      transform: translateX(-110%);
+      animation: dv2ScannerSweep 3.2s linear infinite;
+      pointer-events: none;
     }
+    @keyframes dv2ScannerSweep { 0% { transform: translateX(-110%); } 100% { transform: translateX(110%); } }
+
+    .dv2-scanner-row {
+      position: relative; display: flex; align-items: center; gap: 10px;
+      margin-bottom: 10px;
+    }
+    .dv2-scanner-row svg { animation: dv2SparkSpin 3.2s linear infinite; }
+    @keyframes dv2SparkSpin { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
     .dv2-scanner-meta {
-      font-family: var(--dv2-mono); font-size: 10px;
-      font-weight: 800; letter-spacing: 1.4px;
+      font-family: var(--dv2-mono); font-size: 11px;
+      font-weight: 800; letter-spacing: 1.6px;
       color: white;
+      text-shadow: 0 1px 6px rgba(255,255,255,0.25);
     }
     .dv2-scanner-title {
-      font-size: 19px; font-weight: 800; letter-spacing: -0.4px;
+      font-family: var(--dv2-serif);
+      font-size: 24px; font-weight: 800; letter-spacing: -0.6px;
       position: relative;
       color: white;
+      line-height: 1.15;
+      margin-top: 2px;
     }
     .dv2-scanner-sub {
-      font-size: 12px; opacity: 0.85; margin-top: 4px;
-      position: relative; line-height: 1.4;
+      font-size: 13px; opacity: 0.92; margin-top: 6px;
+      position: relative; line-height: 1.45;
       color: white;
     }
     .dv2-scanner-btn {
       position: relative;
-      margin-top: 14px;
-      display: flex; align-items: center; justify-content: center; gap: 8px;
+      margin-top: 18px;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
       background: white; color: var(--dv2-blue-d);
-      padding: 12px 16px; border-radius: 10px;
-      font-family: var(--dv2-font); font-size: 14px; font-weight: 700;
+      padding: 16px 18px; border-radius: 12px;
+      font-family: var(--dv2-font); font-size: 16px; font-weight: 800;
+      letter-spacing: -0.2px;
+      box-shadow: 0 8px 16px -8px rgba(0,0,0,0.20);
+      transition: transform 0.15s, box-shadow 0.15s;
     }
+    .dv2-scanner-cta:hover .dv2-scanner-btn {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 24px -8px rgba(0,0,0,0.30);
+    }
+    .dv2-scanner-btn svg { width: 20px; height: 20px; }
 
     /* Color-blocked sections */
     .dv2-section {
@@ -5091,6 +5168,7 @@
       <path d="M27 43.2 Q 32 46.5 37 43.2" stroke="#FF9D8A" stroke-width="0.8" fill="none" stroke-linecap="round" opacity="0.7"/>
     </svg>
     <i class="fa-solid fa-robot dv2-fab-fa"></i>
+    <span class="dv2-fab-bubble">👋 Hi! Ask me anything</span>
   </button>
 
   <!-- Toast notification — shared by profile, reminders, copy script -->
