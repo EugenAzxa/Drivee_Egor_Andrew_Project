@@ -2660,6 +2660,138 @@
     .dv2-pill.green { background: rgba(31,171,107,0.25); color: #7AE8B0; }
     .dv2-pill.red   { background: rgba(225,71,61,0.25);  color: #FFA0A0; }
     .dv2-pill.blue  { background: rgba(46,100,255,0.25); color: #B6C9FF; }
+
+    /* ─── v2 typography (app-wide when toggle on) ─── */
+    .design-v2 body,
+    .design-v2 .tab-section {
+      background: var(--dv2-bg);
+      font-family: var(--dv2-font);
+      color: var(--dv2-ink);
+    }
+
+    /* ─── v2 card treatment (all tabs, all cards) ─── */
+    .design-v2 .card {
+      background: var(--dv2-paper);
+      border: 1px solid var(--dv2-line-soft);
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 8px 24px -16px rgba(14,27,61,0.12);
+    }
+    .design-v2 .card-title {
+      font-family: var(--dv2-serif);
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--dv2-ink);
+      margin-bottom: 4px;
+    }
+    .design-v2 .card-subtitle {
+      font-size: 12px;
+      color: var(--dv2-ink2);
+      margin-bottom: 12px;
+      font-weight: 500;
+    }
+    /* Section/tab headings */
+    .design-v2 #tab-services h2,
+    .design-v2 #tab-hotspots h2,
+    .design-v2 #tab-legal h2,
+    .design-v2 #tab-guide h2,
+    .design-v2 .section-title {
+      font-family: var(--dv2-serif);
+      letter-spacing: -0.4px;
+    }
+
+    /* ─── v2 buttons inside cards ─── */
+    .design-v2 .card button:not(.dv2-icon-btn):not(.pill-btn) {
+      font-family: var(--dv2-font);
+      font-weight: 700;
+    }
+
+    /* ─── v2 bottom nav (pill-btn) ─── */
+    .design-v2 #bottom-nav-wrap {
+      background: var(--dv2-paper);
+      border-top: 1px solid var(--dv2-line);
+      box-shadow: 0 -10px 24px -16px rgba(14,27,61,0.10);
+    }
+    .design-v2 #nav-pill {
+      background: var(--dv2-paper);
+      border: none;
+      box-shadow: none;
+    }
+    .design-v2 .pill-btn {
+      background: transparent !important;
+      color: var(--dv2-ink3) !important;
+      font-family: var(--dv2-font) !important;
+      flex-direction: column !important;
+      gap: 3px !important;
+      border-radius: 12px !important;
+      padding: 6px 4px !important;
+      transition: color 0.15s !important;
+    }
+    .design-v2 .pill-btn i {
+      width: 38px; height: 26px;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, color 0.15s;
+      font-size: 14px;
+    }
+    .design-v2 .pill-btn .pill-label {
+      font-size: 10px !important;
+      font-weight: 700 !important;
+      letter-spacing: 0.2px !important;
+      opacity: 1 !important;
+      max-width: none !important;
+      display: block !important;
+    }
+    .design-v2 .pill-btn.active {
+      background: transparent !important;
+      color: var(--dv2-blue-d) !important;
+    }
+    .design-v2 .pill-btn.active i {
+      background: var(--dv2-blue-50);
+      color: var(--dv2-blue-d);
+    }
+
+    /* ─── v2 FAB AI bubble (blue → purple gradient with pulse) ─── */
+    .design-v2 .nav-fab {
+      background: linear-gradient(135deg, var(--dv2-blue) 0%, #6B4EE0 100%) !important;
+      color: white !important;
+      box-shadow: 0 14px 28px -8px rgba(46,100,255,0.6) !important;
+      border: none !important;
+      position: relative;
+    }
+    .design-v2 .nav-fab::before {
+      content: "";
+      position: absolute;
+      inset: -4px;
+      border-radius: 999px;
+      border: 2px solid rgba(46,100,255,0.4);
+      animation: dv2AiPulse 2s infinite;
+      pointer-events: none;
+    }
+    @keyframes dv2AiPulse {
+      0%   { transform: scale(0.95); opacity: 1; }
+      100% { transform: scale(1.4);  opacity: 0; }
+    }
+
+    /* ─── Soft section accents inside dashboard ─── */
+    .design-v2 #tab-dashboard {
+      padding-top: 0 !important;
+    }
+    /* Reminders card gets a sand wash */
+    .design-v2 #reminders-card {
+      background: var(--dv2-sand) !important;
+      border-color: rgba(232,155,34,0.15) !important;
+    }
+    .design-v2 #reminders-card .card-title {
+      color: var(--dv2-ink);
+    }
+
+    /* ─── v2 marketing banner cards (chase/holiday/tip) ─── */
+    .design-v2 .ticket-chase,
+    .design-v2 .chase-caption {
+      display: none !important;
+    }
   </style>
 </head>
 
