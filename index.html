@@ -3015,15 +3015,25 @@
       box-shadow: 0 0 0 3px rgba(46,100,255,0.12) !important;
     }
 
-    /* Tab section padding — give content breathing room from edges */
+    /* Hide the v1 sticky top bar in v2 — heroes replace it */
+    .design-v2 #top-bar {
+      display: none !important;
+    }
+
+    /* Tab section: no top padding (hero bleeds to top), side padding for cards, room for nav */
     .design-v2 .tab-section {
       padding: 0 16px 100px !important;
     }
-    /* but heroes get to bleed full-width */
+    /* Heroes bleed past the tab-section side padding so they hit the screen edges */
     .design-v2 .tab-section > .dv2-hero,
     .design-v2 .tab-section > .dv2-tab-hero {
       margin-left: -16px !important;
       margin-right: -16px !important;
+    }
+    /* Push hero content below the iPhone notch / status bar */
+    .design-v2 .dv2-hero,
+    .design-v2 .dv2-hero-simple {
+      padding-top: calc(env(safe-area-inset-top, 0px) + 28px) !important;
     }
 
     /* Ticket chase + visual noise removal */
