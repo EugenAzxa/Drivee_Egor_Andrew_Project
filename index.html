@@ -3232,6 +3232,203 @@
     .design-v2 #tab-services[data-svc-active] .dv2-tab-hero.dv2-hero-simple .dv2-hsimple-meta {
       display: none;
     }
+
+    /* ═══════════════════════════════════════════════════════════════
+       V2 DASHBOARD — Scanner CTA, Open reminders, Quick actions
+    ═══════════════════════════════════════════════════════════════ */
+
+    /* Hide v1 dashboard cards — replaced by new v2 sections */
+    .design-v2 #tab-dashboard > .card,
+    .design-v2 #tab-dashboard #profile-prompt,
+    .design-v2 #tab-dashboard #reminders-card {
+      display: none !important;
+    }
+
+    /* Scanner CTA: blue → purple gradient */
+    .dv2-scanner-cta {
+      width: 100%;
+      text-align: left;
+      padding: 18px;
+      border-radius: 16px;
+      border: none;
+      cursor: pointer;
+      background: linear-gradient(135deg, #2E64FF 0%, #6B4EE0 100%);
+      color: white;
+      box-shadow: 0 14px 28px -10px rgba(46,100,255,0.5);
+      position: relative;
+      overflow: hidden;
+      font-family: var(--dv2-font);
+      margin: 0 0 4px 0;
+    }
+    .dv2-scanner-cta::before {
+      content: ""; position: absolute;
+      top: -20px; right: -20px; width: 120px; height: 120px;
+      border-radius: 999px; background: rgba(255,255,255,0.10);
+      pointer-events: none;
+    }
+    .dv2-scanner-cta::after {
+      content: ""; position: absolute;
+      top: 30px; right: 50px; width: 30px; height: 30px;
+      border-radius: 999px; background: rgba(255,255,255,0.08);
+      pointer-events: none;
+    }
+    .dv2-scanner-row {
+      position: relative; display: flex; align-items: center; gap: 8px;
+      margin-bottom: 8px;
+    }
+    .dv2-scanner-meta {
+      font-family: var(--dv2-mono); font-size: 10px;
+      font-weight: 800; letter-spacing: 1.4px;
+      color: white;
+    }
+    .dv2-scanner-title {
+      font-size: 19px; font-weight: 800; letter-spacing: -0.4px;
+      position: relative;
+      color: white;
+    }
+    .dv2-scanner-sub {
+      font-size: 12px; opacity: 0.85; margin-top: 4px;
+      position: relative; line-height: 1.4;
+      color: white;
+    }
+    .dv2-scanner-btn {
+      position: relative;
+      margin-top: 14px;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      background: white; color: var(--dv2-blue-d);
+      padding: 12px 16px; border-radius: 10px;
+      font-family: var(--dv2-font); font-size: 14px; font-weight: 700;
+    }
+
+    /* Color-blocked sections */
+    .dv2-section {
+      margin: 0 -16px 0 -16px !important;
+      padding: 22px 20px !important;
+      background: var(--dv2-bg);
+    }
+    .dv2-section-sand { background: var(--dv2-sand) !important; }
+    .dv2-section-sky  { background: var(--dv2-sky) !important; }
+    .dv2-section-mint { background: var(--dv2-mint) !important; }
+    .dv2-section-lilac { background: var(--dv2-lilac) !important; }
+    .dv2-section-peach { background: var(--dv2-peach) !important; }
+
+    .dv2-section-head {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .dv2-section-h {
+      font-family: var(--dv2-serif);
+      font-size: 22px; font-weight: 700; letter-spacing: -0.5px;
+      color: var(--dv2-ink);
+    }
+    .dv2-section-more {
+      font-family: var(--dv2-mono);
+      font-size: 11px; font-weight: 800; letter-spacing: 1.2px;
+      color: var(--dv2-blue);
+      background: none; border: none; cursor: pointer;
+      padding: 4px 0;
+    }
+
+    /* Reminders list (inline) */
+    .dv2-reminders-list {
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .dv2-rem {
+      background: white;
+      border: 1px solid var(--dv2-line-soft);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex; align-items: center; gap: 12px;
+      cursor: pointer; text-align: left; width: 100%;
+      font-family: var(--dv2-font);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .dv2-rem:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 8px 16px -10px rgba(14,27,61,0.18);
+    }
+    .dv2-rem-pill {
+      display: inline-flex; align-items: center;
+      padding: 4px 10px; border-radius: 999px;
+      font-family: var(--dv2-mono); font-size: 10px;
+      font-weight: 800; letter-spacing: 1px;
+      flex-shrink: 0;
+      background: var(--dv2-blue-50); color: var(--dv2-blue-d);
+    }
+    .dv2-rem-pill.upcoming { background: var(--dv2-blue-50); color: var(--dv2-blue-d); }
+    .dv2-rem-pill.today    { background: var(--dv2-sand);    color: var(--dv2-amber); }
+    .dv2-rem-pill.overdue  { background: var(--dv2-peach);   color: var(--dv2-red); }
+    .dv2-rem-info { flex: 1; min-width: 0; overflow: hidden; }
+    .dv2-rem-ref {
+      font-family: var(--dv2-mono); font-size: 9px;
+      color: var(--dv2-ink3); font-weight: 700; letter-spacing: 0.5px;
+    }
+    .dv2-rem-title {
+      font-size: 14px; font-weight: 700;
+      color: var(--dv2-ink); margin-top: 1px;
+    }
+    .dv2-rem-loc {
+      font-family: var(--dv2-mono); font-size: 10px;
+      color: var(--dv2-ink2); margin-top: 1px; letter-spacing: 0.4px;
+      overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    }
+    .dv2-rem-amt-col {
+      text-align: right; flex-shrink: 0;
+    }
+    .dv2-rem-amt {
+      font-family: var(--dv2-mono); font-size: 18px;
+      font-weight: 800; letter-spacing: -0.5px;
+      color: var(--dv2-ink);
+    }
+    .dv2-rem-due {
+      font-family: var(--dv2-mono); font-size: 9px;
+      color: var(--dv2-ink3); font-weight: 700;
+      letter-spacing: 0.5px; margin-top: 2px;
+    }
+
+    /* Empty state */
+    .dv2-rem-empty {
+      background: white;
+      border: 1px solid var(--dv2-line-soft);
+      border-radius: 12px;
+      padding: 22px 16px;
+      text-align: center;
+      color: var(--dv2-ink2);
+      font-size: 13px;
+      font-family: var(--dv2-font);
+    }
+
+    /* Quick action tiles (2x2 grid inside sky section) */
+    .dv2-quick-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+    .dv2-quick {
+      background: white;
+      border: 1px solid var(--dv2-line-soft);
+      border-radius: 12px;
+      padding: 14px;
+      display: flex; flex-direction: column; gap: 8px;
+      text-align: left; cursor: pointer;
+      font-family: var(--dv2-font);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .dv2-quick:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px -10px rgba(14,27,61,0.18);
+    }
+    .dv2-quick-ic {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .dv2-quick-name {
+      font-size: 13px; font-weight: 700;
+      color: var(--dv2-ink);
+    }
+    .dv2-quick-sub {
+      font-family: var(--dv2-mono); font-size: 9px;
+      color: var(--dv2-ink2); letter-spacing: 0.7px;
+      font-weight: 700;
+    }
   </style>
 </head>
 
@@ -3585,6 +3782,72 @@
             <div class="dv2-bal-sub" id="dv2-balance-sub">0 ACTIVE · NO PLATE</div>
           </div>
           <span class="dv2-pill" id="dv2-pill">MANUAL</span>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════════
+           V2 DASHBOARD SECTIONS — only visible when ?design=v2 is on
+      ═══════════════════════════════════════════════════════════════ -->
+
+      <!-- Scanner CTA: blue → purple gradient -->
+      <button class="dv2-tab-hero dv2-scanner-cta" type="button" id="dv2-scanner-cta" onclick="if(typeof startCameraCapture==='function') startCameraCapture(); else if(typeof openScanner==='function') openScanner(); else { var c=document.querySelector('#tab-dashboard .card'); if(c) c.scrollIntoView({behavior:'smooth'}); }">
+        <div class="dv2-scanner-row">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3Z"/></svg>
+          <span class="dv2-scanner-meta">OCR + AI VISION</span>
+        </div>
+        <div class="dv2-scanner-title">Snap the ticket. We read it.</div>
+        <div class="dv2-scanner-sub">From paper to filed reminder in 60 seconds.</div>
+        <div class="dv2-scanner-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3Z"/><circle cx="12" cy="13" r="3"/></svg>
+          Scan ticket
+        </div>
+      </button>
+
+      <!-- Open reminders (sand) -->
+      <div class="dv2-tab-hero dv2-section dv2-section-sand">
+        <div class="dv2-section-head">
+          <span class="dv2-section-h">Open reminders</span>
+          <button class="dv2-section-more" id="dv2-rem-see-all" onclick="if(typeof showTab==='function') showTab('tab-services')">SEE ALL · 0</button>
+        </div>
+        <div id="dv2-reminders-list" class="dv2-reminders-list">
+          <div class="dv2-rem-empty">You're all clear. No outstanding tickets — nice driving.</div>
+        </div>
+      </div>
+
+      <!-- Quick actions (sky) -->
+      <div class="dv2-tab-hero dv2-section dv2-section-sky">
+        <div class="dv2-section-head">
+          <span class="dv2-section-h">Quick actions</span>
+        </div>
+        <div class="dv2-quick-grid">
+          <button class="dv2-quick" onclick="showTab('tab-legal')">
+            <div class="dv2-quick-ic" style="background: var(--dv2-lilac); color: #6B4EE0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/></svg>
+            </div>
+            <div class="dv2-quick-name">Get verdict</div>
+            <div class="dv2-quick-sub">AI LEGAL</div>
+          </button>
+          <button class="dv2-quick" onclick="showTab('tab-hotspots')">
+            <div class="dv2-quick-ic" style="background: var(--dv2-mint); color: var(--dv2-green);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div class="dv2-quick-name">Free parking</div>
+            <div class="dv2-quick-sub">LIVE SPOTS</div>
+          </button>
+          <button class="dv2-quick" onclick="showTab('tab-services')">
+            <div class="dv2-quick-ic" style="background: var(--dv2-sand); color: var(--dv2-amber);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="dv2-quick-name">Late-fee timer</div>
+            <div class="dv2-quick-sub">SAVE $79 AVG</div>
+          </button>
+          <button class="dv2-quick" onclick="showTab('tab-hotspots')">
+            <div class="dv2-quick-ic" style="background: var(--dv2-peach); color: var(--dv2-red);">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s-8-4-8-12V5l8-3 8 3v5c0 8-8 12-8 12z"/></svg>
+            </div>
+            <div class="dv2-quick-name">Hotspots</div>
+            <div class="dv2-quick-sub">3 RED ZONES</div>
+          </button>
         </div>
       </div>
 
@@ -6272,6 +6535,70 @@
           dv2Bell.style.display = 'none';
         }
       }
+
+      // Render the v2 dashboard reminder rows inline
+      dv2RenderReminders();
+    }
+
+    // ─── v2 inline reminders (Open reminders section on dashboard) ───
+    function dv2RenderReminders() {
+      var list   = document.getElementById('dv2-reminders-list');
+      var seeAll = document.getElementById('dv2-rem-see-all');
+      if (!list) return;
+
+      var reminders = (typeof safeGet === 'function' ? safeGet(REMINDERS_KEY) : null) || [];
+      var today = new Date(); today.setHours(0,0,0,0);
+
+      if (seeAll) seeAll.textContent = 'SEE ALL · ' + reminders.length;
+
+      if (reminders.length === 0) {
+        list.innerHTML = '<div class="dv2-rem-empty">You\'re all clear. No outstanding tickets — nice driving.</div>';
+        return;
+      }
+
+      var withMeta = reminders.map(function(r) {
+        var due = (typeof parseLocalDate === 'function') ? parseLocalDate(r.dueDate) : new Date(r.dueDate);
+        var dayDiff = Math.round((due - today) / (1000 * 60 * 60 * 24));
+        var status = dayDiff < 0 ? 'overdue' : dayDiff === 0 ? 'today' : 'upcoming';
+        return { r: r, due: due, dayDiff: dayDiff, status: status };
+      });
+      // Overdue first, then nearest due date
+      withMeta.sort(function(a, b) {
+        if (a.status === 'overdue' && b.status !== 'overdue') return -1;
+        if (b.status === 'overdue' && a.status !== 'overdue') return 1;
+        return a.dayDiff - b.dayDiff;
+      });
+
+      function escapeHtml(s) {
+        return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+          return { '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c];
+        });
+      }
+
+      var html = '';
+      withMeta.slice(0, 3).forEach(function(m) {
+        var label = m.status.toUpperCase();
+        var dueText = m.dayDiff < 0
+          ? 'OVERDUE · DAY ' + Math.abs(m.dayDiff)
+          : m.dayDiff === 0
+            ? 'DUE TODAY'
+            : 'IN ' + m.dayDiff + ' DAYS';
+        var ref = escapeHtml(m.r.ref || '—');
+        var dueDate = escapeHtml((m.r.dueDate || '').toUpperCase());
+        html += '<button class="dv2-rem" type="button" onclick="if(typeof showTab===\'function\')showTab(\'tab-services\')">' +
+          '<span class="dv2-rem-pill ' + m.status + '">' + label + '</span>' +
+          '<div class="dv2-rem-info">' +
+            '<div class="dv2-rem-ref">REF · ' + ref + '</div>' +
+            '<div class="dv2-rem-title">Toronto Ticket</div>' +
+            '<div class="dv2-rem-loc">DUE ' + dueDate + '</div>' +
+          '</div>' +
+          '<div class="dv2-rem-amt-col">' +
+            '<div class="dv2-rem-amt">$65</div>' +
+            '<div class="dv2-rem-due">' + dueText + '</div>' +
+          '</div>' +
+          '</button>';
+      });
+      list.innerHTML = html;
     }
 
     // ===================================================
