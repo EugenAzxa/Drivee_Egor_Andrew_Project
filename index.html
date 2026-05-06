@@ -3474,6 +3474,84 @@
       background: linear-gradient(180deg, white 0%, var(--dv2-blue-50) 100%);
     }
 
+    /* Inline Early Resolution offer that appears inside #scan-actions after a successful scan */
+    .dv2-er-inline {
+      margin-top: 14px;
+      padding: 16px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #2E64FF 0%, #6B4EE0 100%);
+      color: white;
+      box-shadow: 0 12px 24px -10px rgba(46,100,255,0.50);
+      position: relative;
+      overflow: hidden;
+    }
+    .dv2-er-inline::before {
+      content: ""; position: absolute;
+      top: -20px; right: -20px; width: 100px; height: 100px;
+      border-radius: 999px; background: rgba(255,255,255,0.10);
+      pointer-events: none;
+    }
+    .dv2-er-inline-row {
+      display: flex; gap: 12px; align-items: flex-start;
+      position: relative;
+    }
+    .dv2-er-inline-icon {
+      width: 38px; height: 38px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+      flex-shrink: 0;
+    }
+    .dv2-er-inline-info { flex: 1; }
+    .dv2-er-inline-meta {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; font-weight: 800; letter-spacing: 1.5px;
+      color: rgba(255,255,255,0.75);
+      margin-bottom: 4px;
+    }
+    .dv2-er-inline-title {
+      font-family: 'IBM Plex Serif', Georgia, serif;
+      font-size: 17px; font-weight: 700;
+      letter-spacing: -0.4px;
+      color: white;
+      margin-bottom: 4px;
+      line-height: 1.2;
+    }
+    .dv2-er-inline-sub {
+      font-size: 12px;
+      color: rgba(255,255,255,0.92);
+      line-height: 1.45;
+    }
+    .dv2-er-inline-sub strong { color: white; font-weight: 800; }
+    .dv2-er-inline-cta {
+      position: relative;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%;
+      margin-top: 14px;
+      padding: 13px 18px;
+      background: white;
+      color: #1A3FB8;
+      border-radius: 11px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 14px; font-weight: 800;
+      text-decoration: none;
+      box-shadow: 0 6px 14px -6px rgba(0,0,0,0.20);
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+    .dv2-er-inline-cta:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px -6px rgba(0,0,0,0.30);
+    }
+    .dv2-er-inline-trust {
+      position: relative;
+      margin-top: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 9px; font-weight: 700; letter-spacing: 0.8px;
+      color: rgba(255,255,255,0.75);
+      text-align: center;
+    }
+
     /* ─── Restore True Cost Calculator to its original v1 look ─── */
     /* Don't apply the v2 paper-card flat treatment to this card */
     .design-v2 #svc-cost {
@@ -4599,6 +4677,28 @@
           </div>
           <div id="scan-reminder-confirm" style="font-size:13px;color:var(--green);text-align:center;padding:4px 0;display:none">
             ✅ Reminder auto-set for due date
+          </div>
+
+          <!-- Early Resolution paid offer — shown right after a successful scan -->
+          <div class="dv2-er-inline">
+            <div class="dv2-er-inline-row">
+              <div class="dv2-er-inline-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3Z"/></svg>
+              </div>
+              <div class="dv2-er-inline-info">
+                <div class="dv2-er-inline-meta">EARLY RESOLUTION · AI EUGEN</div>
+                <div class="dv2-er-inline-title">Plead this down before court</div>
+                <div class="dv2-er-inline-sub">AI drafts the prosecutor request from this scan. Often turns demerit-point tickets into no-points reduced fines. <strong>$0.99 one-time</strong> · no subscription.</div>
+              </div>
+            </div>
+            <a class="dv2-er-inline-cta" href="https://buy.stripe.com/6oU28tey34q14I6gCUes000"
+               target="_blank" rel="noopener"
+               data-stripe-link="https://buy.stripe.com/6oU28tey34q14I6gCUes000"
+               onclick="return dv2EarlyResolutionPay(event);">
+              Get AI Eugen's draft — $0.99
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </a>
+            <div class="dv2-er-inline-trust">🔒 Stripe · One-time payment · Refund if unused</div>
           </div>
         </div>
 
