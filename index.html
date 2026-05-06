@@ -3419,11 +3419,14 @@
        V2 DASHBOARD — Scanner CTA, Open reminders, Quick actions
     ═══════════════════════════════════════════════════════════════ */
 
-    /* Hide v1 dashboard cards — replaced by new v2 sections */
-    .design-v2 #tab-dashboard > .card,
-    .design-v2 #tab-dashboard #profile-prompt,
-    .design-v2 #tab-dashboard #reminders-card {
-      display: none !important;
+    /* Keep v1 dashboard cards visible in v2 — they hold the working
+       functionality (scan-result UI, Demerit Points tracker, Renewal
+       Reminders, Scanned Tickets, the Add-Reminder form). They get
+       the v2 paper-card paint automatically via the global .card rule.
+       Only hide the things that v2 actually replaces or that look noisy. */
+    .design-v2 #tab-dashboard #profile-prompt {
+      /* Keep visible but stripped down — we'll style it via the existing
+         #profile-prompt rule above. */
     }
 
     /* Scanner CTA: blue → purple gradient — flagship card, MAXIMUM visibility */
@@ -4186,7 +4189,7 @@
 
       <!-- Scanner CTA wrapped in a paper section so it aligns with the other sections -->
       <div class="dv2-tab-hero dv2-section dv2-section-paper">
-        <button class="dv2-scanner-cta" type="button" id="dv2-scanner-cta" onclick="if(typeof startCameraCapture==='function') startCameraCapture(); else if(typeof openScanner==='function') openScanner(); else { var c=document.querySelector('#tab-dashboard .card'); if(c) c.scrollIntoView({behavior:'smooth'}); }">
+        <button class="dv2-scanner-cta" type="button" id="dv2-scanner-cta" onclick="var i=document.getElementById('ticket-photo'); if(i) i.click();">
           <div class="dv2-scanner-row">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3Z"/></svg>
             <span class="dv2-scanner-meta">OCR + AI VISION</span>
