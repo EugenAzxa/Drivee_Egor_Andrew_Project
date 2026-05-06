@@ -3519,6 +3519,40 @@
       text-align: right;
     }
 
+    /* ─── Ticket # row in the verdict card ─── */
+    .design-v2 .dv2-verdict-ticket {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 12px; margin: 10px 0;
+      background: rgba(11,20,48,0.05);
+      border: 1px solid rgba(11,20,48,0.08);
+      border-radius: 10px;
+    }
+    .design-v2 .dv2-verdict-ticket .dv2-vt-lbl {
+      font-family: var(--dv2-mono);
+      font-size: 9px; font-weight: 800; letter-spacing: 1.4px;
+      color: var(--dv2-ink2);
+    }
+    .design-v2 .dv2-verdict-ticket .dv2-vt-val {
+      font-family: var(--dv2-mono);
+      font-size: 14px; font-weight: 800; letter-spacing: -0.2px;
+      color: var(--dv2-ink);
+      flex: 1;
+      text-align: right;
+    }
+
+    /* ─── "OR PLEAD IT DOWN" divider between primary action and ER button ─── */
+    .design-v2 .dv2-verdict-er-divider {
+      display: flex; align-items: center; gap: 10px;
+      margin: 14px 0;
+      font-family: var(--dv2-mono);
+      font-size: 10px; font-weight: 800; letter-spacing: 1.4px;
+      color: var(--dv2-ink3);
+    }
+    .design-v2 .dv2-verdict-er-divider::before,
+    .design-v2 .dv2-verdict-er-divider::after {
+      content: ""; flex: 1; height: 1px; background: var(--dv2-line);
+    }
+
     /* ─── Big prominent fine amount inside the verdict card ─── */
     .design-v2 .dv2-verdict-amount {
       background: linear-gradient(135deg, #FFEAE0 0%, #FBE5E3 100%);
@@ -4732,7 +4766,7 @@
         </button>
 
         <div id="scan-status" style="display:none;margin-bottom:12px;padding:12px 14px;background:rgba(10,132,255,0.07);border:1px solid rgba(10,132,255,0.2);border-radius:12px;font-size:13px;color:var(--blue);text-align:center">
-          🤖 Claude is reading your ticket…
+          🤖 AI Eugen is reading your ticket…
         </div>
 
         <!-- Post-scan actions — shown after successful scan -->
@@ -6355,7 +6389,7 @@
       if (actionsEl) actionsEl.style.display = 'none';
 
       statusEl.style.display    = 'block';
-      statusEl.textContent      = '🤖 Claude Vision reading your ticket…';
+      statusEl.textContent      = '🤖 AI Eugen is reading your ticket…';
       statusEl.style.animation  = 'pulse 1.5s ease-in-out infinite';
       statusEl.style.background = 'rgba(37,99,235,0.07)';
       statusEl.style.borderColor= 'rgba(37,99,235,0.2)';
@@ -6495,7 +6529,7 @@
 
         // Send OCR text to Claude for smarter extraction
         if (text.trim().length > 20) {
-          statusEl.textContent = '🤖 Claude is reading your ticket…';
+          statusEl.textContent = '🤖 AI Eugen is reading your ticket…';
           scanWithClaude(text, statusEl);
         } else {
           // Fallback: show regex results
@@ -6891,7 +6925,7 @@
         statusEl.style.background = 'rgba(34,197,94,0.08)';
         statusEl.style.borderColor = 'rgba(34,197,94,0.25)';
         statusEl.style.color = 'var(--green)';
-        statusEl.textContent = '🤖 Claude found: ' + (found.length ? found.join(' · ') : 'details extracted') + ' — tap Get Verdict';
+        statusEl.textContent = '✅ AI Eugen found: ' + (found.length ? found.join(' · ') : 'details extracted') + ' — verdict below';
       })
       .catch(function() {
         statusEl.style.color = 'var(--warning)';
@@ -6974,26 +7008,43 @@
           '</div>'
         : '';
 
-      // Decide whether Early Resolution is a sensible primary CTA. ER works well
-      // for "fight-able but not worth a lawyer" cases — the contest verdict, plus
-      // serious cases that aren't urgent (DUI/stunt go straight to lawyer).
-      var showER = (verdict.cls === 'contest' || verdict.cls === 'serious');
-      var primaryAction = showER
-        ? '<a class="dv2-verdict-er-btn" href="https://buy.stripe.com/6oU28tey34q14I6gCUes000" ' +
-            'target="_blank" rel="noopener" ' +
-            'data-stripe-link="https://buy.stripe.com/6oU28tey34q14I6gCUes000" ' +
-            'onclick="return dv2EarlyResolutionPay(event);">' +
-            '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3Z"/></svg>' +
-            '⚖️ Plead Early Resolution — $0.99' +
-          '</a>' +
-          '<div class="dv2-verdict-er-sub">AI Eugen drafts the prosecutor request from this ticket — most demerit-point cases plead down to no-points reduced fines. One-time payment, refund if unused.</div>' +
+      // Pull ticket # from the last scan so we can show it prominently
+      var lastScan  = window._lastScan || {};
+      var ticketRef = lastScan.ref || '';
+      var ticketLine = ticketRef
+        ? '<div class="dv2-verdict-ticket"><span class="dv2-vt-lbl">TICKET #</span><span class="dv2-vt-val">' + ticketRef + '</span></div>'
+        : '';
+
+      // Build the Early-Resolution Stripe button — always present, just sized
+      // differently depending on how appropriate ER is for this verdict class.
+      // Urgent (DUI/stunt) → ER is SECONDARY (find a lawyer first, but ER is still
+      // useful for related minor charges).
+      // Contest / Serious → ER is PRIMARY (this is the case it was made for).
+      // Minor (parking <$65) → ER is SECONDARY (just paying is usually right, but
+      // some users want to plead it down).
+      var erButton =
+        '<a class="dv2-verdict-er-btn" href="https://buy.stripe.com/6oU28tey34q14I6gCUes000" ' +
+          'target="_blank" rel="noopener" ' +
+          'data-stripe-link="https://buy.stripe.com/6oU28tey34q14I6gCUes000" ' +
+          'onclick="return dv2EarlyResolutionPay(event);">' +
+          '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3Z"/></svg>' +
+          '⚖️ Plead Early Resolution — $0.99' +
+        '</a>' +
+        '<div class="dv2-verdict-er-sub">AI Eugen drafts the prosecutor request from this ticket. One-time $0.99, refund if unused. Most demerit-point cases plead down to no-points reduced fines.</div>';
+
+      var erIsPrimary = (verdict.cls === 'contest' || verdict.cls === 'serious');
+      var primaryAction = erIsPrimary
+        ? erButton +
           '<button class="btn btn-secondary" id="verdict-action-btn" style="margin-top:10px">' + verdict.actionLabel + '</button>'
-        : '<button class="btn btn-primary" id="verdict-action-btn">' + verdict.actionLabel + '</button>';
+        : '<button class="btn btn-primary" id="verdict-action-btn">' + verdict.actionLabel + '</button>' +
+          '<div class="dv2-verdict-er-divider"><span>OR PLEAD IT DOWN</span></div>' +
+          erButton;
 
       container.innerHTML =
         '<div class="verdict-card ' + verdict.cls + '" style="margin-top:14px;">' +
           '<div class="verdict-label" style="color:' + verdict.labelColor + ';">' + verdict.label + '</div>' +
           '<div class="verdict-message">' + verdict.message + '</div>' +
+          ticketLine +
           amountLine +
           '<div class="verdict-reason">' + verdict.reason + '</div>' +
           primaryAction +
@@ -7001,11 +7052,11 @@
             '<div class="verdict-save-label">Save as Reminder</div>' +
             '<div class="input-group" style="margin-bottom:8px;">' +
               '<label for="verdict-ref">Ticket Reference Number</label>' +
-              '<input type="text" id="verdict-ref" placeholder="e.g. TPA-123456" />' +
+              '<input type="text" id="verdict-ref" placeholder="e.g. TPA-123456" value="' + ticketRef + '" />' +
             '</div>' +
             '<div class="input-group" style="margin-bottom:10px;">' +
               '<label for="verdict-due">Due Date</label>' +
-              '<input type="date" id="verdict-due" />' +
+              '<input type="date" id="verdict-due" value="' + (lastScan.due && lastScan.due !== 'unknown' ? lastScan.due : '') + '" />' +
             '</div>' +
             '<button class="btn btn-secondary" onclick="saveTicketAsReminder()">💾 Save Reminder</button>' +
           '</div>' +
