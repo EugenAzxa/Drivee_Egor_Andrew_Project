@@ -3474,6 +3474,318 @@
       background: linear-gradient(180deg, white 0%, var(--dv2-blue-50) 100%);
     }
 
+    /* ═══════════════════════════════════════════════════════════════
+       Early Resolution — FREE guided wizard
+    ═══════════════════════════════════════════════════════════════ */
+
+    /* Launcher (replaces the old Stripe paywall) */
+    .dv2-er-launcher {
+      background: linear-gradient(135deg, #2E64FF 0%, #6B4EE0 100%);
+      color: white;
+      border-radius: 16px;
+      padding: 24px 22px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 14px 28px -10px rgba(46,100,255,0.45);
+    }
+    .dv2-er-launcher::before {
+      content: ""; position: absolute;
+      top: -30px; right: -30px; width: 140px; height: 140px;
+      border-radius: 999px; background: rgba(255,255,255,0.10);
+      pointer-events: none;
+    }
+    .dv2-er-launcher-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      background: rgba(31,171,107,0.30);
+      color: #B6F0CC;
+      border-radius: 999px;
+      font-family: var(--dv2-mono); font-size: 9px; font-weight: 800;
+      letter-spacing: 1.4px;
+      position: relative;
+    }
+    .dv2-er-launcher-title {
+      font-family: var(--dv2-serif);
+      font-size: 22px; font-weight: 700; letter-spacing: -0.5px;
+      color: white;
+      margin: 12px 0 6px;
+      position: relative;
+    }
+    .dv2-er-launcher-sub {
+      font-size: 13px;
+      color: rgba(255,255,255,0.92);
+      line-height: 1.5;
+      margin-bottom: 18px;
+      position: relative;
+    }
+    .dv2-er-start-btn {
+      position: relative;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      width: 100%;
+      padding: 14px 18px;
+      background: white;
+      color: var(--dv2-blue-d);
+      border: 0;
+      border-radius: 12px;
+      font-family: var(--dv2-font);
+      font-size: 15px; font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 8px 16px -8px rgba(0,0,0,0.20);
+      transition: transform 0.15s, box-shadow 0.15s;
+      letter-spacing: -0.2px;
+    }
+    .dv2-er-start-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 22px -8px rgba(0,0,0,0.30);
+    }
+
+    /* Wizard container */
+    .dv2-er-wizard {
+      background: var(--dv2-paper);
+      border: 1px solid var(--dv2-line);
+      border-radius: 16px;
+      padding: 18px;
+      margin-top: 14px;
+      animation: dv2ERFadeIn 0.35s ease-out;
+    }
+    @keyframes dv2ERFadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Progress bar */
+    .dv2-er-w-header { margin-bottom: 18px; }
+    .dv2-er-progress-bar {
+      height: 6px;
+      background: var(--dv2-line);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .dv2-er-progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--dv2-blue) 0%, #6B4EE0 100%);
+      width: 20%;
+      border-radius: 999px;
+      transition: width 0.45s cubic-bezier(0.4,0,0.2,1);
+    }
+    .dv2-er-step-label {
+      font-family: var(--dv2-mono);
+      font-size: 10px; font-weight: 800; letter-spacing: 1.4px;
+      color: var(--dv2-ink2);
+      margin-top: 8px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .dv2-er-step-label .dv2-er-step-name {
+      color: var(--dv2-blue-d);
+      flex: 1;
+      text-align: right;
+    }
+
+    /* Steps */
+    .dv2-er-step {
+      animation: dv2ERStepIn 0.3s cubic-bezier(0.4,0,0.2,1);
+    }
+    @keyframes dv2ERStepIn {
+      from { opacity: 0; transform: translateX(20px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .dv2-er-step-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+      display: inline-block;
+      animation: dv2ERIconBounce 0.6s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    @keyframes dv2ERIconBounce {
+      0%   { transform: scale(0); }
+      100% { transform: scale(1); }
+    }
+    .dv2-er-step h4 {
+      font-family: var(--dv2-serif);
+      font-size: 22px; font-weight: 700; letter-spacing: -0.5px;
+      color: var(--dv2-ink);
+      margin: 0 0 8px;
+      line-height: 1.2;
+    }
+    .dv2-er-step p {
+      font-size: 13px; color: var(--dv2-ink2);
+      line-height: 1.5;
+      margin: 0 0 16px;
+    }
+
+    /* Form fields */
+    .dv2-er-field {
+      display: block; margin-bottom: 12px;
+    }
+    .dv2-er-fl {
+      display: block;
+      font-family: var(--dv2-mono);
+      font-size: 9px; font-weight: 800; letter-spacing: 1.3px;
+      color: var(--dv2-ink2);
+      margin-bottom: 4px;
+    }
+    .dv2-er-field input,
+    .dv2-er-field textarea {
+      width: 100%;
+      padding: 12px 14px !important;
+      border: 1.5px solid var(--dv2-line) !important;
+      border-radius: 10px !important;
+      font-family: var(--dv2-font) !important;
+      font-size: 16px !important; /* 16px+ stops iOS auto-zoom-on-focus */
+      background: var(--dv2-paper) !important;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      box-sizing: border-box;
+    }
+    .dv2-er-field input:focus,
+    .dv2-er-field textarea:focus {
+      border-color: var(--dv2-blue) !important;
+      box-shadow: 0 0 0 3px rgba(46,100,255,0.15) !important;
+      outline: none;
+    }
+    .dv2-er-field textarea { resize: vertical; min-height: 100px; }
+
+    /* Quick-add chips on step 3 */
+    .dv2-er-prompt-chips {
+      display: flex; flex-wrap: wrap; gap: 6px;
+      margin-bottom: 12px;
+    }
+    .dv2-er-chip {
+      padding: 6px 12px;
+      background: var(--dv2-blue-50);
+      color: var(--dv2-blue-d);
+      border: 1px solid rgba(46,100,255,0.18);
+      border-radius: 999px;
+      font-family: var(--dv2-font);
+      font-size: 12px; font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .dv2-er-chip:hover {
+      background: rgba(46,100,255,0.18);
+      transform: translateY(-1px);
+    }
+    .dv2-er-chip:active { transform: translateY(0); }
+
+    /* Radio options on step 4 */
+    .dv2-er-options { display: flex; flex-direction: column; gap: 10px; }
+    .dv2-er-opt {
+      display: block;
+      padding: 14px 16px;
+      background: var(--dv2-paper);
+      border: 1.5px solid var(--dv2-line);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      position: relative;
+    }
+    .dv2-er-opt input { display: none; }
+    .dv2-er-opt::before {
+      content: "";
+      position: absolute;
+      top: 16px; right: 16px;
+      width: 18px; height: 18px;
+      border-radius: 999px;
+      border: 2px solid var(--dv2-line);
+      background: white;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .dv2-er-opt:has(input:checked) {
+      border-color: var(--dv2-blue);
+      background: var(--dv2-blue-50);
+    }
+    .dv2-er-opt:has(input:checked)::before {
+      border-color: var(--dv2-blue);
+      background: radial-gradient(circle, var(--dv2-blue) 40%, white 50%);
+    }
+    .dv2-er-opt-title {
+      display: block;
+      font-family: var(--dv2-font);
+      font-size: 14px; font-weight: 800;
+      color: var(--dv2-ink);
+      padding-right: 32px;
+    }
+    .dv2-er-opt-sub {
+      display: block;
+      font-size: 12px;
+      color: var(--dv2-ink2);
+      margin-top: 4px;
+      padding-right: 32px;
+      line-height: 1.4;
+    }
+
+    /* Generated form output */
+    .dv2-er-output-text {
+      width: 100%;
+      padding: 14px;
+      background: #F8FAFD !important;
+      border: 1.5px solid var(--dv2-line) !important;
+      border-radius: 10px;
+      font-family: var(--dv2-mono) !important;
+      font-size: 12px;
+      line-height: 1.6;
+      color: var(--dv2-ink);
+      resize: vertical;
+      box-sizing: border-box;
+      animation: dv2ERFadeIn 0.5s ease-out;
+    }
+    .dv2-er-output-actions {
+      display: flex; gap: 8px;
+      margin-top: 12px;
+    }
+    .dv2-er-action-btn {
+      flex: 1;
+      padding: 12px 14px;
+      background: var(--dv2-blue-50);
+      color: var(--dv2-blue-d);
+      border: 0;
+      border-radius: 10px;
+      font-family: var(--dv2-font);
+      font-size: 13px; font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .dv2-er-action-btn:hover { background: rgba(46,100,255,0.18); }
+    .dv2-er-action-btn.primary {
+      background: var(--dv2-blue);
+      color: white;
+    }
+    .dv2-er-action-btn.primary:hover { background: var(--dv2-blue-d); }
+
+    /* Wizard footer */
+    .dv2-er-w-footer {
+      display: flex; align-items: center;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--dv2-line);
+    }
+    .dv2-er-back-btn,
+    .dv2-er-next-btn {
+      padding: 12px 18px;
+      border: 0;
+      border-radius: 10px;
+      font-family: var(--dv2-font);
+      font-size: 14px; font-weight: 800;
+      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px;
+      transition: background 0.15s, transform 0.15s;
+    }
+    .dv2-er-back-btn {
+      background: transparent;
+      color: var(--dv2-ink2);
+    }
+    .dv2-er-back-btn:hover {
+      background: rgba(11,20,48,0.05);
+      color: var(--dv2-ink);
+    }
+    .dv2-er-next-btn {
+      background: linear-gradient(135deg, var(--dv2-blue) 0%, #6B4EE0 100%);
+      color: white;
+      box-shadow: 0 8px 16px -8px rgba(46,100,255,0.40);
+    }
+    .dv2-er-next-btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 12px 22px -8px rgba(46,100,255,0.55);
+    }
+
     /* ─── Clean Ticket-Details summary card after scan ─── */
     .design-v2 .dv2-sd-card {
       background: white;
@@ -5289,27 +5601,130 @@
           </a>
         </div>
 
-        <!-- The paid CTA -->
-        <div class="dv2-er-paywall">
-          <div class="dv2-er-price">
-            <span class="dv2-er-amt">$0.99</span>
-            <span class="dv2-er-amt-sub">one-time · no subscription</span>
-          </div>
-          <p class="dv2-er-pitch">AI Eugen reads your scanned ticket, finds the strongest argument for your case, and drafts the Early Resolution request <strong>in plain English</strong>. You copy, sign, and send.</p>
-          <a class="dv2-er-cta" id="dv2-er-pay-btn"
-             href="https://buy.stripe.com/6oU28tey34q14I6gCUes000"
-             target="_blank" rel="noopener"
-             data-stripe-link="https://buy.stripe.com/6oU28tey34q14I6gCUes000"
-             onclick="return dv2EarlyResolutionPay(event);">
+        <!-- Free guided wizard launcher -->
+        <div class="dv2-er-launcher" id="dv2-er-launcher">
+          <div class="dv2-er-launcher-badge">FREE · NO PAYMENT</div>
+          <h3 class="dv2-er-launcher-title">Build your Early Resolution form</h3>
+          <p class="dv2-er-launcher-sub">Five quick steps. We explain what each line means and why it matters. At the end you copy the finished form and send it in. Free.</p>
+          <button class="dv2-er-start-btn" type="button" onclick="dv2ERWizardStart()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m12 3 1.9 5.8a2 2 0 0 0 1.3 1.3L21 12l-5.8 1.9a2 2 0 0 0-1.3 1.3L12 21l-1.9-5.8a2 2 0 0 0-1.3-1.3L3 12l5.8-1.9a2 2 0 0 0 1.3-1.3L12 3Z"/></svg>
-            Get AI Eugen's draft — $0.99
-          </a>
+            Start the guided form
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+          </button>
           <div class="dv2-er-trust">
-            <span>🔒 Secure payment via Stripe</span>
+            <span>✦ Powered by AI Eugen</span>
             <span>·</span>
-            <span>💸 One-time payment · no subscription</span>
+            <span>📝 ~3 minutes</span>
             <span>·</span>
-            <span>↻ Refund if you don't use it</span>
+            <span>🆓 Free, always</span>
+          </div>
+        </div>
+
+        <!-- Wizard (hidden until launcher is tapped) -->
+        <div class="dv2-er-wizard" id="dv2-er-wizard" hidden>
+          <div class="dv2-er-w-header">
+            <div class="dv2-er-progress-bar">
+              <div class="dv2-er-progress-fill" id="dv2-er-progress-fill"></div>
+            </div>
+            <div class="dv2-er-step-label">
+              <span id="dv2-er-step-num">1</span> of 5
+              <span class="dv2-er-step-name" id="dv2-er-step-name">YOUR TICKET</span>
+            </div>
+          </div>
+
+          <!-- Step 1: Ticket -->
+          <div class="dv2-er-step" data-step="1">
+            <div class="dv2-er-step-icon">📋</div>
+            <h4>Your ticket details</h4>
+            <p>We use what AI Eugen already pulled from your scan. Double-check it's right — fix anything wrong.</p>
+            <label class="dv2-er-field"><span class="dv2-er-fl">TICKET / INFRACTION #</span>
+              <input type="text" id="dv2-er-ticket" placeholder="e.g. 8718027Z" autocomplete="off"/></label>
+            <label class="dv2-er-field"><span class="dv2-er-fl">LICENCE PLATE</span>
+              <input type="text" id="dv2-er-plate" placeholder="e.g. DHMT191" autocomplete="off"/></label>
+            <label class="dv2-er-field"><span class="dv2-er-fl">OFFENCE DATE</span>
+              <input type="date" id="dv2-er-date" autocomplete="off"/></label>
+            <label class="dv2-er-field"><span class="dv2-er-fl">VIOLATION</span>
+              <input type="text" id="dv2-er-offence" placeholder="e.g. Drive — Handheld Communication Device" autocomplete="off"/></label>
+            <label class="dv2-er-field"><span class="dv2-er-fl">FINE AMOUNT (TOTAL PAYABLE)</span>
+              <input type="number" id="dv2-er-amount" placeholder="615" autocomplete="off"/></label>
+          </div>
+
+          <!-- Step 2: Your info -->
+          <div class="dv2-er-step" data-step="2" hidden>
+            <div class="dv2-er-step-icon">👤</div>
+            <h4>Who are you?</h4>
+            <p>The prosecutor needs to know how to reach you. We never store this on a server — it stays on your phone.</p>
+            <label class="dv2-er-field"><span class="dv2-er-fl">FULL NAME</span>
+              <input type="text" id="dv2-er-name" placeholder="Sarah Tremblay" autocomplete="name"/></label>
+            <label class="dv2-er-field"><span class="dv2-er-fl">ADDRESS</span>
+              <input type="text" id="dv2-er-addr" placeholder="123 King St W, Toronto ON" autocomplete="address-line1"/></label>
+            <label class="dv2-er-field"><span class="dv2-er-fl">EMAIL</span>
+              <input type="email" id="dv2-er-email" placeholder="you@example.com" autocomplete="email"/></label>
+            <label class="dv2-er-field"><span class="dv2-er-fl">PHONE</span>
+              <input type="tel" id="dv2-er-phone" placeholder="(416) 555-0142" autocomplete="tel"/></label>
+          </div>
+
+          <!-- Step 3: What happened -->
+          <div class="dv2-er-step" data-step="3" hidden>
+            <div class="dv2-er-step-icon">💬</div>
+            <h4>What happened, in your own words?</h4>
+            <p>This is the story the prosecutor will read. Be honest, brief, and specific. Mention things that suggest the ticket was harsh, not whether you're "guilty" overall — admitting some fault while explaining context tends to plead better than denying everything.</p>
+            <div class="dv2-er-prompt-chips">
+              <button type="button" class="dv2-er-chip" onclick="dv2ERAddChip('I was using my phone for navigation, not texting.')">Navigation, not texting</button>
+              <button type="button" class="dv2-er-chip" onclick="dv2ERAddChip('Sign was partly hidden by a tree/banner/scaffolding.')">Sign was hidden</button>
+              <button type="button" class="dv2-er-chip" onclick="dv2ERAddChip('I had just started driving and was unfamiliar with the area.')">New to area</button>
+              <button type="button" class="dv2-er-chip" onclick="dv2ERAddChip('Clean driving record for the past N years.')">Clean record</button>
+              <button type="button" class="dv2-er-chip" onclick="dv2ERAddChip('I rely on my licence for work — a suspension would cost my job.')">Need licence for work</button>
+            </div>
+            <label class="dv2-er-field"><span class="dv2-er-fl">YOUR STATEMENT</span>
+              <textarea id="dv2-er-story" rows="6" placeholder="Tell the prosecutor what happened..."></textarea></label>
+          </div>
+
+          <!-- Step 4: What you're asking for -->
+          <div class="dv2-er-step" data-step="4" hidden>
+            <div class="dv2-er-step-icon">⚖️</div>
+            <h4>What are you asking the prosecutor for?</h4>
+            <p>Pick the outcome that fits your case. Be realistic — asking for "withdraw entirely" on a clear distracted-driving charge usually fails, but pleading down to a no-points equivalent often works.</p>
+            <div class="dv2-er-options" id="dv2-er-asking-options">
+              <label class="dv2-er-opt"><input type="radio" name="dv2-er-asking" value="reduce-fine" checked/>
+                <span class="dv2-er-opt-title">Reduce the fine</span>
+                <span class="dv2-er-opt-sub">Most common outcome. Often $200–400 off.</span></label>
+              <label class="dv2-er-opt"><input type="radio" name="dv2-er-asking" value="lower-charge"/>
+                <span class="dv2-er-opt-title">Plead to a lower charge</span>
+                <span class="dv2-er-opt-sub">e.g. $295 careless → $115 no-points equivalent. Best for demerit-point tickets.</span></label>
+              <label class="dv2-er-opt"><input type="radio" name="dv2-er-asking" value="drop-points"/>
+                <span class="dv2-er-opt-title">Drop the demerit points</span>
+                <span class="dv2-er-opt-sub">Pay the fine as-is, but ask the points be removed (protects insurance).</span></label>
+              <label class="dv2-er-opt"><input type="radio" name="dv2-er-asking" value="withdraw"/>
+                <span class="dv2-er-opt-title">Withdraw the ticket entirely</span>
+                <span class="dv2-er-opt-sub">Only if the evidence is genuinely weak (wrong plate, hidden sign, etc.)</span></label>
+            </div>
+          </div>
+
+          <!-- Step 5: Review + copy -->
+          <div class="dv2-er-step" data-step="5" hidden>
+            <div class="dv2-er-step-icon">✅</div>
+            <h4>Your form is ready</h4>
+            <p>Copy the text below. You can email it, paste it into the Toronto Court Case Lookup form, or print, sign, and mail it to the courthouse address shown on your ticket.</p>
+            <textarea class="dv2-er-output-text" id="dv2-er-output" rows="14" readonly></textarea>
+            <div class="dv2-er-output-actions">
+              <button type="button" class="dv2-er-action-btn primary" onclick="dv2ERCopy()">📋 Copy form</button>
+              <button type="button" class="dv2-er-action-btn" onclick="dv2EREmail()">📧 Email it to me</button>
+            </div>
+            <a class="dv2-er-link" href="https://secure.toronto.ca/CourtCaseLookUp/" target="_blank" rel="noopener" style="margin-top: 14px; display: inline-flex;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+              Submit at Toronto Court Case Lookup
+            </a>
+          </div>
+
+          <!-- Footer nav -->
+          <div class="dv2-er-w-footer">
+            <button type="button" class="dv2-er-back-btn" id="dv2-er-back-btn" onclick="dv2ERWizardBack()" hidden>← Back</button>
+            <div style="flex: 1"></div>
+            <button type="button" class="dv2-er-next-btn" id="dv2-er-next-btn" onclick="dv2ERWizardNext()">
+              Next
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+            </button>
           </div>
         </div>
       </div>
@@ -5843,6 +6258,207 @@
     // Uses CSS classes — never touches style.display directly.
     // This avoids breaking flex/grid layouts when re-showing tabs.
     // ===================================================
+    // ═══════════════════════════════════════════════════════════════
+    // EARLY RESOLUTION — free guided wizard (replaces $0.99 Stripe paywall)
+    // ═══════════════════════════════════════════════════════════════
+    var dv2ERStep  = 1;
+    var dv2ERTotal = 5;
+    var DV2_ER_STEP_NAMES = [
+      'YOUR TICKET', 'YOUR INFO', 'WHAT HAPPENED', 'WHAT YOU WANT', 'COPY & SEND'
+    ];
+
+    function dv2ERWizardStart() {
+      var launcher = document.getElementById('dv2-er-launcher');
+      var wiz      = document.getElementById('dv2-er-wizard');
+      if (!launcher || !wiz) return;
+      launcher.style.display = 'none';
+      wiz.hidden = false;
+      // Pre-fill from the most recent scan (if any)
+      var p = window._lastScan || {};
+      var profile = (typeof safeGet === 'function' ? safeGet('drivee_profile') : null) || {};
+      function setVal(id, v) { var el = document.getElementById(id); if (el && v) el.value = v; }
+      setVal('dv2-er-ticket',  p.ref);
+      setVal('dv2-er-plate',   p.plate || profile.plate);
+      setVal('dv2-er-date',    p.date);
+      setVal('dv2-er-offence', dv2ERHumanizeType(p.type) || (p.advice && p.advice.length < 80 ? p.advice : ''));
+      setVal('dv2-er-amount',  p.amount);
+      setVal('dv2-er-name',    profile.name);
+      dv2ERStep = 1;
+      dv2ERShowStep(1);
+    }
+
+    function dv2ERHumanizeType(t) {
+      if (!t) return '';
+      var map = {
+        parking: 'Parking violation',
+        speeding: 'Speeding',
+        speeding_low: 'Speeding (1–15 km/h over)',
+        speeding_mid: 'Speeding (16–29 km/h over)',
+        speeding_high: 'Speeding (30–49 km/h over)',
+        stunt: 'Stunt driving (50+ km/h over)',
+        redlight_camera: 'Red light camera',
+        redlight_officer: 'Failure to stop — red light (officer)',
+        distracted: 'Drive while holding handheld device (HTA 78.1)',
+        careless: 'Careless driving',
+        seatbelt: 'Seatbelt violation',
+        stop_sign: 'Failure to stop — stop sign',
+        school_bus: 'Failure to stop — school bus',
+        hov: 'HOV lane violation',
+        no_insurance: 'No insurance'
+      };
+      return map[t] || t.replace(/_/g, ' ');
+    }
+
+    function dv2ERWizardNext() {
+      if (dv2ERStep < dv2ERTotal) {
+        dv2ERStep++;
+        dv2ERShowStep(dv2ERStep);
+      } else {
+        // Already on review step — Next acts as "Done", scrolls to top
+        var w = document.getElementById('dv2-er-wizard');
+        if (w) w.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function dv2ERWizardBack() {
+      if (dv2ERStep > 1) {
+        dv2ERStep--;
+        dv2ERShowStep(dv2ERStep);
+      }
+    }
+
+    function dv2ERShowStep(n) {
+      // Toggle step visibility
+      document.querySelectorAll('.dv2-er-step').forEach(function(el) {
+        var s = parseInt(el.getAttribute('data-step'), 10);
+        if (s === n) {
+          el.hidden = false;
+          el.style.animation = 'none'; el.offsetHeight; el.style.animation = '';
+        } else {
+          el.hidden = true;
+        }
+      });
+      // Progress bar + step label
+      var pct = (n / dv2ERTotal) * 100;
+      var fill = document.getElementById('dv2-er-progress-fill');
+      if (fill) fill.style.width = pct + '%';
+      var num = document.getElementById('dv2-er-step-num');
+      if (num) num.textContent = n;
+      var name = document.getElementById('dv2-er-step-name');
+      if (name) name.textContent = DV2_ER_STEP_NAMES[n - 1] || '';
+      // Footer buttons
+      var back = document.getElementById('dv2-er-back-btn');
+      var next = document.getElementById('dv2-er-next-btn');
+      if (back) back.hidden = (n === 1);
+      if (next) {
+        if (n === dv2ERTotal) {
+          next.innerHTML = 'Done';
+          next.style.opacity = '0.7';
+        } else {
+          next.innerHTML = 'Next <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>';
+          next.style.opacity = '1';
+        }
+      }
+      // Generate the form on the final step
+      if (n === dv2ERTotal) dv2ERGenerate();
+      // Scroll the wizard top into view (so user sees the new step from top)
+      var w = document.getElementById('dv2-er-wizard');
+      if (w) w.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function dv2ERAddChip(text) {
+      var ta = document.getElementById('dv2-er-story');
+      if (!ta) return;
+      var cur = ta.value.trim();
+      ta.value = cur ? cur + ' ' + text : text;
+      ta.focus();
+    }
+
+    function dv2ERGenerate() {
+      function v(id) {
+        var el = document.getElementById(id);
+        return el ? (el.value || '').trim() : '';
+      }
+      var ticket  = v('dv2-er-ticket')  || '[ticket #]';
+      var plate   = v('dv2-er-plate')   || '[plate]';
+      var date    = v('dv2-er-date')    || '[offence date]';
+      var offence = v('dv2-er-offence') || '[offence]';
+      var amount  = v('dv2-er-amount');
+      var name    = v('dv2-er-name')    || '[your name]';
+      var addr    = v('dv2-er-addr')    || '[your address]';
+      var email   = v('dv2-er-email');
+      var phone   = v('dv2-er-phone');
+      var story   = v('dv2-er-story')   || '[your statement]';
+      var asking  = (document.querySelector('input[name="dv2-er-asking"]:checked') || {}).value || 'reduce-fine';
+
+      var askingText = {
+        'reduce-fine':   'a reduction in the total payable fine',
+        'lower-charge':  'a plea to a lower equivalent charge with no demerit points',
+        'drop-points':   'the demerit points associated with this charge be removed',
+        'withdraw':      'the charge be withdrawn'
+      }[asking];
+
+      var lines = [];
+      lines.push('EARLY RESOLUTION REQUEST');
+      lines.push('Ontario Court of Justice — Provincial Offences');
+      lines.push('');
+      lines.push('To: The Prosecutor');
+      lines.push('Re: Ticket / Infraction No. ' + ticket);
+      lines.push('Offence date: ' + date);
+      lines.push('Plate: ' + plate);
+      lines.push('Charge: ' + offence + (amount ? ' ($' + amount + ')' : ''));
+      lines.push('');
+      lines.push('From:');
+      lines.push(name);
+      if (addr)  lines.push(addr);
+      if (email) lines.push(email);
+      if (phone) lines.push(phone);
+      lines.push('');
+      lines.push('Dear Prosecutor,');
+      lines.push('');
+      lines.push('I am writing to request an Early Resolution meeting under the Provincial Offences Act in respect of the above-noted ticket. I would like to discuss the matter before any trial date.');
+      lines.push('');
+      lines.push('STATEMENT:');
+      lines.push(story);
+      lines.push('');
+      lines.push('I am respectfully asking for ' + askingText + '.');
+      lines.push('');
+      lines.push('I understand that by submitting this request I have not pleaded guilty to the charge. I am available to attend a meeting in person, by telephone, or by video at the prosecutor\'s convenience.');
+      lines.push('');
+      lines.push('Thank you for considering this request.');
+      lines.push('');
+      lines.push('Sincerely,');
+      lines.push(name);
+
+      var out = document.getElementById('dv2-er-output');
+      if (out) out.value = lines.join('\n');
+    }
+
+    function dv2ERCopy() {
+      var out = document.getElementById('dv2-er-output');
+      if (!out) return;
+      out.select();
+      try {
+        navigator.clipboard.writeText(out.value).then(function() {
+          if (typeof showToast === 'function') showToast('✅ Copied — paste it into the court form');
+        }).catch(function() {
+          document.execCommand('copy');
+          if (typeof showToast === 'function') showToast('✅ Copied');
+        });
+      } catch (e) {
+        document.execCommand('copy');
+        if (typeof showToast === 'function') showToast('✅ Copied');
+      }
+    }
+
+    function dv2EREmail() {
+      var out = document.getElementById('dv2-er-output');
+      if (!out) return;
+      var subject = 'Early Resolution Request — ' + (document.getElementById('dv2-er-ticket').value || 'Toronto ticket');
+      var body = encodeURIComponent(out.value);
+      window.location.href = 'mailto:?subject=' + encodeURIComponent(subject) + '&body=' + body;
+    }
+
     // ─── Verdict button → Early Resolution decision page ───
     // Take the user to the Services tab's Early Resolution detail panel so
     // they can READ the explanation, see why it fits their kind of ticket,
